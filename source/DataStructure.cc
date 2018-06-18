@@ -4,6 +4,9 @@
 //mailto:andrea.scarpelli@cern.ch
 ////////////////////////////////////////////////////////////////////////////////
 
+//TODO add missing branches to MCTrack
+//TODO add backtracker quantities to Track
+
 #include <iostream>
 #include <fstream>
 #include <stdlib.h>
@@ -36,6 +39,31 @@ LArParser::LArParser( TTree *tree, Run *run ){
 }
 
 LArParser::~LArParser(){}
+
+void LArParser::setMCBranches(){
+
+  //Link branches in the ROOT file to variables
+  //Metadata
+  fTree->SetBranchAddress("Subrun", &tSubrun);
+  fTree->SetBranchAddress("EventNumberInRun", &tEventNumberInRun);
+
+  //g4 particles
+  fTree->SetBranchAddress("MCTruth_GEANT4_NumberOfParticles", &tNGeantTrackPerEvent);
+  fTree->SetBranchAddress("MCTruth_GEANT4_PDGCode",&tPdg);
+  fTree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_ParticleID",&tParticleId);
+  fTree->SetBranchAddress("MCTruth_GEANT4_StartEnergy",&tStartE);
+  fTree->SetBranchAddress("MCTruth_GEANT4_IsInTPCAV",&tIsInTPCAV);
+  fTree->SetBranchAddress("MCTruth_GEANT4_StartTime",&tStartTime);
+  fTree->SetBranchAddress("MCTruth_GEANT4_StartMomentum",&tMom);
+  fTree->SetBranchAddress("MCTruth_GEANT4_StartMomentum_X",&tMomX);
+  fTree->SetBranchAddress("MCTruth_GEANT4_StartMomentum_Y",&tMomY);
+  fTree->SetBranchAddress("MCTruth_GEANT4_StartMomentum_Z",&tMomZ);
+  fTree->SetBranchAddress("MCTruth_GEANT4_StartPoint_X",&tStartX);
+  fTree->SetBranchAddress("MCTruth_GEANT4_StartPoint_Y",&tStartY);
+  fTree->SetBranchAddress("MCTruth_GEANT4_StartPoint_Z",&tStartZ);
+  fTree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_Pathlength",&tLengthAV);
+
+}
 
 void LArParser::setRecoBranches(){
 
@@ -140,6 +168,39 @@ bool LArParser::isTreeGood(){
 
 }
 
+void LArParser::fillMCTrack( vector<MCTrack> & tracks ){
+  //fill the reco MCTrack data product
+
+  for( int l=0; l<tNGeantTrackPerEvent; l++  ){
+
+    MCTrack dummyTrack;
+
+    dummyTrack.subrun = tSubrun;
+    dummyTrack.event = tEventNumberInRun;
+
+    dummyTrack.pdgCode=tPdg[l];
+    dummyTrack.particleId=tParticleId[l];
+    dummyTrack.isInTPCAV=tIsInTPCAV[l];
+    dummyTrack.startE=tStartE[l];
+    dummyTrack.mom=tMom[l];
+    dummyTrack.momX=tMomX[l];
+    dummyTrack.momY=tMomY[l];
+    dummyTrack.momZ=tMomZ[l];
+    dummyTrack.startTime=tStartTime[l];
+    dummyTrack.startX=tStartX[l];
+    dummyTrack.startY=tStartY[l];
+    dummyTrack.startZ=tStartZ[l];
+    dummyTrack.lengthAV=tLengthAV[l];
+    dummyTrack.endX=tEndX[l];
+    dummyTrack.endY=tEndY[l];
+    dummyTrack.endZ=tEndZ[l];
+
+    tracks.push_back(dummyTrack);
+  }
+
+  return;
+}
+
 void LArParser::fillRecoHits( vector<Hit> & hits ){
   //fill the reco hits object data product
 
@@ -241,6 +302,18 @@ void LArParser::fillRecoTrack( vector<Track> & tracks ){
   return;
 }
 
+void LArParser::getMCTracksEvent( vector<MCTrack> & tracks, int event  ){
+  //just fill the hit array for a specific event
+
+  this->setMCBranches();
+
+  fTree->GetEntry(event);
+  this->fillMCTrack( tracks );
+
+  return;
+
+}
+
 void LArParser::getRecoHitsEvent( vector<Hit> & hits, int event  ){
   //just fill the hit array for a specific event
 
@@ -265,6 +338,20 @@ void LArParser::getRecoTracksEvent( vector<Track> & tracks, int event  ){
 
 }
 
+void LArParser::getMCTracks( vector<MCTrack> & tracks ){
+  //return an array holding the reconstruced track
+
+  this->setMCBranches();
+
+  for(int i=0; i<fTree->GetEntries(); i++) //Event loop
+  {
+    fTree->GetEntry(i);
+    this->fillMCTrack( tracks );
+  }//Event loop
+
+  return;
+}
+
 void LArParser::getRecoHits( vector<Hit> & hits ){
   //return a vector holding the free reconstructed hits
 
@@ -277,7 +364,7 @@ void LArParser::getRecoHits( vector<Hit> & hits ){
   }//Event loop
 
   return;
-  }
+}
 
 void LArParser::getRecoTracks( vector<Track> & tracks ){
   //return an array holding the reconstruced track

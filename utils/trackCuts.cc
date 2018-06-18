@@ -23,8 +23,8 @@ using namespace std;
 //initalize some variables as global variables (easy to edit)
 
 vector<int> runList = {840}; //runs to process
-string path="/Users/scarpell/cernbox/311data/"; //target path to input data ( e.g. ntuples on /eos/ )
-string suffix="Ana";
+string path="/Users/scarpell/cernbox/311/simulation/ana/"; //target path to input data ( e.g. ntuples on /eos/ )
+string suffix="MC5";
 
 ////////////////////////////////////////////////////////////////////////////////
 

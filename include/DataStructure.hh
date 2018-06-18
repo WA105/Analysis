@@ -4,6 +4,9 @@
 //mailto:andrea.scarpelli@cern.ch
 ////////////////////////////////////////////////////////////////////////////////
 
+//TODO add missing branches to MCTrack
+//TODO add backtracker quantities to Track
+
 #ifndef  __DATASTRUCTURE_H
 #define __DATASTRUCTURE_H
 
@@ -92,17 +95,35 @@ class Track
 
 ////////////////////////////////////////////////////////////////////////////////
 //Geant4 Tracks data Strucutre
-class MCTrack : public Track
+class MCTrack
 {
 
   public:
     MCTrack();
     ~MCTrack();
 
+    int event;
+    int subrun;
+    int eventNumber;
+    int mcTracksPerEvent;
+    int pdgCode;
+    int particleId;
+    int isInTPCAV;
+    double startE;
+    double mom;
+    double momX;
+    double momY;
+    double momZ;
+    double startTime;
+    double startX;
+    double startY;
+    double startZ;
+    double lengthAV;
+    double endX;
+    double endY;
+    double endZ;
 
-  private:
-
-};
+  };
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -123,29 +144,54 @@ class LArParser
     void setRun(Run *run){fRun = run;}
 
     //getters
-    void getRecoHitsEvent( vector<Hit> & hits, int event  );
-    void getRecoTracksEvent( vector<Track> & tracks, int event  );
+    void getMCTracksEvent( vector<MCTrack>  & mctracks, int event );
+    void getRecoHitsEvent( vector<Hit> & hits, int event );
+    void getRecoTracksEvent( vector<Track> & tracks, int event );
+    void getMCTracks( vector<MCTrack>  & mctracks );
     void getRecoHits( vector<Hit> & hits );
     void getRecoTracks( vector<Track> & tracks );
     //void readG4Tree( &vector<MCTracks> tracks );
 
-    bool isTreeGood( );
+    bool isTreeGood();
+
   private:
 
     void setRecoBranches();
+    void setMCBranches();
+    void fillMCTrack( vector<MCTrack> & tracks );
     void fillRecoHits( vector<Hit> & hits );
     void fillRecoTrack( vector<Track> & tracks );
 
     TTree *fTree;
     Run *fRun;
 
+    static const int NMaxGeantTrackPerEvent=10000;
     static const int NMaxHitsPerEvent=10000;;
     static const int NMaxClustersPerEvent=10000;
     static const int NMaxTracksPerEvent=1000;
     static const int NMaxTracksPerEventTimesNViews=NMaxTracksPerEvent*NUM_OF_VIEWS;
     static const int NEventsPerRun=335;
 
-    //Define variables to store the data of the ROOT file
+    //G4 //////////////////////////////////////////////////////////////////////
+    int tNGeantTrackPerEvent;
+    int tPdg[NMaxGeantTrackPerEvent];
+    int tParticleId[NMaxGeantTrackPerEvent];
+    int tIsInTPCAV[NMaxGeantTrackPerEvent];
+    float tStartE[NMaxGeantTrackPerEvent];
+    float tMom[NMaxGeantTrackPerEvent];
+    float tMomX[NMaxGeantTrackPerEvent];
+    float tMomY[NMaxGeantTrackPerEvent];
+    float tMomZ[NMaxGeantTrackPerEvent];
+    float tStartTime[NMaxGeantTrackPerEvent];
+    float tStartX[NMaxGeantTrackPerEvent];
+    float tStartY[NMaxGeantTrackPerEvent];
+    float tStartZ[NMaxGeantTrackPerEvent];
+    float tLengthAV[NMaxGeantTrackPerEvent];
+    float tEndX[NMaxGeantTrackPerEvent];
+    float tEndY[NMaxGeantTrackPerEvent];
+    float tEndZ[NMaxGeantTrackPerEvent];
+
+    //Reconstructed values /////////////////////////////////////////////////////
     //Metadata
     int tRun;
     int tSubrun;
@@ -170,7 +216,6 @@ class LArParser
     short tHit_Multiplicity[NMaxHitsPerEvent];
     short tHit_TrackID[NMaxHitsPerEvent];
     short tHit_ClusterID[NMaxHitsPerEvent];
-
 
     //Cluster variables
     //  short tNumberOfClusters;
@@ -230,7 +275,6 @@ class LArParser
     float tTrack_Hit_Width[NMaxHitsPerEvent];
     float tTrack_Hit_GoodnessOfFit[NMaxHitsPerEvent];
     short tTrack_Hit_Multiplicity[NMaxHitsPerEvent];
-
 };
 
 #endif // __DATASTRUCTURE_H
