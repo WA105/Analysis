@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Study reconstruction efficiency in the MCSample
+// Example of a macro studying the reconstruction efficiency of one sample
 //
 //mailto:andrea.scarpelli@cern.ch
 ////////////////////////////////////////////////////////////////////////////////
@@ -21,11 +21,7 @@ using namespace std;
 ////////////////////////////////////////////////////////////////////////////////
 //initalize some variables as global variables (easy to edit)
 
-vector<int> runList = {123}; //runs to process
-string path="/Users/scarpell/cernbox/311/simulation/ana/"; //target path to input data ( e.g. ntuples on /eos/ )
-string prefix="MC5_";
-string suffix="_Ana.root";
-
+vector<int> fileList = {0}; //runs to process
 int mockRun = 840; //query the metadata of this run from db
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -50,89 +46,127 @@ inline vector<string> glob(const string& pat){
   return ret;
 }
 
-void fillRunList( ){
+void fillFileList( ){
   //fill up the runList with all the file if empty
-  if (runList.size() == 0){
+  if (fileList.size() == 0){
     #if verbose
     cout << "Processing all runs in " << path << "*..." << endl;
     #endif
     string wildcard_path = path + "*";
     for( auto irun : glob(wildcard_path) ){
-      runList.push_back(atoi(irun.data()));
+      fileList.push_back(atoi(irun.data()));
     }
   }
   return;
+}
+
+TTree *getTTree( string path, string prefix, string suffix, int runNumber ){
+
+  TTree *ttree;
+
+  //no need to run over subruns (are mc). Just jump to filename definition
+  string file=prefix+to_string(runNumber)+suffix;
+  string filename=path+file;
+
+  if( ExistTest(filename) ){
+
+      cout << "Processing file: " << filename << endl;
+      TFile *file = new TFile(filename.c_str(), "READ");
+
+      if( file->IsOpen() )
+        ttree = (TTree*)file->Get("analysistree/anatree");
+      else
+        cout << "getTTree::Error: Invalid TTree name" << endl;
+
+    }else{
+      cout << "getTTree::Error: Invalid file name " << filename << endl;
+    }
+
+    return ttree;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Main macro
 
 void recoEff(){
+  //Example of a macro to study the reconsturction eff.
 
-  fillRunList();
+  //define here the output file
+  Track recoTrack;
+  MCTrack mcTrack;
 
-  //output file
-  Track testTrack;
-  //TFile *ofile = new TFile("cutOutput.root", "RECREATE");
-  //TTree *tpcTree = new TTree("tpcCut", "contains tracks that cross the tpc");
-  //tpcTree->Branch("selectedTracks", &testTrack );
+  TFile *ofile = new TFile("simOutput.root", "RECREATE");
+
+  //mc tree
+  TTree *mcOutputTree = new TTree("mcTracks", "contains geant tracks");
+  mcOutputTree->Branch("mcTrack", &mcTrack );
+  //reco tree
+  TTree *recoOutputTree = new TTree("recoTracks", "contains reco tracks");
+  recoOutputTree->Branch("recoTrack", &recoTrack );
+
 
   //here I define the parser object
-  LArParser *parser = new LArParser();
+  LArParser *mcParser = new LArParser();
+  LArParser *recoParser = new LArParser();
 
-  //start loop over the runs in the runList
-  for(int runNumber : runList){ //loop over runList
+  //define the Run object using the mockRun flag (always the same in this case)
+  Run *run = new Run(mockRun, "metadata/test.db");
 
-    //define the run object and fill up the data products
-    Run *run = new Run(mockRun, "metadata/test.db");
 
-    //no need to run over subruns (are mc). Just jump to filename definition
-    string file=prefix+to_string(runNumber)+suffix;
-    string filename=path+file;
+  //fill the filelist if empty
+  fileList();
 
-    if( ExistTest(filename) ){
+  //loop over all the runs
+  for(int fileNumber : fileList){
 
-        cout << "Processing file: " << filename << endl;
-        TFile *file = new TFile(filename.c_str());
+     TTree *mcTree = getTTree("/Users/scarpell/cernbox/311/simulation/g4detsim/", "", "-G4Detsim-Parser.root", fileNumber );
+     TTree *recoTree = getTTree("/Users/scarpell/cernbox/311/simulation/ana/", "MC5_", "_Ana.root", fileNumber );
 
-        if( file->IsOpen() ){
-          TTree *ttree = (TTree*)file->Get("analysistree/anatree");
+     mcParser->setTTree(mcTree);
+     mcParser->setRun(run);
 
-          //set the parser with the correct run and tree
-          parser->setTTree(ttree);
-          parser->setRun(run);
+     recoParser->setTTree(recoTree);
+     recoParser->setRun(run);
 
-          //check if the tree exists and has been correctly set
-          if( parser->isTreeGood() ){
+     //check if the tree exists and has been correctly set
+     if( !mcParser->isTreeGood() || !recoParser->isTreeGood() ){
+       cout << "Invalid ttree" << endl;
+       continue;
+     }
 
-            //now I loop over the events of the tree
-            for(int evt=0; evt< ttree->GetEntries(); evt++ ){
-
-              //data structure arrays
-              vector<Track> tracks;
-
-              //use the parser to fill up the data structures
-              parser->getRecoTracksEvent(tracks, evt);
-
-              for( auto track : tracks ){
-                for( auto hit : track.hitsTrk ){
-                  cout << hit.particleID << " " << hit.trueEnergy << " " << hit.trueEnergyFraction << endl;
-                }
-              }
-            }
-          }else{
-            cout << "Invalid TTree in file: " << filename << endl;
-          }
-        }
-        file->Close();
-    }else{
-        cout << "File " << filename << " not found." << endl;
+    //check if the two trees have the same number of entries. I ideally want to loop over one of them
+    if( mcTree->GetEntries() != recoTree->GetEntries() ){
+      cout << "Not the same number of events" << endl;
+      continue;
     }
 
-  }//end for run
+    //loop over the events in mcTree. Should be the same for also recoTree
+    for(int evt=0; evt<mcTree->GetEntries(); evt++){
 
-  //ofile->cd();
-  //tpcTree->Write();
-  //ofile->Close();
+      //data structures array
+      vector<MCTrack> mcTracks;
+      vector<Track> recoTracks;
+
+      mcParser->getMCTracksEvent(mcTracks, evt);
+      recoParser->getRecoTracksEvent(recoTracks, evt);
+
+      for( auto track : mcTracks ){
+        mcTrack = track;
+        mcOutputTree->Fill();
+      }
+
+      for( auto track : recoTracks ){
+        recoTrack = track;
+        recoOutputTree->Fill();
+      }
+
+    }//end event loop
+  }//end filelist run
+
+
+  ofile->cd();
+  mcOutputTree->Write();
+  recoOutputTree->Write();
+  ofile->Close();
 
 }//end macro
