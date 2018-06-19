@@ -21,10 +21,10 @@ using namespace std;
 ////////////////////////////////////////////////////////////////////////////////
 //initalize some variables as global variables (easy to edit)
 
-vector<int> runList = {0}; //runs to process
-string path="/Users/scarpell/cernbox/311/simulation/g4detsim/"; //target path to input data ( e.g. ntuples on /eos/ )
-string prefix="";
-string suffix="-G4Detsim-Parser.root";
+vector<int> runList = {123}; //runs to process
+string path="/Users/scarpell/cernbox/311/simulation/ana/"; //target path to input data ( e.g. ntuples on /eos/ )
+string prefix="MC5_";
+string suffix="_Ana.root";
 
 int mockRun = 840; //query the metadata of this run from db
 
@@ -109,15 +109,16 @@ void recoEff(){
             for(int evt=0; evt< ttree->GetEntries(); evt++ ){
 
               //data structure arrays
-              vector<MCTrack> mctracks;
+              vector<Track> tracks;
 
               //use the parser to fill up the data structures
-              parser->getMCTracksEvent(mctracks, evt);
+              parser->getRecoTracksEvent(tracks, evt);
 
-              for( auto mctrack : mctracks ){
-                cout << mctrack.startE << endl;
+              for( auto track : tracks ){
+                for( auto hit : track.hitsTrk ){
+                  cout << hit.particleID << " " << hit.trueEnergy << " " << hit.trueEnergyFraction << endl;
+                }
               }
-
             }
           }else{
             cout << "Invalid TTree in file: " << filename << endl;

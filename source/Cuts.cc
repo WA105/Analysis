@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "Geometry.hh"
+#include "DataStructure.hh"
 #include "Cuts.hh"
 
 Cut::Cut(){
@@ -55,24 +56,22 @@ void Cut::setActiveVolumeCut( vector<int> volumeCut ){
   return;
 }
 
-bool Cut::isCrossingTPC( Track track ){
+bool Cut::isPassingCut(){
+  return fIsPassingCut;
+}
+
+bool Cut::isCrossingTPC(){
   //Check if the selected track cross the tpc
 
-  bool isCrossing = false;
+  fIsPassingCut = false;
 
   //first select based on the track length:
-  if( track.length > fLengthCut){
-    if( max(track.endPointX, track.startPointX) > maxx
-        && min(track.endPointX, track.startPointX) < minx ){
-          isCrossing = true;
+  if( fTrack.length > fLengthCut){
+    if( max(fTrack.endPointX, fTrack.startPointX) > maxx
+        && min(fTrack.endPointX, fTrack.startPointX) < minx ){
+          fIsPassingCut = true;
     }
   }
 
-  return isCrossing;
+  return fIsPassingCut;
 }
-
-/*
-bool Cut::passBoxCut( Track track ){
-
-}
-*/

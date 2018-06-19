@@ -15,7 +15,7 @@
 #include "TChain.h"
 #include "Run.hh"
 #include "DataStructure.hh"
-#include "Cuts.hh"
+//#include "Cuts.hh"
 
 using namespace std;
 
@@ -23,8 +23,8 @@ using namespace std;
 //initalize some variables as global variables (easy to edit)
 
 vector<int> runList = {840}; //runs to process
-string path="/Users/scarpell/cernbox/311/simulation/ana/"; //target path to input data ( e.g. ntuples on /eos/ )
-string suffix="MC5";
+string path="/Users/scarpell/cernbox/311data/"; //target path to input data ( e.g. ntuples on /eos/ )
+string suffix="-Ana";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -48,7 +48,7 @@ void trackCuts(){
   LArParser *parser = new LArParser();
 
   //here I define the cuts objects to test
-  Cut *testCut = new Cut( {2,2,2,2,2,2}, 100 );
+  //Cut *testCut = new Cut( {2,2,2,2,2,2}, 100 );
 
   //start loop over the runs in the runList
   for(int runNumber : runList){ //loop over runsclear
@@ -90,14 +90,18 @@ void trackCuts(){
               parser->getRecoHitsEvent( hits, evt );
               parser->getRecoTracksEvent( tracks, evt );
 
+              /*
               //here I loop over the track elements and save only the tracks meeting the cuts requirements
               for(auto track : tracks){
                 //check the cuts and save to file
                 testTrack = track;
-                if( testCut->isCrossingTPC( testTrack ) ){
+                testCut->setTrack( testTrack );
+
+                if( testCut->isPassingCut() ){
                   tpcTree->Fill();
                 }
               }
+              */
 
               //open a new tfile and save the objects there (one tree for every cut)
               //define cuts here

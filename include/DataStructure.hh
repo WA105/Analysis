@@ -17,6 +17,7 @@
 #include "TTree.h"
 #include "Geometry.hh"
 #include "Run.hh"
+//#include "Cuts.hh"
 
 using namespace std;
 
@@ -49,6 +50,11 @@ class Hit
     double width;
     double goodnessOfFit;
     double multiplicity;
+
+    //backtracker quantites
+    int particleID;
+    double trueEnergy;
+    double trueEnergyFraction;
 
     //find lem
     //project view
@@ -91,6 +97,7 @@ class Track
     double endDirectionZ;
 
     vector<Hit> hitsTrk; //Array holding the hits associated with this track
+
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -216,6 +223,9 @@ class LArParser
     short tHit_Multiplicity[NMaxHitsPerEvent];
     short tHit_TrackID[NMaxHitsPerEvent];
     short tHit_ClusterID[NMaxHitsPerEvent];
+    int tHit_particleID[NMaxHitsPerEvent];
+    float tHit_TrueEnergy[NMaxHitsPerEvent];
+    float tHit_TrueEnergyFraction[NMaxHitsPerEvent];
 
     //Cluster variables
     //  short tNumberOfClusters;
@@ -275,6 +285,9 @@ class LArParser
     float tTrack_Hit_Width[NMaxHitsPerEvent];
     float tTrack_Hit_GoodnessOfFit[NMaxHitsPerEvent];
     short tTrack_Hit_Multiplicity[NMaxHitsPerEvent];
+    int tTrack_Hit_particleID[NMaxHitsPerEvent];
+    float tTrack_Hit_TrueEnergy[NMaxHitsPerEvent];
+    float tTrack_Hit_TrueEnergyFraction[NMaxHitsPerEvent];
 };
 
 #endif // __DATASTRUCTURE_H

@@ -14,6 +14,7 @@
 
 #include "Run.hh"
 #include "DataStructure.hh"
+//#include "Cuts.hh"
 
 using namespace std;
 
@@ -90,6 +91,9 @@ void LArParser::setRecoBranches(){
     fTree->SetBranchAddress("Hit_GoodnessOfFit",&tHit_GoodnessOfFit);
     fTree->SetBranchAddress("Hit_Multiplicity",&tHit_Multiplicity);
     fTree->SetBranchAddress("Hit_TrackID",&tHit_TrackID);
+    fTree->SetBranchAddress("Hit_trueID",&tHit_particleID);
+    fTree->SetBranchAddress("hit_trueEnergyMax",&tHit_TrueEnergy);
+    fTree->SetBranchAddress("hit_trueEnergyFraction",&tHit_TrueEnergy);
     //fTree->SetBranchAddress("Hit_ClusterID",&tHit_ClusterID);
 
     //  //Cluster variables
@@ -154,6 +158,9 @@ void LArParser::setRecoBranches(){
     fTree->SetBranchAddress("Track_Hit_Width", &tTrack_Hit_Width);
     fTree->SetBranchAddress("Track_Hit_GoodnessOfFit", &tTrack_Hit_GoodnessOfFit);
     fTree->SetBranchAddress("Track_Hit_Multiplicity", &tTrack_Hit_Multiplicity);
+    fTree->SetBranchAddress("Track_Hit_trueID", &tTrack_Hit_particleID);
+    fTree->SetBranchAddress("Track_Hit_trueEnergyMax", &tTrack_Hit_TrueEnergy);
+    fTree->SetBranchAddress("Track_Hit_trueEnergyFraction", &tTrack_Hit_TrueEnergyFraction);
 
     return;
 }
@@ -223,6 +230,9 @@ void LArParser::fillRecoHits( vector<Hit> & hits ){
     dummyHits.goodnessOfFit=tHit_GoodnessOfFit[l];
     dummyHits.multiplicity=tHit_Multiplicity[l];
     dummyHits.trackID=tHit_TrackID[l];
+    dummyHits.particleID= tHit_TrackID[l];
+    dummyHits.trueEnergy = tHit_TrueEnergy[l];
+    dummyHits.trueEnergyFraction = tHit_TrueEnergyFraction[l];
     //dummyHit.lem=dummyHits.findLEM(dummyHits.Y, dummyHits.Z);
 
     hits.push_back(dummyHits);
@@ -289,6 +299,9 @@ void LArParser::fillRecoTrack( vector<Track> & tracks ){
         dummyHits.width=tTrack_Hit_Width[l];
         dummyHits.goodnessOfFit=tTrack_Hit_GoodnessOfFit[l];
         dummyHits.multiplicity=tTrack_Hit_Multiplicity[l];
+        dummyHits.particleID= tTrack_Hit_particleID[l];
+        dummyHits.trueEnergy = tTrack_Hit_TrueEnergy[l];
+        dummyHits.trueEnergyFraction = tTrack_Hit_TrueEnergyFraction[l];
         //dummyHits.lem=dummyHits.findLEM(dummyHits.Y, dummyHits.Z);
 
         dummyTrack.hitsTrk.push_back(dummyHits);

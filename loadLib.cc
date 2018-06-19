@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+//NB: Library cuts not yet completed
+
 void loadLib(){
 
   char cwd[1024];
@@ -19,7 +21,7 @@ void loadLib(){
   gROOT->LoadMacro((currentdir+"/source/Geometry.cc+").c_str());
   gROOT->LoadMacro((currentdir+"/source/Run.cc+").c_str());
   gROOT->LoadMacro((currentdir+"/source/DataStructure.cc+").c_str());
-  gROOT->LoadMacro((currentdir+"/source/Cuts.cc+").c_str());
+  //gROOT->LoadMacro((currentdir+"/source/Cuts.cc+").c_str());
 
   //gROOT->LoadMacro((currentdir+"/source/311Lib.cc+").c_str());
   //gROOT->LoadMacro((currentdir+"/source/311style.cc+").c_str());

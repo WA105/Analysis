@@ -18,6 +18,9 @@
 
 using namespace std;
 
+//Cut implement Track, therefore all the public classes and variables that are
+//defined into Track are available also in Cut
+
 class Cut
 {
   public:
@@ -28,17 +31,23 @@ class Cut
     //setters
     void setActiveVolumeCut( vector<int> volumeCut );
     void setTrackLengthCut(double length){fLengthCut = length; };
+    void setTrack( Track track ){ fTrack = track; }
 
-    //cuts
-    bool isCrossingTPC( Track track ); //crossing TPC from anode to cathode
-    bool passBoxCut( Track track ); //box cut for charge
+    //getters
+    bool isPassingCut(); //crossing TPC from anode to cathode
 
   private:
 
+    //here one can implement its own cut functions
+    bool isCrossingTPC();
     void initActiveVolumeBounds();
 
     vector<int> fVolumeCut = {0,0,0,0,0,0}; //in cm
     double fLengthCut=100; //in cm
+
+    bool fIsPassingCut; //flag retuned by isPassingCut() into the track object
+
+    Track fTrack;
 
     int minx;
     int maxx;
