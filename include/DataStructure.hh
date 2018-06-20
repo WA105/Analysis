@@ -114,9 +114,10 @@ class MCTrack
     int eventNumber;
     int mcTracksPerEvent;
     int pdgCode;
-    int particleId;
+    int particleID;
     int isInTPCAV;
     double startE;
+    //double endE;
     double mom;
     double momX;
     double momY;

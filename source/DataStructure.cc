@@ -186,7 +186,7 @@ void LArParser::fillMCTrack( vector<MCTrack> & tracks ){
     dummyTrack.event = tEventNumberInRun;
 
     dummyTrack.pdgCode=tPdg[l];
-    dummyTrack.particleId=tParticleId[l];
+    dummyTrack.particleID=tParticleId[l];
     dummyTrack.isInTPCAV=tIsInTPCAV[l];
     dummyTrack.startE=tStartE[l];
     dummyTrack.mom=tMom[l];
