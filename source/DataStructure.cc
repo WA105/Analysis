@@ -62,6 +62,8 @@ void LArParser::setMCBranches(){
   fTree->SetBranchAddress("MCTruth_GEANT4_StartPoint_X",&tStartX);
   fTree->SetBranchAddress("MCTruth_GEANT4_StartPoint_Y",&tStartY);
   fTree->SetBranchAddress("MCTruth_GEANT4_StartPoint_Z",&tStartZ);
+  fTree->SetBranchAddress("MCTruth_GEANT4_StartDirection_Phi",&tStartPhi);
+  fTree->SetBranchAddress("MCTruth_GEANT4_StartDirection_Theta",&tStartTheta);
   fTree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_Pathlength",&tLengthAV);
 
 }
@@ -197,6 +199,8 @@ void LArParser::fillMCTrack( vector<MCTrack> & tracks ){
     dummyTrack.startX=tStartX[l];
     dummyTrack.startY=tStartY[l];
     dummyTrack.startZ=tStartZ[l];
+    dummyTrack.startPhi=tStartPhi[l];
+    dummyTrack.startTheta=tStartTheta[l];
     dummyTrack.lengthAV=tLengthAV[l];
     dummyTrack.endX=tEndX[l];
     dummyTrack.endY=tEndY[l];

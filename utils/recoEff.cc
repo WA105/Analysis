@@ -47,7 +47,7 @@ inline vector<string> glob(const string& pat){
   return ret;
 }
 
-void fillFileList( ){
+void fillFileList(string path){
   //fill up the runList with all the file if empty
   if (fileList.size() == 0){
     #if verbose
@@ -97,55 +97,71 @@ class Efficiency
     ~Efficiency();
 
     //setters
-    setMapEntry(int id, MCTrack mctrack ){ fParticleMap[id] = mctrack; }
-    setRecoTrack( Track track ){ fTrack = track; }
+    void setMapEntry(int id, MCTrack mctrack ){ fParticleMap[id] = mctrack; }
+    void setRecoTrack( Track track ){ fTrack = track; }
 
     //getters
 
     //others
-    fill();
+    void fill();
+    void write(TFile *ofile);
 
     //cleaner
-    clean();
+    void clean();
 
   private:
+    void matchTruth();
+    void fillMap1D(int pdg, map<int, TH1D*> map, double fillIn );
+    void fillMap2D(int pdg, map<int, TH2D*> map, double fillX, double fillY );
+
+    //Particle that I consider for the efficiency
+    vector<int> pdgCode = { 13, 0 };
+    vector<string> pdgNames = { "Muons", "Other" };
+
+    //binning
+    //theta
+    int nBinsTheta = 100;
+    double thetaStart = 0;
+    double thetaEnd = 180;
+
+    //phi
+    int nBinsPhi = 100;
+    double phiStart = -180;
+    double phiEnd = 180;
 
     //histogram maps
     map<int, TH1D*> fThetaTrueMap;
     map<int, TH1D*> fPhiTrueMap;
     map<int, TH2D*> fPhiThetaTrueMap;
-
     map<int, TH1D*> fThetaRecoMap;
     map<int, TH1D*> fPhiRecoMap;
     map<int, TH2D*> fPhiThetaRecoMap;
 
+    //more quantities
     map<int, MCTrack> fParticleMap; //particleID mctrack association
     map<int, double> fEnergyMap; //particleID energy association
     Track fTrack;
     double fPurirty;
     double fCompleteness;
     double fPdg;
+    double fBestTrackID;
 
 };
 
 Efficiency::Efficiency(){
   //constructor of the class: initialize here all the histograms
 
-  vector<int> pdgList = { 13, 0 };
-  vector<int> pdgNames = { "Muons", "Other" };
-
-  size_t arraySize = max(pdgList.size(), pdgNames.size() )
-
+  size_t arraySize = max(pdgCode.size(), pdgNames.size() );
 
   for( size_t i =0; i< arraySize; i++ ){
 
-    TH1D* hThetaTrue = new TH1D(("hThetaTrue"+pdgNames.at(i)).c_str(), ("#theta (true) "+pdgNames.at(i)).c_str() , nBinsTheta, thetaStart, thetaEnd);
-    TH1D* hPhiTrue = new TH1D(("hPhiTrue"+pdgNames.at(i)).c_str(), ("#phi (true) "+pdgNames.at(i)).c_str() , nBinsPhi, phiStart, phiEnd);
-    TH2D* hPhiThetaTrue = new TH2D(("hPhiThetaTrue"+pdgNames.at(i)).c_str(), ("#phi vs. #theta (true) "+pdgNames.at(i)).c_str(), nBinsTheta, thetaStart, thetaEnd, nBinsPhi, phiStart, phiEnd); ;
+    TH1D* hThetaTrue = new TH1D(("hThetaTrue"+pdgNames.at(i)).c_str(), ("#theta (true) "+pdgNames.at(i)+";#theta (deg)").c_str() , nBinsTheta, thetaStart, thetaEnd);
+    TH1D* hPhiTrue = new TH1D(("hPhiTrue"+pdgNames.at(i)).c_str(), ("#phi (true) "+pdgNames.at(i)+";#phi (deg)").c_str() , nBinsPhi, phiStart, phiEnd);
+    TH2D* hPhiThetaTrue = new TH2D(("hPhiThetaTrue"+pdgNames.at(i)).c_str(), ("#phi vs. #theta (true) "+pdgNames.at(i)+"; #theta (deg);#phi (deg)").c_str(), nBinsTheta, thetaStart, thetaEnd, nBinsPhi, phiStart, phiEnd); ;
 
-    TH1D* hThetaReco = new TH1D(("hThetaReco"+pdgNames.at(i)).c_str(), ("#theta (reco) "+pdgNames.at(i)).c_str() , nBinsTheta, thetaStart, thetaEnd);;
-    TH1D* hPhiReco = new TH1D(("hPhiReco"+pdgNames.at(i)).c_str(), ("#phi (reco) "+pdgNames.at(i)).c_str() , nBinsPhi, phiStart, phiEnd);
-    TH2D* hPhiThetaReco = new TH2D(("hPhiThetaTrue"+pdgNames.at(i)).c_str(), ("#phi vs. #theta (true) "+pdgNames.at(i)).c_str(), nBinsTheta, thetaStart, thetaEnd, nBinsPhi, phiStart, phiEnd);
+    TH1D* hThetaReco = new TH1D(("hThetaReco"+pdgNames.at(i)).c_str(), ("#theta (reco) "+pdgNames.at(i)+";#theta (deg)").c_str() , nBinsTheta, thetaStart, thetaEnd);;
+    TH1D* hPhiReco = new TH1D(("hPhiReco"+pdgNames.at(i)).c_str(), ("#phi (reco) "+pdgNames.at(i)+";#phi (deg)").c_str() , nBinsPhi, phiStart, phiEnd);
+    TH2D* hPhiThetaReco = new TH2D(("hPhiThetaTrue"+pdgNames.at(i)).c_str(), ("#phi vs. #theta (true) "+pdgNames.at(i)+"; #theta (deg);#phi (deg)").c_str(), nBinsTheta, thetaStart, thetaEnd, nBinsPhi, phiStart, phiEnd);
 
     fThetaTrueMap[pdgCode.at(i)] = hThetaTrue;
     fThetaTrueMap[pdgCode.at(i)] = hThetaReco;
@@ -155,52 +171,104 @@ Efficiency::Efficiency(){
     fPhiThetaRecoMap[pdgCode.at(i)] = hPhiThetaReco;
 
   }
-
 }
+
 Efficiency::~Efficiency(){}
 
-Efficiency::MatchTruth(){
+void Efficiency::matchTruth(){
   //match reco and truth, calculate purity and completeness of a reco track
+
+  //first of all reset all the variables
+  fEnergyMap.clear();
+  fPurirty=0;
+  fCompleteness=0;
+  fPdg=0;
 
   //loop over the hits and associate every energy deposit to the correct particleID
   double totEnergy = 0.;
-  for( auto hit : track.hitsTrk ){
+  for( auto hit : fTrack.hitsTrk ){
     fEnergyMap[ hit.particleID ] += hit.trueEnergy;
     totEnergy+=hit.trueEnergy;
   }
 
   //find the best particle ID (the one that contribute the most in the track energy account )
-  int bestID =0.;
+  fBestTrackID =0.;
   double maxe = 0.;
   for( auto const & val : fEnergyMap  ){
 
     if( maxe < val.second ){
       maxe = val.second;
-      bestID = val.first;
+      fBestTrackID= val.first;
     }
   }
 
-  fPurirty = fEnergyMap[ bestID ]/fParticleMap[].startE;
-  fCompleteness = fEnergyMap[ bestID ]/totEnergy;
-  fPdg = fParticleMap[ bestID ].pdgCode;
+  fPurirty = fEnergyMap[ fBestTrackID ]/fParticleMap[ fBestTrackID ].startE;
+  fCompleteness = fEnergyMap[ fBestTrackID ]/totEnergy;
+  fPdg = fParticleMap[ fBestTrackID ].pdgCode;
 
 }
 
-Efficiency::fill(){
+void Efficiency::fillMap1D(int pdg, map<int, TH1D*> map, double fillIn ){
+  //fill the map if the pdg code of the best tParticleId
+  if( map.find(pdg) != map.end() ){
+    map[pdg]->Fill( fillIn );
+  }else{
+    map[0]->Fill( fillIn );
+  }
+}
+
+void Efficiency::fillMap2D(int pdg, map<int, TH2D*> map, double fillX, double fillY ){
+  //fill the map if the pdg code of the best tParticleId
+  if( map.find(pdg) != map.end() ){
+    map[pdg]->Fill( fillX, fillY );
+  }else{
+    map[0]->Fill( fillX, fillY );
+  }
+}
+
+void Efficiency::fill(){
   //fill up the correct histogram for the track
-  if(fCompleteness>0.5 && fPurirty>0.5 && abs(fPdg) == 13){
+
+  this->matchTruth();
+
+  //fill first the mc quanties
+  fillMap1D( fPdg, fThetaTrueMap, fParticleMap[fBestTrackID].startTheta);
+  fillMap1D( fPdg, fPhiTrueMap, fParticleMap[fBestTrackID].startPhi );
+  fillMap2D( fPdg, fPhiThetaTrueMap, fParticleMap[fBestTrackID].startTheta, fParticleMap[fBestTrackID].startPhi);
+
+  if(fCompleteness>0.5 && fPurirty>0.5){
+
+    //fill the reco quantities
+    fillMap1D( fPdg, fThetaRecoMap, fParticleMap[fBestTrackID].startTheta);
+    fillMap1D( fPdg, fPhiRecoMap, fParticleMap[fBestTrackID].startPhi );
+    fillMap2D( fPdg, fPhiThetaRecoMap, fParticleMap[fBestTrackID].startTheta, fParticleMap[fBestTrackID].startPhi);
+  }
+
+}
+
+void Efficiency::write(TFile *ofile){
+  //write histogram in root file
+
+  ofile->cd();
+  size_t arraySize = max(pdgCode.size(), pdgNames.size() );
+
+  for( size_t i =0; i< arraySize; i++ ){
+
+    fThetaTrueMap[pdgCode.at(i)]->Write();
+    fThetaTrueMap[pdgCode.at(i)]->Write();
+    fPhiTrueMap[pdgCode.at(i)]->Write();
+    fPhiTrueMap[pdgCode.at(i)]->Write();
+    fPhiThetaTrueMap[pdgCode.at(i)]->Write();
+    fPhiThetaRecoMap[pdgCode.at(i)]->Write();
 
   }
 
 }
 
-Efficiency::clean(){
+void Efficiency::clean(){
 
   fParticleMap.clear();
-  fEnergyMap.clear();
-  fPurirty=0;
-  fCompleteness=0;
-  fPdg=0;
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -230,7 +298,10 @@ void recoEff(){
   Run *run = new Run(mockRun, "metadata/test.db");
 
   //fill the filelist if empty
-  fileList();
+  //fillFileList();
+
+  //and here i define the class efficiency
+  Efficiency *recoEfficiency = new Efficiency();
 
   //loop over all the runs
   for(int fileNumber : fileList){
@@ -280,18 +351,24 @@ void recoEff(){
       for( auto track : recoTracks ){
 
         //here we do the real efficiency analysis trying to match reconstructed
-        //tracks and true tracks
+        //calculate efficiency for the track and fill the historams
         recoEfficiency->setRecoTrack( track );
+        recoEfficiency->fill();
 
         recoTrack = track;
         recoOutputTree->Fill();
       }
 
+      recoEfficiency->clean(); //clean the trueParticle map inside the class
     }//end event loop
   }//end filelist run
 
 
   ofile->cd();
+  //write efficiency histograms
+  recoEfficiency->write( ofile );
+
+  //write ttree
   mcOutputTree->Write();
   recoOutputTree->Write();
   ofile->Close();

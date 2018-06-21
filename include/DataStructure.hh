@@ -126,6 +126,8 @@ class MCTrack
     double startX;
     double startY;
     double startZ;
+    double startTheta;
+    double startPhi;
     double lengthAV;
     double endX;
     double endY;
@@ -194,6 +196,8 @@ class LArParser
     float tStartX[NMaxGeantTrackPerEvent];
     float tStartY[NMaxGeantTrackPerEvent];
     float tStartZ[NMaxGeantTrackPerEvent];
+    float tStartPhi[NMaxGeantTrackPerEvent];
+    float tStartTheta[NMaxGeantTrackPerEvent];
     float tLengthAV[NMaxGeantTrackPerEvent];
     float tEndX[NMaxGeantTrackPerEvent];
     float tEndY[NMaxGeantTrackPerEvent];
@@ -209,7 +213,6 @@ class LArParser
     //  char tIsData;
 
     //Hit variables
-
     int tNumberOfHits;
     short tHit_TPC[NMaxHitsPerEvent];
     short tHit_View[NMaxHitsPerEvent];
