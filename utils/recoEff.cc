@@ -23,7 +23,7 @@ using namespace std;
 ////////////////////////////////////////////////////////////////////////////////
 //initalize some variables as global variables (easy to edit)
 
-vector<int> fileList = {0}; //runs to process
+vector<int> fileList = {822}; //runs to process
 int mockRun = 840; //query the metadata of this run from db
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -161,12 +161,12 @@ Efficiency::Efficiency(){
 
     TH1D* hThetaReco = new TH1D(("hThetaReco"+pdgNames.at(i)).c_str(), ("#theta (reco) "+pdgNames.at(i)+";#theta (deg)").c_str() , nBinsTheta, thetaStart, thetaEnd);;
     TH1D* hPhiReco = new TH1D(("hPhiReco"+pdgNames.at(i)).c_str(), ("#phi (reco) "+pdgNames.at(i)+";#phi (deg)").c_str() , nBinsPhi, phiStart, phiEnd);
-    TH2D* hPhiThetaReco = new TH2D(("hPhiThetaTrue"+pdgNames.at(i)).c_str(), ("#phi vs. #theta (true) "+pdgNames.at(i)+"; #theta (deg);#phi (deg)").c_str(), nBinsTheta, thetaStart, thetaEnd, nBinsPhi, phiStart, phiEnd);
+    TH2D* hPhiThetaReco = new TH2D(("hPhiThetaReco"+pdgNames.at(i)).c_str(), ("#phi vs. #theta (true) "+pdgNames.at(i)+"; #theta (deg);#phi (deg)").c_str(), nBinsTheta, thetaStart, thetaEnd, nBinsPhi, phiStart, phiEnd);
 
     fThetaTrueMap[pdgCode.at(i)] = hThetaTrue;
-    fThetaTrueMap[pdgCode.at(i)] = hThetaReco;
+    fThetaRecoMap[pdgCode.at(i)] = hThetaReco;
     fPhiTrueMap[pdgCode.at(i)] = hPhiTrue;
-    fPhiTrueMap[pdgCode.at(i)] = hPhiReco;
+    fPhiRecoMap[pdgCode.at(i)] = hPhiReco;
     fPhiThetaTrueMap[pdgCode.at(i)] = hPhiThetaTrue;
     fPhiThetaRecoMap[pdgCode.at(i)] = hPhiThetaReco;
 
@@ -206,6 +206,8 @@ void Efficiency::matchTruth(){
   fCompleteness = fEnergyMap[ fBestTrackID ]/totEnergy;
   fPdg = fParticleMap[ fBestTrackID ].pdgCode;
 
+  cout << fPurirty << " " << fCompleteness << " " << fPdg << endl;
+
 }
 
 void Efficiency::fillMap1D(int pdg, map<int, TH1D*> map, double fillIn ){
@@ -236,13 +238,16 @@ void Efficiency::fill(){
   fillMap1D( fPdg, fPhiTrueMap, fParticleMap[fBestTrackID].startPhi );
   fillMap2D( fPdg, fPhiThetaTrueMap, fParticleMap[fBestTrackID].startTheta, fParticleMap[fBestTrackID].startPhi);
 
+
   if(fCompleteness>0.5 && fPurirty>0.5){
+
 
     //fill the reco quantities
     fillMap1D( fPdg, fThetaRecoMap, fParticleMap[fBestTrackID].startTheta);
     fillMap1D( fPdg, fPhiRecoMap, fParticleMap[fBestTrackID].startPhi );
     fillMap2D( fPdg, fPhiThetaRecoMap, fParticleMap[fBestTrackID].startTheta, fParticleMap[fBestTrackID].startPhi);
   }
+
 
 }
 
@@ -255,9 +260,9 @@ void Efficiency::write(TFile *ofile){
   for( size_t i =0; i< arraySize; i++ ){
 
     fThetaTrueMap[pdgCode.at(i)]->Write();
-    fThetaTrueMap[pdgCode.at(i)]->Write();
+    fThetaRecoMap[pdgCode.at(i)]->Write();
     fPhiTrueMap[pdgCode.at(i)]->Write();
-    fPhiTrueMap[pdgCode.at(i)]->Write();
+    fPhiRecoMap[pdgCode.at(i)]->Write();
     fPhiThetaTrueMap[pdgCode.at(i)]->Write();
     fPhiThetaRecoMap[pdgCode.at(i)]->Write();
 
@@ -307,7 +312,7 @@ void recoEff(){
   for(int fileNumber : fileList){
 
      TTree *mcTree = getTTree("/Users/scarpell/cernbox/311/simulation/g4detsim/", "", "-G4Detsim-Parser.root", fileNumber ); //TODO dynamic path
-     TTree *recoTree = getTTree("/Users/scarpell/cernbox/311/simulation/ana/", "MC5_", "_Ana.root", fileNumber ); //TODO: dyynamic path
+     TTree *recoTree = getTTree("/Users/scarpell/cernbox/311/simulation/ana/", "", "-RecoFull-Parser.root", fileNumber ); //TODO: dyynamic path
 
      mcParser->setTTree(mcTree);
      mcParser->setRun(run);
@@ -359,7 +364,7 @@ void recoEff(){
         recoOutputTree->Fill();
       }
 
-      recoEfficiency->clean(); //clean the trueParticle map inside the class
+      //recoEfficiency->clean(); //clean the trueParticle map inside the class
     }//end event loop
   }//end filelist run
 

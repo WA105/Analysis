@@ -5,7 +5,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 //TODO add missing branches to MCTrack
-//TODO add backtracker quantities to Track
 
 #include <iostream>
 #include <fstream>
@@ -94,8 +93,8 @@ void LArParser::setRecoBranches(){
     fTree->SetBranchAddress("Hit_Multiplicity",&tHit_Multiplicity);
     fTree->SetBranchAddress("Hit_TrackID",&tHit_TrackID);
     fTree->SetBranchAddress("Hit_trueID",&tHit_particleID);
-    fTree->SetBranchAddress("hit_trueEnergyMax",&tHit_TrueEnergy);
-    fTree->SetBranchAddress("hit_trueEnergyFraction",&tHit_TrueEnergy);
+    fTree->SetBranchAddress("Hit_trueEnergyMax",&tHit_TrueEnergy);
+    fTree->SetBranchAddress("Hit_trueEnergyFraction",&tHit_TrueEnergy);
     //fTree->SetBranchAddress("Hit_ClusterID",&tHit_ClusterID);
 
     //  //Cluster variables
