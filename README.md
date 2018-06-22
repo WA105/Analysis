@@ -1,6 +1,6 @@
 
 
-# 311 Analysis 
+# LArTPC Analysis 
 
 Set of useful libraries and examples of macros for the dual-phase LArTPC analysis. Work is still in progress. for questions:<a href="mailto:andrea.scarpelli@cern.ch" target="_blank"> andrea.scarpelli@cern.ch </a>
 
