@@ -23,7 +23,10 @@ using namespace std;
 ////////////////////////////////////////////////////////////////////////////////
 //initalize some variables as global variables (easy to edit)
 
-vector<int> fileList = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}; //runs to process
+vector<int> fileList = {}; //runs to process
+int startFile = 0;
+int endFile = 500;
+
 int mockRun = 840; //query the metadata of this run from db
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -49,6 +52,12 @@ inline vector<string> glob(const string& pat){
 
 void fillFileList(string path){
   //fill up the runList with all the file if empty
+
+  for(i=startFile; i<endFile; i++){
+    fileList.push_back(i);
+  }
+
+  /*
   if (fileList.size() == 0){
     #if verbose
     cout << "Processing all runs in " << path << "*..." << endl;
@@ -58,6 +67,8 @@ void fillFileList(string path){
       fileList.push_back(atoi(irun.data()));
     }
   }
+  */
+
   return;
 }
 
@@ -289,11 +300,11 @@ void recoEff(){
   TFile *ofile = new TFile("simOutput.root", "RECREATE");
 
   //mc tree
-  TTree *mcOutputTree = new TTree("mcTracks", "contains geant tracks");
-  mcOutputTree->Branch("mcTrack", &mcTrack );
+  //TTree *mcOutputTree = new TTree("mcTracks", "contains geant tracks");
+  //mcOutputTree->Branch("mcTrack", &mcTrack );
   //reco tree
-  TTree *recoOutputTree = new TTree("recoTracks", "contains reco tracks");
-  recoOutputTree->Branch("recoTrack", &recoTrack );
+  //TTree *recoOutputTree = new TTree("recoTracks", "contains reco tracks");
+  //recoOutputTree->Branch("recoTrack", &recoTrack );
 
   //here I define the parser object
   LArParser *mcParser = new LArParser();
@@ -350,8 +361,8 @@ void recoEff(){
         //a match between true and reco
         recoEfficiency->setMapEntry( track.particleID, track );
 
-        mcTrack = track;
-        mcOutputTree->Fill();
+        //mcTrack = track;
+        //mcOutputTree->Fill();
       }
 
       //insert the reconstruced hits inside the event
@@ -364,8 +375,8 @@ void recoEff(){
         recoEfficiency->setRecoTrack( track );
         recoEfficiency->fill();
 
-        recoTrack = track;
-        recoOutputTree->Fill();
+        //recoTrack = track;
+        //recoOutputTree->Fill();
       }
 
       //recoEfficiency->clean(); //clean the trueParticle map inside the class
@@ -378,8 +389,8 @@ void recoEff(){
   recoEfficiency->write( ofile );
 
   //write ttree
-  mcOutputTree->Write();
-  recoOutputTree->Write();
+  //mcOutputTree->Write();
+  //recoOutputTree->Write();
   ofile->Close();
 
 }//end macro
