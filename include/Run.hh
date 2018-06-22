@@ -21,7 +21,7 @@ class Run
     ~Run();
 
     //setters
-    void setDBName( string dbName ){ fDbName = dbName; };
+    //void setDBName( string dbName ){ fDbName = dbName; };
     void setRunNumber( int run ){ fRunNumber = run; };
     void setNumberOfSubrun( int nSubruns ){ fNumberOfSubruns = nSubruns; };
 
@@ -31,7 +31,7 @@ class Run
 
   private:
 
-    void importRunMetadata();
+    //void importRunMetadata();
 
     string fDbName;
     int fRunNumber;
