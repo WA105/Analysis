@@ -23,7 +23,7 @@ using namespace std;
 ////////////////////////////////////////////////////////////////////////////////
 //initalize some variables as global variables (easy to edit)
 
-vector<int> fileList = {822}; //runs to process
+vector<int> fileList = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}; //runs to process
 int mockRun = 840; //query the metadata of this run from db
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -99,6 +99,7 @@ class Efficiency
     //setters
     void setMapEntry(int id, MCTrack mctrack ){ fParticleMap[id] = mctrack; }
     void setRecoTrack( Track track ){ fTrack = track; }
+    void setRecoHits( vector<Hit> hits ){ fHits = hits; }
 
     //getters
 
@@ -115,8 +116,8 @@ class Efficiency
     void fillMap2D(int pdg, map<int, TH2D*> map, double fillX, double fillY );
 
     //Particle that I consider for the efficiency
-    vector<int> pdgCode = { 13, 0 };
-    vector<string> pdgNames = { "Muons", "Other" };
+    vector<int> pdgCode = { 13, -13, 11, -11, 211, -211, 2212, 0 };
+    vector<string> pdgNames = { "Muons", "Antimuons", "Electrons", "Positron", "PiPlus", "PiMinus", "Proton", "Other" };
 
     //binning
     //theta
@@ -141,6 +142,7 @@ class Efficiency
     map<int, MCTrack> fParticleMap; //particleID mctrack association
     map<int, double> fEnergyMap; //particleID energy association
     Track fTrack;
+    vector<Hit> fHits;
     double fPurirty;
     double fCompleteness;
     double fPdg;
@@ -184,48 +186,50 @@ void Efficiency::matchTruth(){
   fCompleteness=0;
   fPdg=0;
 
-  //loop over the hits and associate every energy deposit to the correct particleID
-  double totEnergy = 0.;
+  //loop over the hits in tracks and associate every energy deposit to the correct particleID
+  double energyTrk = 0.;
   for( auto hit : fTrack.hitsTrk ){
     fEnergyMap[ hit.particleID ] += hit.trueEnergy;
-    totEnergy+=hit.trueEnergy;
+    energyTrk += (hit.trueEnergy/hit.trueEnergyFraction);
   }
 
   //find the best particle ID (the one that contribute the most in the track energy account )
   fBestTrackID =0.;
   double maxe = 0.;
   for( auto const & val : fEnergyMap  ){
-
     if( maxe < val.second ){
       maxe = val.second;
       fBestTrackID= val.first;
     }
   }
 
-  fPurirty = fEnergyMap[ fBestTrackID ]/fParticleMap[ fBestTrackID ].startE;
-  fCompleteness = fEnergyMap[ fBestTrackID ]/totEnergy;
-  fPdg = fParticleMap[ fBestTrackID ].pdgCode;
+  //calculate the total energy of the best track in hits
+  double totalEnergy = 0;
+  for( auto hit : fHits ){
+    if( fBestTrackID == hit.particleID )
+      totalEnergy+=hit.trueEnergy;
+  }
 
-  cout << fPurirty << " " << fCompleteness << " " << fPdg << endl;
+  fPurirty = (fEnergyMap[ fBestTrackID ])/totalEnergy;
+  fCompleteness = fEnergyMap[ fBestTrackID ]/energyTrk;
+  fPdg = fParticleMap[ fBestTrackID ].pdgCode;
 
 }
 
 void Efficiency::fillMap1D(int pdg, map<int, TH1D*> map, double fillIn ){
   //fill the map if the pdg code of the best tParticleId
-  if( map.find(pdg) != map.end() ){
-    map[pdg]->Fill( fillIn );
-  }else{
-    map[0]->Fill( fillIn );
-  }
+    if( map.find(pdg) != map.end() )
+      map[pdg]->Fill( fillIn );
+    else
+      map[0]->Fill( fillIn );
 }
 
 void Efficiency::fillMap2D(int pdg, map<int, TH2D*> map, double fillX, double fillY ){
   //fill the map if the pdg code of the best tParticleId
-  if( map.find(pdg) != map.end() ){
+  if( map.find(pdg) != map.end() )
     map[pdg]->Fill( fillX, fillY );
-  }else{
+  else
     map[0]->Fill( fillX, fillY );
-  }
 }
 
 void Efficiency::fill(){
@@ -238,17 +242,13 @@ void Efficiency::fill(){
   fillMap1D( fPdg, fPhiTrueMap, fParticleMap[fBestTrackID].startPhi );
   fillMap2D( fPdg, fPhiThetaTrueMap, fParticleMap[fBestTrackID].startTheta, fParticleMap[fBestTrackID].startPhi);
 
-
   if(fCompleteness>0.5 && fPurirty>0.5){
-
 
     //fill the reco quantities
     fillMap1D( fPdg, fThetaRecoMap, fParticleMap[fBestTrackID].startTheta);
     fillMap1D( fPdg, fPhiRecoMap, fParticleMap[fBestTrackID].startPhi );
     fillMap2D( fPdg, fPhiThetaRecoMap, fParticleMap[fBestTrackID].startTheta, fParticleMap[fBestTrackID].startPhi);
   }
-
-
 }
 
 void Efficiency::write(TFile *ofile){
@@ -273,7 +273,7 @@ void Efficiency::write(TFile *ofile){
 void Efficiency::clean(){
 
   fParticleMap.clear();
-
+  fHits.clear();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -338,10 +338,11 @@ void recoEff(){
       //data structures array
       vector<MCTrack> mcTracks;
       vector<Track> recoTracks;
-      map<int, MCTrack> particleMap;
+      vector<Hit> recoHits; //hits not associated to a track
 
       mcParser->getMCTracksEvent(mcTracks, evt);
       recoParser->getRecoTracksEvent(recoTracks, evt);
+      recoParser->getRecoHitsEvent( recoHits, evt );
 
       for( auto track : mcTracks ){
 
@@ -352,6 +353,9 @@ void recoEff(){
         mcTrack = track;
         mcOutputTree->Fill();
       }
+
+      //insert the reconstruced hits inside the event
+      recoEfficiency->setRecoHits( recoHits );
 
       for( auto track : recoTracks ){
 

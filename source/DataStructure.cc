@@ -51,19 +51,20 @@ void LArParser::setMCBranches(){
   fTree->SetBranchAddress("MCTruth_GEANT4_NumberOfParticles", &tNGeantTrackPerEvent);
   fTree->SetBranchAddress("MCTruth_GEANT4_PDGCode",&tPdg);
   fTree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_ParticleID",&tParticleId);
-  fTree->SetBranchAddress("MCTruth_GEANT4_StartEnergy",&tStartE);
+  fTree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_StartEnergy",&tStartE);
   fTree->SetBranchAddress("MCTruth_GEANT4_IsInTPCAV",&tIsInTPCAV);
-  fTree->SetBranchAddress("MCTruth_GEANT4_StartTime",&tStartTime);
-  fTree->SetBranchAddress("MCTruth_GEANT4_StartMomentum",&tMom);
-  fTree->SetBranchAddress("MCTruth_GEANT4_StartMomentum_X",&tMomX);
-  fTree->SetBranchAddress("MCTruth_GEANT4_StartMomentum_Y",&tMomY);
-  fTree->SetBranchAddress("MCTruth_GEANT4_StartMomentum_Z",&tMomZ);
-  fTree->SetBranchAddress("MCTruth_GEANT4_StartPoint_X",&tStartX);
-  fTree->SetBranchAddress("MCTruth_GEANT4_StartPoint_Y",&tStartY);
-  fTree->SetBranchAddress("MCTruth_GEANT4_StartPoint_Z",&tStartZ);
-  fTree->SetBranchAddress("MCTruth_GEANT4_StartDirection_Phi",&tStartPhi);
-  fTree->SetBranchAddress("MCTruth_GEANT4_StartDirection_Theta",&tStartTheta);
+  fTree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_StartTime",&tStartTime);
+  fTree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_StartMomentum",&tMom);
+  fTree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_StartMomentum_X",&tMomX);
+  fTree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_StartMomentum_Y",&tMomY);
+  fTree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_StartMomentum_Z",&tMomZ);
+  fTree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_StartPoint_X",&tStartX);
+  fTree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_StartPoint_Y",&tStartY);
+  fTree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_StartPoint_Z",&tStartZ);
+  fTree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_StartDirection_Phi",&tStartPhi);
+  fTree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_StartDirection_Theta",&tStartTheta);
   fTree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_Pathlength",&tLengthAV);
+  fTree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_EndEnergy",&tEndE);
 
 }
 
@@ -94,7 +95,7 @@ void LArParser::setRecoBranches(){
     fTree->SetBranchAddress("Hit_TrackID",&tHit_TrackID);
     fTree->SetBranchAddress("Hit_trueID",&tHit_particleID);
     fTree->SetBranchAddress("Hit_trueEnergyMax",&tHit_TrueEnergy);
-    fTree->SetBranchAddress("Hit_trueEnergyFraction",&tHit_TrueEnergy);
+    fTree->SetBranchAddress("Hit_trueEnergyFraction",&tHit_TrueEnergyFraction);
     //fTree->SetBranchAddress("Hit_ClusterID",&tHit_ClusterID);
 
     //  //Cluster variables
@@ -201,6 +202,7 @@ void LArParser::fillMCTrack( vector<MCTrack> & tracks ){
     dummyTrack.startPhi=tStartPhi[l];
     dummyTrack.startTheta=tStartTheta[l];
     dummyTrack.lengthAV=tLengthAV[l];
+    dummyTrack.endE=tEndE[l];
     dummyTrack.endX=tEndX[l];
     dummyTrack.endY=tEndY[l];
     dummyTrack.endZ=tEndZ[l];
@@ -233,7 +235,7 @@ void LArParser::fillRecoHits( vector<Hit> & hits ){
     dummyHits.goodnessOfFit=tHit_GoodnessOfFit[l];
     dummyHits.multiplicity=tHit_Multiplicity[l];
     dummyHits.trackID=tHit_TrackID[l];
-    dummyHits.particleID= tHit_TrackID[l];
+    dummyHits.particleID= tHit_particleID[l];
     dummyHits.trueEnergy = tHit_TrueEnergy[l];
     dummyHits.trueEnergyFraction = tHit_TrueEnergyFraction[l];
     //dummyHit.lem=dummyHits.findLEM(dummyHits.Y, dummyHits.Z);

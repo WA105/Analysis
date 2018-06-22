@@ -117,7 +117,7 @@ class MCTrack
     int particleID;
     int isInTPCAV;
     double startE;
-    //double endE;
+    double endE;
     double mom;
     double momX;
     double momY;
@@ -188,6 +188,7 @@ class LArParser
     int tParticleId[NMaxGeantTrackPerEvent];
     int tIsInTPCAV[NMaxGeantTrackPerEvent];
     float tStartE[NMaxGeantTrackPerEvent];
+    float tEndE[NMaxGeantTrackPerEvent];
     float tMom[NMaxGeantTrackPerEvent];
     float tMomX[NMaxGeantTrackPerEvent];
     float tMomY[NMaxGeantTrackPerEvent];
