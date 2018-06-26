@@ -4,9 +4,6 @@
 //mailto:andrea.scarpelli@cern.ch
 ////////////////////////////////////////////////////////////////////////////////
 
-//TODO add missing branches to MCTrack
-//TODO add backtracker quantities to Track
-
 #ifndef  __DATASTRUCTURE_H
 #define __DATASTRUCTURE_H
 

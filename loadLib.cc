@@ -22,6 +22,7 @@ void loadLib(){
   gROOT->LoadMacro((currentdir+"/source/Run.cc+").c_str());
   gROOT->LoadMacro((currentdir+"/source/DataStructure.cc+").c_str());
   //gROOT->LoadMacro((currentdir+"/source/Cuts.cc+").c_str());
+  gROOT->LoadMacro((currentdir+"/source/Efficiency.cc+").c_str());
 
   //gROOT->LoadMacro((currentdir+"/source/311Lib.cc+").c_str());
   //gROOT->LoadMacro((currentdir+"/source/311style.cc+").c_str());
