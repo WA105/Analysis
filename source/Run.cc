@@ -27,7 +27,6 @@ Run::Run(int run, string dbase){
 
 Run::~Run(){}
 
-/*
 void Run::importRunMetadata(){
   //read run metadata from database
   sqlite3* fdb;
@@ -62,4 +61,3 @@ void Run::importRunMetadata(){
 
  return;
 }
-*/

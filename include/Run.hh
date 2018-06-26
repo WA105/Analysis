@@ -31,7 +31,7 @@ class Run
 
   private:
 
-    //void importRunMetadata();
+    void importRunMetadata();
 
     string fDbName;
     int fRunNumber;
