@@ -6,6 +6,8 @@ This is based on charge injection in the range of 14-150 fC during cold operatio
 
 **Monte Carlo**: 
 
-electron lifetime of 7 ms
-Gain: center LEM gains of 4, the corner LEMs (LEMs 1,3,10,12) are set to a gain of 2 
-pream-response function:
+-electron lifetime of 7 ms
+
+-Gain: center LEM gains of 4, the corner LEMs (LEMs 1,3,10,12) are set to a gain of 2 
+
+-pream-response function:
