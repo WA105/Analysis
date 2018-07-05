@@ -1,0 +1,2 @@
+Here the text file that comes out of the highway algorithm for run 840, subrun 0. Here I only made a cut on the minimum track length of 20 cm. The text file entries are the run, subrun, event and track numbers, followed by the box charge ratios for the two views. A different number of boxes is used depending on the track length with about 1 box per 50 cm. That's why there can be more than one box charge ratio.
+For some tracks, a straight line can not be fitted to the hits in one of the views. These tracks are simply ignored for now.
