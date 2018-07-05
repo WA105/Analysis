@@ -1,0 +1,17 @@
+## basic configuration of the submit file ##
+Universe = vanilla
+Executable = /afs/cern.ch/work/a/ascarpel/private/Analysis/efficency/build/recoEff
+Error = job.err.$(Cluster)-$(Process)
+Output = job.out.$(Cluster)-$(Process)
+Log = job.log.$(Cluster)
+getenv = True
+
+## list of i/o arguments ##
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+requirements            = (Arch == "INTEL" && OpSys == "LINUX") || (Arch == "X86_64" && OpSys =="LINUX" )
+priority 		            = 20
+Arguments = -s /eos/experiment/wa105/offline/LArSoft/MC/MC6/ROOT/g4detsim/$(Process)-G4Detsim-Parser.root -r /eos/experiment/wa105/offline/LArSoft/MC/MC6/ROOT/recofull/$(Process)-RecoFull-Parser.root
+transfer_input_files = /eos/experiment/wa105/offline/LArSoft/MC/MC6/ROOT/g4detsim/$(Process)-G4Detsim-Parser.root, /eos/experiment/wa105/offline/LArSoft/MC/MC6/ROOT/recofull/$(Process)-RecoFull-Parser.root
+transfer_output_remaps = "recoEfficiency.root = /eos/user/a/ascarpel/311/reco/efficency/MC6/recoEfficiency_$(Process).root"
+Queue 3
