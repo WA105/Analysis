@@ -4,8 +4,6 @@
 //mailto:andrea.scarpelli@cern.ch
 ////////////////////////////////////////////////////////////////////////////////
 
-//TODO dynamic path to input and output file
-
 //c++ includes
 #include <glob.h>
 #include <iostream>
@@ -32,8 +30,6 @@ using namespace std;
 vector<int> fileList = {}; //runs to process
 int startFile = 0;
 int endFile = 10;
-
-int mockRun = 840; //query the metadata of this run from db
 
 ////////////////////////////////////////////////////////////////////////////////
 // Functions
