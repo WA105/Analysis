@@ -14,12 +14,12 @@
 
 const int NUM_OF_VIEWS = 2;
 const int NUM_OF_LEMS = 12;
-int tpc_boundaries[6] = {-50, 50, -50, 50, 0, 300}; //minx,maxx,miny,maxy,minz,max
-double Ch_0 = 320;
-double Ch_1 = 960;
-double pitch = 0.3;
-int tdc = 1667;
-double ADC2CHARGE = 45.31875; //ADC*ticks (from qScan)
+const int tpc_boundaries[6] = {-50, 50, -50, 50, 0, 300}; //minx,maxx,miny,maxy,minz,max
+const double Ch_0 = 320;
+const double Ch_1 = 960;
+const double pitch = 0.3;
+const int tdc = 1667;
+const double ADC2CHARGE = 45.31875; //ADC*ticks (from qScan)
 
 //int find_lem(double y, double z);
 

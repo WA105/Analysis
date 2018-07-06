@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 2.8)
 #set(CMAKE_CXX_STANDARD 11)
 
 #Enable the use of runtime paths on Mac OSX.
-set(CMAKE_MACOSX_RPATH ON)
+#set(CMAKE_MACOSX_RPATH ON)
 
 #ROOT libraries
 list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})

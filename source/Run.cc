@@ -8,7 +8,7 @@
 #include <fstream>
 #include <stdlib.h>
 #include <stdio.h>
-//#include <sqlite3.h>
+#include <sqlite3.h>
 #include "Run.hh"
 
 using namespace std;

@@ -39,7 +39,7 @@ class Efficiency
     //others
     void fill();
     void makeEfficiencyPlot();
-    void write(TFile *ofile);
+    void write();
 
     //cleaner
     void clean();

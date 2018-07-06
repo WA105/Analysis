@@ -138,13 +138,12 @@ void Efficiency::makeEfficiencyPlot(){
     if( TEfficiency::CheckConsistency(*fPhiThetaRecoMap[pdgCode.at(i)], *fPhiThetaTrueMap[pdgCode.at(i)]) )
       fPhiThetaEfficiency[pdgCode.at(i)] = new TEfficiency(*fPhiThetaRecoMap[pdgCode.at(i)], *fPhiThetaTrueMap[pdgCode.at(i)]);
 
-    fPhiEfficiency[pdgCode.at(i)]->SetName( (pdgNames.at(i)+"Phi_Efficiency" );
-    fThetaEfficiency[pdgCode.at(i)]->SetName( (pdgNames.at(i)+"Theta_Efficiency" );
-    fPhiThetaEfficiency[pdgCode.at(i)]->SetName( (pdgNames.at(i)+"PhiTheta_Efficiency" );
-
-    fPhiEfficiency[pdgCode.at(i)]->SetTitle( (pdgNames.at(i)+"Phi_Efficiency" );
-    fThetaEfficiency[pdgCode.at(i)]->SetTitle( (pdgNames.at(i)+"Theta_Efficiency" );
-    fPhiThetaEfficiency[pdgCode.at(i)]->SetTitle( (pdgNames.at(i)+"PhiTheta_Efficiency" );
+    fPhiEfficiency[pdgCode.at(i)]->SetName( (pdgNames.at(i)+"Phi_Efficiency").c_str() );
+    fThetaEfficiency[pdgCode.at(i)]->SetName( (pdgNames.at(i)+"Theta_Efficiency").c_str() );
+    fPhiThetaEfficiency[pdgCode.at(i)]->SetName( (pdgNames.at(i)+"PhiTheta_Efficiency").c_str() );
+    fPhiEfficiency[pdgCode.at(i)]->SetTitle( (pdgNames.at(i)+"Phi_Efficiency").c_str() );
+    fThetaEfficiency[pdgCode.at(i)]->SetTitle( (pdgNames.at(i)+"Theta_Efficiency").c_str() );
+    fPhiThetaEfficiency[pdgCode.at(i)]->SetTitle( (pdgNames.at(i)+"PhiTheta_Efficiency").c_str() );
 
   }
 }
