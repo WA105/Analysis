@@ -165,7 +165,6 @@ int main( int argc, char* argv[] ){
   }//end event loop
 
   //calculate the efficency plot
-  recoEfficiency->makeEfficiencyPlot();
 
   ofile->cd();
   recoEfficiency->write();
