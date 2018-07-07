@@ -50,10 +50,10 @@ class Efficiency
     void fillMap2D(int pdg, map<int, TH2D*> map, double fillX, double fillY );
 
     //Particle that I consider for the efficiency
-    vector<int> pdgCode = { 13, -13, 11, -11, 211, -211, 2212, 0 }; // NB this can be custom set
+    vector<int> pdgCode = { 13, 11, 211, 2212, 0 }; // NB this can be custom set
 
     //NB: this can be fetched from a database (has ROOT something already)
-    vector<string> pdgNames = { "Muons", "Antimuons", "Electrons", "Positron", "PiPlus", "PiMinus", "Proton", "Other" };
+    vector<string> pdgNames = { "Muons", "Electrons","Pions", "Proton", "Other" };
 
     //binning
     //theta

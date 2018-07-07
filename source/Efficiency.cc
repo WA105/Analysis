@@ -109,16 +109,16 @@ void Efficiency::fill(){
   this->matchTruth();
 
   //fill first the mc quanties
-  fillMap1D( fPdg, fThetaTrueMap, fParticleMap[fBestTrackID].startTheta);
-  fillMap1D( fPdg, fPhiTrueMap, fParticleMap[fBestTrackID].startPhi );
-  fillMap2D( fPdg, fPhiThetaTrueMap, fParticleMap[fBestTrackID].startTheta, fParticleMap[fBestTrackID].startPhi);
+  fillMap1D( abs(fPdg), fThetaTrueMap, fParticleMap[fBestTrackID].startTheta);
+  fillMap1D( abs(fPdg), fPhiTrueMap, fParticleMap[fBestTrackID].startPhi );
+  fillMap2D( abs(fPdg), fPhiThetaTrueMap, fParticleMap[fBestTrackID].startTheta, fParticleMap[fBestTrackID].startPhi);
 
   if(fCompleteness>0.5 && fPurirty>0.5){
 
     //fill the reco quantities
-    fillMap1D( fPdg, fThetaRecoMap, fParticleMap[fBestTrackID].startTheta);
-    fillMap1D( fPdg, fPhiRecoMap, fParticleMap[fBestTrackID].startPhi );
-    fillMap2D( fPdg, fPhiThetaRecoMap, fParticleMap[fBestTrackID].startTheta, fParticleMap[fBestTrackID].startPhi);
+    fillMap1D( abs(fPdg), fThetaRecoMap, fParticleMap[fBestTrackID].startTheta);
+    fillMap1D( abs(fPdg), fPhiRecoMap, fParticleMap[fBestTrackID].startPhi );
+    fillMap2D( abs(fPdg), fPhiThetaRecoMap, fParticleMap[fBestTrackID].startTheta, fParticleMap[fBestTrackID].startPhi);
   }
 }
 
