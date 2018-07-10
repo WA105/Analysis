@@ -22,8 +22,34 @@
 #include "Efficiency.hh"
 
 Efficiency::Efficiency(){
-  //constructor of the class: initialize here all the histograms
 
+  //constructor of the class: initialize here the TTree
+  fMcTTree = new TTree("mctree", "Truth info");
+  fRecoTTree = new TTree("recotree", "Reco information");
+
+  //set branches
+  fMcTTree->Branch("FileNumber", &fFileNumber, "FileNumber/I");
+  fMcTTree->Branch("Event", &fEvent, "Event/I");
+  fMcTTree->Branch("ParticleId", &fParticleId, "ParticleId/I");
+  fMcTTree->Branch("Pdg", &fPdg, "Pdg/D");
+  fMcTTree->Branch("Theta", &fTrueTheta, "Theta/D");
+  fMcTTree->Branch("Phi", &fTruePhi, "Phi/D");
+  fMcTTree->Branch("Energy", &fTrueE, "Energy/D");
+
+  fRecoTTree->Branch("FileNumber", &fFileNumber, "FileNumber/I");
+  fRecoTTree->Branch("Event", &fEvent, "Event/I");
+  fRecoTTree->Branch("TrackId", &fTrackId, "TrackId/I");
+  fRecoTTree->Branch("NtracksEvent", &fNtracksEvent, "NtracksEvent/I");
+  fRecoTTree->Branch("ParticleId", &fParticleId, "ParticleId/I");
+  fRecoTTree->Branch("Pdg", &fPdg, "Pdg/D");
+  fRecoTTree->Branch("Theta", &fRecoTheta, "Theta/D");
+  fRecoTTree->Branch("Phi", &fRecoPhi, "Phi/D");
+  fRecoTTree->Branch("Energy", &fRecoE, "Energy/D");
+  fRecoTTree->Branch("Completeness", &fCompleteness, "Completeness/D");
+  fRecoTTree->Branch("Purity", &fPurirty, "Purity/D");
+
+
+  //histograms
   size_t arraySize = max(pdgCode.size(), pdgNames.size() );
 
   for( size_t i =0; i< arraySize; i++ ){
@@ -44,6 +70,7 @@ Efficiency::Efficiency(){
     fPhiThetaRecoMap[pdgCode.at(i)] = hPhiThetaReco;
 
   }
+
 }
 
 Efficiency::~Efficiency(){}
@@ -55,7 +82,6 @@ void Efficiency::matchTruth(){
   fEnergyMap.clear();
   fPurirty=0;
   fCompleteness=0;
-  fPdg=0;
 
   //loop over the hits in tracks and associate every energy deposit to the correct particleID
   double energyTrk = 0.;
@@ -83,7 +109,6 @@ void Efficiency::matchTruth(){
 
   fPurirty = (fEnergyMap[ fBestTrackID ])/totalEnergy;
   fCompleteness = fEnergyMap[ fBestTrackID ]/energyTrk;
-  fPdg = fParticleMap[ fBestTrackID ].pdgCode;
 
 }
 
@@ -104,9 +129,26 @@ void Efficiency::fillMap2D(int pdg, map<int, TH2D*> map, double fillX, double fi
 }
 
 void Efficiency::fill(){
-  //fill up the correct histogram for the track
+  //fill the reco quantitiess
 
+  //match with truth
   this->matchTruth();
+
+  fFileNumber = fParticleMap[ fBestTrackID ].run.getFileNumber();
+  fEvent = fParticleMap[ fBestTrackID ].eventNumber;
+  fParticleId = fBestTrackID;
+  fTrackId = fTrack.trackID;
+  fPdg = fParticleMap[ fBestTrackID ].pdgCode;
+  fTrueTheta = fParticleMap[fBestTrackID].startTheta;
+  fTruePhi = fParticleMap[fBestTrackID].startPhi;
+  fTrueE = fParticleMap[fBestTrackID].startE;
+
+  fRecoTheta = fParticleMap[fBestTrackID].startTheta;
+  fRecoPhi = fParticleMap[fBestTrackID].startPhi;
+  fRecoE = fParticleMap[fBestTrackID].startE;
+
+  fMcTTree->Fill();
+  fRecoTTree->Fill();
 
   //fill first the mc quanties
   fillMap1D( abs(fPdg), fThetaTrueMap, fParticleMap[fBestTrackID].startTheta);
@@ -120,7 +162,9 @@ void Efficiency::fill(){
     fillMap1D( abs(fPdg), fPhiRecoMap, fParticleMap[fBestTrackID].startPhi );
     fillMap2D( abs(fPdg), fPhiThetaRecoMap, fParticleMap[fBestTrackID].startTheta, fParticleMap[fBestTrackID].startPhi);
   }
+
 }
+
 
 void Efficiency::makeEfficiencyPlot(){
   //calculate the efficieny plots
@@ -149,7 +193,6 @@ void Efficiency::makeEfficiencyPlot(){
 }
 
 void Efficiency::write(){
-  //write histogram in root file
 
   size_t arraySize = max(pdgCode.size(), pdgNames.size() );
 
@@ -164,12 +207,17 @@ void Efficiency::write(){
     fThetaEfficiency[pdgCode.at(i)]->Write();
     fPhiEfficiency[pdgCode.at(i)]->Write();
     fPhiThetaEfficiency[pdgCode.at(i)]->Write();
+
   }
 
+  //write tree
+  fMcTTree->Write();
+  fRecoTTree->Write();
 }
 
 void Efficiency::clean(){
 
+  //quantities to be reset after the event
   fParticleMap.clear();
   fHits.clear();
 }

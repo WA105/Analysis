@@ -106,6 +106,7 @@ class MCTrack
     MCTrack();
     ~MCTrack();
 
+    Run run;
     int event;
     int subrun;
     int eventNumber;

@@ -25,11 +25,13 @@ class Run
     //setters
     void setDBName( string dbName ){ fDbName = dbName; };
     void setRunNumber( int run ){ fRunNumber = run; };
+    void setFileNumber( int fileNumber ){ fFileNumber = fileNumber; }; //montecarlo doesn't have an unique run number
     void setNumberOfSubrun( int nSubruns ){ fNumberOfSubruns = nSubruns; };
 
     //getters
     int getRunNumber(){ return fRunNumber; }
     int getNumberOfSubruns(){ return fNumberOfSubruns; }
+    int getFileNumber(){ return fFileNumber; };
 
   private:
 
@@ -38,6 +40,7 @@ class Run
     string fDbName;
     int fRunNumber;
     int fNumberOfSubruns;
+    int fFileNumber;
 
 };
 

@@ -184,6 +184,7 @@ void LArParser::fillMCTrack( vector<MCTrack> & tracks ){
 
     MCTrack dummyTrack;
 
+    dummyTrack.run = *fRun;
     dummyTrack.subrun = tSubrun;
     dummyTrack.event = tEventNumberInRun;
 

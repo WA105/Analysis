@@ -33,12 +33,11 @@ class Efficiency
     void setMapEntry(int id, MCTrack mctrack ){ fParticleMap[id] = mctrack; }
     void setRecoTrack( Track track ){ fTrack = track; }
     void setRecoHits( vector<Hit> hits ){ fHits = hits; }
-
-    //getters
+    void setNumberOfTracksEvent( int nTracks ){ fNtracksEvent = nTracks;} //not elegant, but need that afterwards in the analysis
 
     //others
-    void fill();
     void makeEfficiencyPlot();
+    void fill();
     void write();
 
     //cleaner
@@ -46,14 +45,16 @@ class Efficiency
 
   private:
     void matchTruth();
+
     void fillMap1D(int pdg, map<int, TH1D*> map, double fillIn );
     void fillMap2D(int pdg, map<int, TH2D*> map, double fillX, double fillY );
+
 
     //Particle that I consider for the efficiency
     vector<int> pdgCode = { 13, 11, 211, 2212, 0 }; // NB this can be custom set
 
     //NB: this can be fetched from a database (has ROOT something already)
-    vector<string> pdgNames = { "Muons", "Electrons","Pions", "Proton", "Other" };
+    vector<string> pdgNames = { "Muons", "Electrons","Pions", "Protons", "Other" };
 
     //binning
     //theta
@@ -78,15 +79,29 @@ class Efficiency
     map<int, TEfficiency*> fPhiThetaEfficiency;
 
     //more quantities
+    TTree *fMcTTree;
+    TTree *fRecoTTree;
+
     map<int, MCTrack> fParticleMap; //particleID mctrack association
     map<int, double> fEnergyMap; //particleID energy association
     Track fTrack;
     vector<Hit> fHits;
+
+    int fFileNumber;
+    int fEvent;
+    int fParticleId;
+    int fTrackId;
+    int fNtracksEvent;
     double fPurirty;
     double fCompleteness;
     double fPdg;
     double fBestTrackID;
-
+    double fTruePhi;
+    double fTrueTheta;
+    double fTrueE;
+    double fRecoPhi;
+    double fRecoTheta;
+    double fRecoE;
 };
 
 #endif // __EFFICIENCY_H

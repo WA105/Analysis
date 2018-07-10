@@ -68,6 +68,26 @@ TTree *getTTree( string filename ){
     return ttree;
 }
 
+int getFileNumber( std::string filename ){
+  //assuming the filename encorded in a format /path/to/file/0-somename-Parser.root
+
+  //isolate filenumber from path
+  std::string s = filename;
+  std::string delimiter = "/";
+
+  size_t pos = 0;
+  std::string token;
+
+  while ((pos = s.find(delimiter)) != std::string::npos) {
+    token = s.substr(0, pos);
+    s.erase(0, pos + delimiter.length());
+  }
+
+  pos = s.find("-");
+  std::string number = s.substr(0, pos);
+  return stoi(number);
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // Main macro
@@ -89,6 +109,9 @@ int main( int argc, char* argv[] ){
    }
   }
 
+  //extract the filenumber from the simFile
+  int fileNumber = getFileNumber( simFile );
+
   //define here the output file
   Track recoTrack;
   MCTrack mcTrack;
@@ -106,7 +129,10 @@ int main( int argc, char* argv[] ){
   LArParser *recoParser = new LArParser();
 
   //define the Run object using the mockRun flag (always the same in this case)
+  //mockrun is the fake runnuber to extract the information from
+  //fileNumber is the actual progressive file id to uniquely select the tracks
   Run *run = new Run(mockRun, "metadata/test.db");
+  run->setFileNumber( fileNumber );
 
   //and here i define the class efficiency
   Efficiency *recoEfficiency = new Efficiency();
@@ -152,6 +178,8 @@ int main( int argc, char* argv[] ){
 
       //insert the reconstruced hits inside the event
       recoEfficiency->setRecoHits( recoHits );
+      recoEfficiency->setNumberOfTracksEvent( (int)recoTracks.size() );
+
 
       for( auto track : recoTracks ){
         //here we do the real efficiency analysis trying to match reconstructed
