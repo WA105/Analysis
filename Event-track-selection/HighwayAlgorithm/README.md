@@ -2,11 +2,11 @@
 
 ## Prerequisites ##
 In order to perform efficently swiss_highway_data_2018_jun_24_reco_functions.py expects some packages:
-  *numpy
-  *matplotlib
-  *scipy
-  *root
-  *root_numpy
+  * numpy
+  * matplotlib
+  * scipy
+  * root
+  * root_numpy
 
 ## Run the algorithm ##
 To run "Highway algorithm" just do:
