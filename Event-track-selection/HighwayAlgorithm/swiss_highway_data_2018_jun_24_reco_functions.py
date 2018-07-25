@@ -1,19 +1,20 @@
-import os
-from glob import glob
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib
-import ROOT
-import root_numpy
-from datetime import datetime
-from dateutil import tz
-import mpl_toolkits.mplot3d as mp3d
-import scipy.optimize
-import warnings
+#import os
+#from glob import glob
+#import numpy as np
+#import matplotlib.pyplot as plt
+#import matplotlib
+#import ROOT
+#import root_numpy
+#from datetime import datetime
+#from dateutil import tz
+#import mpl_toolkits.mplot3d as mp3d
+#import scipy.optimize
+#import warnings
 
 import sys
 import argparse
 
+'''
 def file_exists(filename): #returns True if file exists, False if it does not
     return bool(glob(filename))
 
@@ -809,6 +810,7 @@ def event_display_fit_boxes(run, subrun, event, track, number_of_segments, recta
     print 'Charge ratios View1 (from lowest box to highest): ' + str(np.round(np.array(sorted_charge_ratios_view1), 3))
 
     plt.show()
+'''
 
 def splitPath(filename):
 

@@ -20,6 +20,8 @@ const double Ch_1 = 960;
 const double pitch = 0.3;
 const int tdc = 1667;
 const double ADC2CHARGE = 45.31875; //ADC*ticks (from qScan)
+const int  maxNumChannels = 1280;
+const int maxNumTdc = maxNumChannels*tdc;
 
 //int find_lem(double y, double z);
 

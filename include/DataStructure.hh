@@ -19,6 +19,26 @@
 using namespace std;
 
 ////////////////////////////////////////////////////////////////////////////////
+//Channel data structure: holds raw adc vectors deposited on each wire
+
+class Channel
+{
+  public:
+    Channel();
+    ~Channel();
+
+    Run run;
+    int subRun;
+    int event;
+    int timeSeconds;
+    int timeNanoSeconds;
+    int channel;
+    int nTicks;
+    int view;
+    std::vector<double> signal;
+};
+
+////////////////////////////////////////////////////////////////////////////////
 //Hit data structure
 class Hit
 {
@@ -135,7 +155,8 @@ class MCTrack
 
 ////////////////////////////////////////////////////////////////////////////////
 
-//similary here a new class can be created for inputs from qScan
+// similary here a new class can be created to convert inputs from qScan into
+// the data structure holds by this framework
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -152,6 +173,7 @@ class LArParser
     void setRun(Run *run){fRun = run;}
 
     //getters
+    void getChannelsEvent( vector<Channel> & channels, int event  );
     void getMCTracksEvent( vector<MCTrack>  & mctracks, int event );
     void getRecoHitsEvent( vector<Hit> & hits, int event );
     void getRecoTracksEvent( vector<Track> & tracks, int event );
@@ -163,9 +185,10 @@ class LArParser
     bool isTreeGood();
 
   private:
-
+    void setRawBranches();
     void setRecoBranches();
     void setMCBranches();
+    void fillRawChannels( vector<Channel> & channels );
     void fillMCTrack( vector<MCTrack> & tracks );
     void fillRecoHits( vector<Hit> & hits );
     void fillRecoTrack( vector<Track> & tracks );
@@ -179,6 +202,20 @@ class LArParser
     static const int NMaxTracksPerEvent=1000;
     static const int NMaxTracksPerEventTimesNViews=NMaxTracksPerEvent*NUM_OF_VIEWS;
     static const int NEventsPerRun=335;
+
+    //Common ///////////////////////////////////////////////////////////////////
+    int tRun;
+    int tSubrun;
+    int tEventNumberInRun;
+    int tEventTimeSeconds;
+    int tEventTimeNanoseconds;
+
+    //Raw //////////////////////////////////////////////////////////////////////
+    int tRawWaveform_NumberOfChannels;
+    int tRawWaveform_NumberOfTicks;
+    int tRawWaveform_Channel[maxNumChannels];
+    int tRawWaveform_NumberOfTicksInAllChannels[maxNumChannels];
+    int tRawWaveform_ADC[maxNumTdc];
 
     //G4 //////////////////////////////////////////////////////////////////////
     int tNGeantTrackPerEvent;
@@ -202,14 +239,7 @@ class LArParser
     float tEndY[NMaxGeantTrackPerEvent];
     float tEndZ[NMaxGeantTrackPerEvent];
 
-    //Reconstructed values /////////////////////////////////////////////////////
-    //Metadata
-    int tRun;
-    int tSubrun;
-    int tEventNumberInRun;
-    //  int  tEventTimeSeconds;
-    //  int  tEventTimeNanoseconds;
-    //  char tIsData;
+    //Reco /////////////////////////////////////////////////////////////////////
 
     //Hit variables
     int tNumberOfHits;

@@ -18,6 +18,10 @@
 using namespace std;
 
 ////////////////////////////////////////////////////////////////////////////////
+Channel::Channel(){}
+Channel::~Channel(){}
+
+////////////////////////////////////////////////////////////////////////////////
 Hit::Hit(){}
 Hit::~Hit(){}
 
@@ -40,12 +44,26 @@ LArParser::LArParser( TTree *tree, Run *run ){
 
 LArParser::~LArParser(){}
 
+void LArParser::setRawBranches(){
+
+  //Link brances in root file containg raw data
+
+  fTree->SetBranchAddress("Subrun", &tSubrun);
+  fTree->SetBranchAddress("EventNumberInRun", &tEventNumberInRun);
+  fTree->SetBranchAddress("EventTimeSeconds", &tEventTimeSeconds);
+  fTree->SetBranchAddress("EventTimeNanoseconds", &tEventTimeNanoseconds);
+  fTree->SetBranchAddress("RawWaveform_NumberOfChannels", &tRawWaveform_NumberOfChannels);
+  fTree->SetBranchAddress("RawWaveform_NumberOfTicks", &tRawWaveform_NumberOfTicks);
+  fTree->SetBranchAddress("RawWaveform_Channel", &tRawWaveform_Channel);
+  fTree->SetBranchAddress("RawWaveform_NumberOfTicksInAllChannels", &tRawWaveform_NumberOfTicksInAllChannels);
+  fTree->SetBranchAddress("RawWaveform_ADC", &tRawWaveform_ADC);
+
+}
+
 void LArParser::setMCBranches(){
 
   //Link branches in the ROOT file to variables
   //Metadata
-  fTree->SetBranchAddress("Subrun", &tSubrun);
-  fTree->SetBranchAddress("EventNumberInRun", &tEventNumberInRun);
 
   //g4 particles
   fTree->SetBranchAddress("MCTruth_GEANT4_NumberOfParticles", &tNGeantTrackPerEvent);
@@ -175,6 +193,37 @@ bool LArParser::isTreeGood(){
   else
     return true;
 
+}
+
+void LArParser::fillRawChannels( vector<Channel> & channels ){
+
+  for(int j=0; j < tRawWaveform_NumberOfChannels; j++){
+
+    Channel dummyChannel;
+
+    for(int k=0; k < tRawWaveform_NumberOfTicks; k++){
+
+      dummyChannel.run = *fRun;
+      dummyChannel.subRun = tSubrun;
+      dummyChannel.event = tEventNumberInRun;
+      dummyChannel.timeSeconds = tEventTimeSeconds;
+      dummyChannel.timeNanoSeconds = tEventTimeNanoseconds;
+      dummyChannel.channel = tRawWaveform_Channel[j];
+      dummyChannel.nTicks = tRawWaveform_NumberOfTicks;
+      dummyChannel.signal.push_back( tRawWaveform_ADC[j*tRawWaveform_NumberOfTicks+k] );
+
+      if(dummyChannel.channel < Ch_0){
+        dummyChannel.view = 0;
+      }
+      else{
+        dummyChannel.view = 1;
+      }
+    } //end loop on tdc ticks
+
+    channels.push_back( dummyChannel );
+  }
+
+  return;
 }
 
 void LArParser::fillMCTrack( vector<MCTrack> & tracks ){
@@ -319,6 +368,18 @@ void LArParser::fillRecoTrack( vector<Track> & tracks ){
   }//end tracks
 
   return;
+}
+
+void LArParser::getChannelsEvent( vector<Channel> & channels, int event  ){
+  //just fill the hit array for a specific event
+
+  this->setRawBranches();
+
+  fTree->GetEntry(event);
+  this->fillRawChannels( channels );
+
+  return;
+
 }
 
 void LArParser::getMCTracksEvent( vector<MCTrack> & tracks, int event  ){
