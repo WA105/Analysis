@@ -21,6 +21,26 @@ using namespace std;
 Channel::Channel(){}
 Channel::~Channel(){}
 
+bool Channel::isDead(){
+  //tag for dead channels (channel containing only 0)
+
+  vector<double>:: iterator pos = find_if( signal.begin(), signal.end(),
+  []( double & adc ) -> bool { return  adc != 0; });
+
+  return ( pos == signal.end() );
+
+}
+
+bool Channel::isBad(){
+  //tag for bad channels: channels with weird adc values (+/- 1000 adc)
+
+  vector<double>:: iterator pos = find_if( signal.begin(), signal.end(),
+  []( double & adc ) -> bool { return  abs(adc) < 10000; });
+
+  return ( pos == signal.end() );
+
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 Hit::Hit(){}
 Hit::~Hit(){}
@@ -48,15 +68,15 @@ void LArParser::setRawBranches(){
 
   //Link brances in root file containg raw data
 
-  fTree->SetBranchAddress("Subrun", &tSubrun);
-  fTree->SetBranchAddress("EventNumberInRun", &tEventNumberInRun);
-  fTree->SetBranchAddress("EventTimeSeconds", &tEventTimeSeconds);
-  fTree->SetBranchAddress("EventTimeNanoseconds", &tEventTimeNanoseconds);
-  fTree->SetBranchAddress("RawWaveform_NumberOfChannels", &tRawWaveform_NumberOfChannels);
-  fTree->SetBranchAddress("RawWaveform_NumberOfTicks", &tRawWaveform_NumberOfTicks);
-  fTree->SetBranchAddress("RawWaveform_Channel", &tRawWaveform_Channel);
-  fTree->SetBranchAddress("RawWaveform_NumberOfTicksInAllChannels", &tRawWaveform_NumberOfTicksInAllChannels);
-  fTree->SetBranchAddress("RawWaveform_ADC", &tRawWaveform_ADC);
+  fTree->SetBranchAddress("Run",&tRun);
+  fTree->SetBranchAddress("Subrun",&tSubrun);
+  fTree->SetBranchAddress("EventNumberInRun",&tEventNumberInRun);
+  fTree->SetBranchAddress("EventTimeSeconds",&tEventTimeSeconds);
+  fTree->SetBranchAddress("RawWaveform_NumberOfChannels",&tRawWaveform_NumberOfChannels);
+  fTree->SetBranchAddress("RawWaveform_NumberOfTicks",&tRawWaveform_NumberOfTicks);
+  fTree->SetBranchAddress("RawWaveform_NumberOfTicksInAllChannels",&tRawWaveform_NumberOfTicksInAllChannels);
+  fTree->SetBranchAddress("RawWaveform_Channel",&tRawWaveform_Channel);
+  fTree->SetBranchAddress("RawWaveform_ADC",&tRawWaveform_ADC);
 
 }
 

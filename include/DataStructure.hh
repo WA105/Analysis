@@ -36,6 +36,9 @@ class Channel
     int nTicks;
     int view;
     std::vector<double> signal;
+
+    bool isDead();
+    bool isBad();
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -202,6 +205,8 @@ class LArParser
     static const int NMaxTracksPerEvent=1000;
     static const int NMaxTracksPerEventTimesNViews=NMaxTracksPerEvent*NUM_OF_VIEWS;
     static const int NEventsPerRun=335;
+    static const int nMaxNumChannels= maxNumChannels;
+    static const int nMaxNumTdc = 2133760;
 
     //Common ///////////////////////////////////////////////////////////////////
     int tRun;
@@ -213,9 +218,9 @@ class LArParser
     //Raw //////////////////////////////////////////////////////////////////////
     int tRawWaveform_NumberOfChannels;
     int tRawWaveform_NumberOfTicks;
-    int tRawWaveform_Channel[maxNumChannels];
-    int tRawWaveform_NumberOfTicksInAllChannels[maxNumChannels];
-    int tRawWaveform_ADC[maxNumTdc];
+    int tRawWaveform_Channel[nMaxNumChannels];
+    int tRawWaveform_NumberOfTicksInAllChannels[nMaxNumChannels];
+    short tRawWaveform_ADC[nMaxNumTdc];
 
     //G4 //////////////////////////////////////////////////////////////////////
     int tNGeantTrackPerEvent;
