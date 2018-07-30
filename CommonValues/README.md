@@ -12,9 +12,12 @@ This is based on charge injection in the range of 14-150 fC during cold operatio
 
 **Electron lifetime**: use a common value of 7 ms. This is based on best fit to most of the data (see below) and presentation from June 29th-2018 on indico.
 ![alt text](Lifetime_all_runs.png)
+
+
 **dQ/ds which values to use**
+based on the presentation from [July 27](https://indico.cern.ch/event/746969/contributions/3089479/attachments/1694455/2727077/purity311_update.pdf/)
 use 
-based on the presentation from [July 27](https://indico.cern.ch/event/746969/contributions/3089479/attachments/1694455/2727077/purity311_update.pdf)
+
 
 **Monte Carlo**: 
 See details of productions on the [Twiki](https://twiki.cern.ch/twiki/bin/view/Sandbox/MonteCarloSamples3x1x1)
