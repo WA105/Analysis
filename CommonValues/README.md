@@ -15,8 +15,8 @@ This is based on charge injection in the range of 14-150 fC during cold operatio
 
 
 **dQ/ds which values to use**
-based on the presentation from [July 27](https://indico.cern.ch/event/746969/contributions/3089479/attachments/1694455/2727077/purity311_update.pdf/)
-use 
+based on the presentation from [July 27](https://indico.cern.ch/event/746969/contributions/3089479/attachments/1694455/2727077/purity311_update.pdf)
+use the variable *ds_local_track_direction* for the ds and *Track_Hit_SummedADC* for the value of the integral
 
 
 **Monte Carlo**: 
