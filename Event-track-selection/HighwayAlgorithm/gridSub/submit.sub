@@ -2,10 +2,10 @@
 ## Basic configuration of the submit file
 ################################################################################
 
-notify_user = andrea.scarpelli@cern.ch
+notify_user = andrea.scarpelli@cern.ch    #include there your email address for notifications
 notification = Error
 Universe = vanilla
-Executable = /afs/cern.ch/work/a/ascarpel/Analysis/Event-track-selection/HighwayAlgorithm/swiss_highway.py
+Executable = /afs/cern.ch/work/a/ascarpel/Analysis/Event-track-selection/HighwayAlgorithm/swiss_highway.py   #change this to the correct path to your swiss_highway.py executable
 Error = job.err.$(Cluster)-$(Process)
 Output = job.out.$(Cluster)-$(Process)
 Log = job.log.$(Cluster)
@@ -13,7 +13,14 @@ getenv = True
 
 ################################################################################
 ## List of i/o arguments
-## JobFlavour: espresso = 20 minutes, microcentury = 1 hour, longlunch  = 2 hours, workday  = 8 hours, tomorrow  = 1 day, testmatch = 3 days, nextweek = 1 week
+## possible JobFlavour arguments:
+## espresso = 20 minutes,
+## microcentury = 1 hour,
+## longlunch  = 2 hours,
+## workday  = 8 hours,
+## tomorrow  = 1 day,
+## testmatch = 3 days,
+## nextweek = 1 week
 ################################################################################
 
 should_transfer_files   = YES
@@ -24,4 +31,4 @@ priority 		            = 20
 #request_memory         = 300
 +JobFlavour             = "microcentury"
 #+MaxRuntime = 1200
-queue arguments from arguments.txt
+queue arguments from arguments.txt      #text file with the list of arguments for swiss_highway.py
