@@ -5,7 +5,7 @@
 notify_user = andrea.scarpelli@cern.ch    #include there your email address for notifications
 notification = Error
 Universe = vanilla
-Executable = /afs/cern.ch/work/a/ascarpel/Analysis/Event-track-selection/HighwayAlgorithm/swiss_highway.py   #change this to the correct path to your swiss_highway.py executable
+Executable = /afs/cern.ch/work/a/ascarpel/Analysis/Event-track-selection/HighwayAlgorithm/swiss_highway.py
 Error = job.err.$(Cluster)-$(Process)
 Output = job.out.$(Cluster)-$(Process)
 Log = job.log.$(Cluster)
@@ -31,4 +31,4 @@ priority 		            = 20
 #request_memory         = 300
 +JobFlavour             = "microcentury"
 #+MaxRuntime = 1200
-queue arguments from arguments.txt      #text file with the list of arguments for swiss_highway.py
+queue arguments from arguments.txt
