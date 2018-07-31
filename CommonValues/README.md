@@ -13,10 +13,12 @@ This is based on charge injection in the range of 14-150 fC during cold operatio
 **Electron lifetime**: use a common value of 7 ms. This is based on best fit to most of the data (see below) and presentation from June 29th-2018 on indico.
 ![alt text](Lifetime_all_runs.png)
 
+
+**dQ/ds which values to use**
+based on the presentation from [July 27](https://indico.cern.ch/event/746969/contributions/3089479/attachments/1694455/2727077/purity311_update.pdf)
+use the variable *ds_local_track_direction* for the ds and *Track_Hit_SummedADC* for the value of the integral
+
+
 **Monte Carlo**: 
+See details of productions on the [Twiki](https://twiki.cern.ch/twiki/bin/view/Sandbox/MonteCarloSamples3x1x1)
 
--electron lifetime of 7 ms
-
--Gain: center LEM gains of 4, the corner LEMs (LEMs 1,3,10,12) are set to a gain of 2 
-
--pream-response function:
