@@ -1,20 +1,18 @@
-#import os
-#from glob import glob
-#import numpy as np
-#import matplotlib.pyplot as plt
-#import matplotlib
-#import ROOT
-#import root_numpy
-#from datetime import datetime
-#from dateutil import tz
-#import mpl_toolkits.mplot3d as mp3d
-#import scipy.optimize
-#import warnings
+#!/usr/bin/env python
+
+import os
+from glob import glob
+import numpy as np
+import ROOT
+import root_numpy
+from datetime import datetime
+from dateutil import tz
+import scipy
+import warnings
 
 import sys
 import argparse
 
-'''
 def file_exists(filename): #returns True if file exists, False if it does not
     return bool(glob(filename))
 
@@ -32,7 +30,7 @@ def get_number_of_events_subrun(run, subrun): #returns number of events for a gi
     total_event_number = file_size - 5.0 - 4.0 #First 5 bytes contain run header, last 4 bytes contain run footer.
     total_event_number /= 35.0 + 1280.0 * 1667.0 * 1.5 #For each event, the first 35 bytes are the event header, then come the 1667 ADC counts for the 1280 channels stored in 12 bit (1.5 bytes) format.
     if not total_event_number.is_integer():
-        print('Number of events is not an integer. Something is fucking wrong!')
+        print('Number of events is not an integer.')
     else:
         return int(total_event_number)
 
@@ -74,67 +72,14 @@ def subtract_pedestal(ADC_values, method='median'): # subtracts the base level o
         for i in range(1280):
             ADC_values_minped[i] = ADC_values[i] - np.mean(ADC_values[i])
     else:
-        print 'Method not recognized. Fucking implement it yourself or check what you typed!'
+        print 'Method not recognized.'
     return ADC_values_minped
-
-def event_display(run, subrun, event, clim):
-    ADC_values = read_one_event(run=run, subrun=subrun, event=event)
-#    ADC_values_minped = subtract_pedestal(ADC_values)
-    fig = plt.figure()
-    fig.suptitle('Run ' + str(run) + ', SubRun ' + str(subrun) + ', Event ' + str(event))
-    gs = gridspec.GridSpec(nrows=1, ncols=2, width_ratios=[1, 3])
-
-    plt.subplot(gs[0])
-    plt.title('View 0')
-    ax0 = plt.gca()
-    ax0.set_xlabel('channel number')
-    ax0.set_ylabel('tick')
-#    plt.xticks(np.arange(0, 321, 160))
-    img0 = ax0.imshow(np.rot90(ADC_values_minped[:320]), extent=(0, 320, 0, 1667), interpolation='nearest', cmap=plt.cm.jet, origin='upper', clim=clim, aspect=320.0/1667.0)
-    ax0.invert_yaxis()
-
-    plt.subplot(gs[1])
-    plt.title('View 1')
-    ax1 = plt.gca()
-    ax1.set_xlabel('channel number')
-    ax1.set_ylabel('tick')
-#    plt.xticks(np.arange(0, 961, 160))
-    img1 = ax1.imshow(np.rot90(ADC_values_minped[320:]), extent=(0, 960, 0, 1667), interpolation='nearest', cmap=plt.cm.jet, origin='upper', clim=clim, aspect=960.0/1667.0/3.0)
-    ax1.invert_yaxis()
-
-    p0 = ax0.get_position().get_points().flatten()
-    p1 = ax1.get_position().get_points().flatten()
-    ax_cbar = fig.add_axes([p0[0], 0.45 * p0[2], p1[2]-p0[0], 0.02])
-    fig.colorbar(img0, cax=ax_cbar, orientation='horizontal', label='ADC counts')
-    plt.show()
-
-def plot_waveform(run, subrun, event, channel, view=None):
-    ADC_values = read_one_event(run=run, subrun=subrun, event=event)
-#    ADC_values_minped = subtract_pedestal(ADC_values)
-    if view == 0:
-        ADC_values_one_channel = ADC_values_minped[channel]
-        title = 'Run ' + str(run) + ', SubRun ' + str(subrun) + ', Event ' + str(event) + ', Channel ' + str(channel)
-    elif view == 1:
-        ADC_values_one_channel = ADC_values_minped[320 + channel]
-        title = 'Run ' + str(run) + ', SubRun ' + str(subrun) + ', Event ' + str(event) + ', Channel ' + str(320 + channel)
-    else:
-        ADC_values_one_channel = ADC_values_minped[channel]
-        title = 'Run ' + str(run) + ', SubRun ' + str(subrun) + ', Event ' + str(event) + ', Channel ' + str(channel)
-
-    fig = plt.figure()
-    plt.title(title)
-    ax = plt.gca()
-    ax.grid(True)
-    ax.set_xlabel('tick')
-    ax.set_ylabel('ADC')
-    ax.plot(np.arange(0.0, 1667.0, 1.0), ADC_values_one_channel, color='navy')
-    plt.show()
 
 def get_reconstruction_variables(run, subrun, event):
     root_file_entries_list = root_numpy.list_branches('/eos/experiment/wa105/offline/LArSoft/Data/Reco/2018_June_24/ROOT/recofast/'
                                                   + str(run) + '/' + str(run) + '-' + str(subrun) + '-RecoFast-Parser.root', 'analysistree/anatree')
     reco_file_values = root_numpy.root2array('/eos/experiment/wa105/offline/LArSoft/Data/Reco/2018_June_24/ROOT/recofast/'
-                                                 + str(run) + '/' + str(run) + '-' + str(subrun) + '-RecoFast-Parser.root', 'analysistree/anatree', start=event, stop=event+1, step=1)
+                                                 + str(run) + '/' + str(run) + '-' + str(subrun) + '-RecoFast-Parser.root', 'analysistree/anatree', start=int(event), stop=int(event)+1, step=1)
     dictionary_reco_file_values = {}
 
     for root_file_index in range(len(root_file_entries_list)):
@@ -150,37 +95,6 @@ def get_reconstruction_variables(run, subrun, event):
                 dictionary_reco_file_values[key] = np.split(dictionary_reco_file_values[key], track_number_of_hits_index_position)
 
     return dictionary_reco_file_values
-
-def reco_display_3d(run, subrun, event):
-    reco_info = get_reconstruction_variables(run=run, subrun=subrun, event=event)
-    bottom = [(0.0, -50.0, -50.0), (0.0, 50.0, -50.0), (300.0, 50.0, -50.0), (300.0, -50.0, -50.0)]
-    top = [(0.0, -50.0, 50.0), (0.0, 50.0, 50.0), (300.0, 50.0, 50.0), (300.0, -50.0, 50.0)]
-    toptop = [(0.0, -50.0, 60.0), (0.0, 50.0, 60.0), (300.0, 50.0, 60.0), (300.0, -50.0, 60.0)]
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    ax.set_xlabel('Z')
-    ax.set_ylabel('Y')
-    ax.set_zlabel('X')
-    opacity = 0.3
-    face1 = mp3d.art3d.Poly3DCollection([bottom], alpha=opacity, linewidth=1)
-    face2 = mp3d.art3d.Poly3DCollection([top], alpha=opacity, linewidth=1)
-    face3 = mp3d.art3d.Poly3DCollection([toptop], alpha=opacity, linewidth=1)
-    face1.set_facecolor((0.5, 0.5, 0.5, opacity))
-    face2.set_facecolor((0, 0, 1, opacity))
-    face3.set_facecolor((0, 0, 1, opacity))
-    ax.add_collection3d(face1)
-    ax.add_collection3d(face2)
-    ax.add_collection3d(face3)
-    ax.set_zlim(-155.0, 155.0)
-    ax.set_ylim(-155.0, 155.0)
-    ax.set_xlim(-5.0, 305.0)
-    for i in range(len(reco_info['track_hit_x'])):
-        for j in range(len(reco_info['track_hit_x'][i])):
-            if reco_info['track_hit_view'][i][j] == 0:
-                ax.scatter(reco_info['track_hit_z'][i], reco_info['track_hit_y'][i], reco_info['track_hit_x'][i], depthshade=False, marker='o')
-            if reco_info['track_hit_view'][i][j] == 1:
-                ax.scatter(reco_info['track_hit_z'][i], reco_info['track_hit_y'][i], reco_info['track_hit_x'][i], depthshade=False, marker='v')
-    plt.show()
 
 def point_to_line_dist(m, b, x0, y0):
     #Formulae derived analytically.
@@ -355,57 +269,6 @@ def is_point_in_rectangle(points_rectangle, point, arg):
         return True
     else:
         return False
-    """
-    else:
-        slope = arg['slope']
-        # it is possible that track-hits can be inside these little triangles at the edge of the boxes, though they aren't inside the boxes
-        # as a result, even if a point is not in a box, we may still want to add it in the charge sum.
-        # there are a lot of cases depending on the box orientation and order of points in the rectangle array
-        if slope > 0:
-            # up-going box.
-            if get_slope_between(points_rectangle[0], points_rectangle[1]) > 0:
-                #clockwise from min ABCD
-                tri1Point1 = points_rectangle[3]
-                tri1Point2 = [0.5*points_rectangle[0][0]+0.5*points_rectangle[3][0], 0.5*points_rectangle[0][1]+0.5*points_rectangle[3][1]]
-                tri1Point3 = [tri1Point2[0], tri1Point1[1]]
-
-                tri2Point1 = points_rectangle[1]
-                tri2Point2 = [0.5*points_rectangle[1][0]+0.5*points_rectangle[2][0], 0.5*points_rectangle[1][1]+0.5*points_rectangle[2][1]]
-                tri2Point3 = [tri2Point2[0], tri2Point1[1]]
-            else:
-                #counterclockwise from min ABCD
-                tri1Point1 = points_rectangle[1]
-                tri1Point2 = [0.5*points_rectangle[0][0]+0.5*points_rectangle[1][0], 0.5*points_rectangle[0][1]+0.5*points_rectangle[1][1]]
-                tri1Point3 = [tri1Point2[0], tri1Point1[1]]
-
-                tri2Point1 = points_rectangle[3]
-                tri2Point2 = [0.5*points_rectangle[3][0]+0.5*points_rectangle[2][0], 0.5*points_rectangle[3][1]+0.5*points_rectangle[2][1]]
-                tri2Point3 = [tri2Point2[0], tri2Point1[1]]
-        elif (slope < 0):
-            #down going box
-            if get_slope_between(points_rectangle[0], points_rectangle[1]) > 0:
-                tri1Point1 = points_rectangle[1]
-                tri1Point2 = [0.5*points_rectangle[0][0]+0.5*points_rectangle[1][0], 0.5*points_rectangle[0][1]+0.5*points_rectangle[1][1]]
-                tri1Point3 = [tri1Point2[0], tri1Point1[1]]
-
-                tri2Point1 = points_rectangle[3]
-                tri2Point2 = [0.5*points_rectangle[3][0]+0.5*points_rectangle[2][0], 0.5*points_rectangle[3][1]+0.5*points_rectangle[2][1]]
-                tri2Point3 = [tri2Point2[0], tri2Point1[1]]
-
-            else:
-                tri1Point1 = points_rectangle[3]
-                tri1Point2 = [0.5*points_rectangle[0][0]+0.5*points_rectangle[3][0], 0.5*points_rectangle[0][1]+0.5*points_rectangle[3][1]]
-                tri1Point3 = [tri1Point2[0], tri1Point1[1]]
-
-                tri2Point1 = points_rectangle[1]
-                tri2Point2 = [0.5*points_rectangle[1][0]+0.5*points_rectangle[2][0], 0.5*points_rectangle[1][1]+0.5*points_rectangle[2][1]]
-                tri2Point3 = [tri2Point2[0], tri2Point1[1]]
-        else:
-            return False
-        return( is_point_in_triangle([tri1Point1, tri1Point2, tri1Point3], point) or is_point_in_triangle([tri2Point1, tri2Point2, tri2Point3], point))
-    """
-
-
 
 # ---- begin unit conversions ----
 
@@ -686,7 +549,7 @@ def get_charge_in_multiple_rectangles_handle_warnings(run, subrun, event, track,
                 dictionaries_charge_sum_small_rectangle, dictionaries_charge_sum_large_rectangle = get_charge_in_multiple_rectangles(run, subrun, event, track, i, small_rectangle_width, large_rectangle_width, include_all_points_in_rectangle)
                 break
             except (TypeError, np.RankWarning):
-                print 'Fuck! Not enough hits per box for ' + str(i) + ' segments (run: ' + str(run) + ', subrun: ' + str(subrun) + ', event: ' + str(event) + ', track: ' + str(track) + '). Trying again with fewer boxes.'
+                print 'Not enough hits per box for ' + str(i) + ' segments (run: ' + str(run) + ', subrun: ' + str(subrun) + ', event: ' + str(event) + ', track: ' + str(track) + '). Trying again with fewer boxes.'
     return dictionaries_charge_sum_small_rectangle, dictionaries_charge_sum_large_rectangle
 
 def select_tracks_based_on_length_position( run, subrun , max_number_of_tracks=10, min_track_length=90.0 ):
@@ -708,7 +571,8 @@ def get_box_charge_ratios_multiple_boxes(run, initial_track_selection, small_rec
     charge_ratios_tracks = []
     for i in initial_track_selection:
         if min_box_length > 0.0:
-            number_of_boxes = int(get_reconstruction_variables(i[0], i[1], i[2])['Track_Length_StraightLine'][i[3]] / min_box_length)
+            number_of_boxes = int(get_reconstruction_variables(i[0], i[1], i[2])['Track_Length_StraightLine'][int(i[3])] / min_box_length)
+            print number_of_boxes
         if number_of_boxes == 0:
             number_of_boxes = 1
         try:
@@ -730,88 +594,6 @@ def get_box_charge_ratios_multiple_boxes(run, initial_track_selection, small_rec
             print 'Could not fit track properly with one segment: Run ' + str(i[0]) + ', SubRun ' + str(i[1]) + ', Event ' + str(i[2]) + ', Track ' + str(i[3])
     return charge_ratios_tracks
 
-def event_display_fit_boxes(run, subrun, event, track, number_of_segments, rectangle_width_small, rectangle_width_large, clim, include_all_points_in_rectangle=False):
-
-    dict_list_small, dict_list_large = get_charge_in_multiple_rectangles_handle_warnings(run, subrun, event, track, number_of_segments, rectangle_width_small, rectangle_width_large, include_all_points_in_rectangle)
-    ADC_values_minped = read_one_event(run, subrun, event)
-#    ADC_values_minped = subtract_pedestal(ADC_values, method='median')
-
-    fig = plt.figure()
-    fig.suptitle('Run ' + str(run) + ', SubRun ' + str(subrun) + ', Event ' + str(event) + ', Track ' + str(track))
-    gs = gridspec.GridSpec(nrows=1, ncols=2, width_ratios=[1, 3])
-    colors = ['magenta', 'black', 'cyan', 'lime', 'grey', 'mediumpurple', 'olive']
-    colors = colors = colors + colors + colors + colors + colors
-
-    plt.subplot(gs[0])
-    plt.title('View 0')
-    ax0 = plt.gca()
-    ax0.set_xlabel('Y')
-    ax0.set_ylabel('X')
-    ax0.set_xlim((-0.51, 0.51))
-    ax0.set_ylim((-0.58, 0.51))
-
-    img0 = ax0.imshow(np.flipud(np.rot90(ADC_values_minped[:320])), extent=(-0.48, 0.48, convert_tick_to_x_position(1666), 0.5), interpolation='nearest', cmap=plt.cm.jet, origin='upper', clim=clim)
-
-    for i in range(len(dict_list_small)):
-        ax0.plot(dict_list_small[i]['reco_hits_y_view0'], dict_list_small[i]['reco_hits_x_view0'], marker='o', linestyle='None', color=colors[i])
-        y_coordinate_extent = np.arange(np.min(dict_list_small[i]['reco_hits_y_view0']), np.max(dict_list_small[i]['reco_hits_y_view0']), 0.001)
-        ax0.plot(y_coordinate_extent, dict_list_small[i]['lin_fit_view0']['slope'] * y_coordinate_extent + dict_list_small[i]['lin_fit_view0']['y_intercept'], marker='None', color=colors[i+1])
-
-        for j in range(4):
-            ax0.plot([dict_list_small[i]['rectangle_points_view0']['rectangle_points'][j % 4][0], dict_list_small[i]['rectangle_points_view0']['rectangle_points'][(j+1) % 4][0]], [dict_list_small[i]['rectangle_points_view0']['rectangle_points'][j % 4][1], dict_list_small[i]['rectangle_points_view0']['rectangle_points'][(j+1) % 4][1]], color=colors[i+2])
-            ax0.plot([dict_list_large[i]['rectangle_points_view0']['rectangle_points'][j % 4][0], dict_list_large[i]['rectangle_points_view0']['rectangle_points'][(j+1) % 4][0]], [dict_list_large[i]['rectangle_points_view0']['rectangle_points'][j % 4][1], dict_list_large[i]['rectangle_points_view0']['rectangle_points'][(j+1) % 4][1]], color=colors[i+3])
-
-        if include_all_points_in_rectangle:
-            ax0.plot(dict_list_small[i]['points_in_rectangle_view0_y'], dict_list_small[i]['points_in_rectangle_view0_x'], marker='.', linestyle='None', color='#aec7e8')
-
-    plt.subplot(gs[1])
-    plt.title('View 1')
-    ax1 = plt.gca()
-    ax1.set_xlabel('Z')
-    ax1.set_ylabel('X')
-    ax1.set_xlim((-0.01, 3.01))
-    ax1.set_ylim((-0.58, 0.51))
-
-    img1 = ax1.imshow(np.flipud(np.rot90(ADC_values_minped[320:])), extent=(0.0, 2.88, convert_tick_to_x_position(1666), 0.5), interpolation='nearest', cmap=plt.cm.jet, origin='upper', clim=clim)
-
-    for i in range(len(dict_list_small)):
-        ax1.plot(dict_list_small[i]['reco_hits_z_view1'], dict_list_small[i]['reco_hits_x_view1'], marker='o', linestyle='None', color=colors[i])
-        y_coordinate_extent = np.arange(np.min(dict_list_small[i]['reco_hits_z_view1']), np.max(dict_list_small[i]['reco_hits_z_view1']), 0.001)
-        ax1.plot(y_coordinate_extent, dict_list_small[i]['lin_fit_view1']['slope'] * y_coordinate_extent + dict_list_small[i]['lin_fit_view1']['y_intercept'], marker='None', color=colors[i+1])
-
-        for j in range(4):
-            ax1.plot([dict_list_small[i]['rectangle_points_view1']['rectangle_points'][j % 4][0], dict_list_small[i]['rectangle_points_view1']['rectangle_points'][(j+1) % 4][0]], [dict_list_small[i]['rectangle_points_view1']['rectangle_points'][j % 4][1], dict_list_small[i]['rectangle_points_view1']['rectangle_points'][(j+1) % 4][1]], color=colors[i+2])
-            ax1.plot([dict_list_large[i]['rectangle_points_view1']['rectangle_points'][j % 4][0], dict_list_large[i]['rectangle_points_view1']['rectangle_points'][(j+1) % 4][0]], [dict_list_large[i]['rectangle_points_view1']['rectangle_points'][j % 4][1], dict_list_large[i]['rectangle_points_view1']['rectangle_points'][(j+1) % 4][1]], color=colors[i+3])
-
-        if include_all_points_in_rectangle:
-            ax1.plot(dict_list_small[i]['points_in_rectangle_view1_z'], dict_list_small[i]['points_in_rectangle_view1_x'], marker='.', linestyle='None', color='#aec7e8')
-
-    p0 = ax0.get_position().get_points().flatten()
-    p1 = ax1.get_position().get_points().flatten()
-    ax_cbar = fig.add_axes([p0[0], 0.45 * p0[2], p1[2]-p0[0], 0.02])
-    fig.colorbar(img0, cax=ax_cbar, orientation='horizontal', label='ADC counts')
-
-    charge_ratios_view0 = []
-    max_x_coordinate_boxes_view0 = []
-    charge_ratios_view1 = []
-    max_x_coordinate_boxes_view1 = []
-    for i in range(len(dict_list_small)):
-        charge_ratios_view0.append((dict_list_large[i]['charge_fC_rectangle_view0'] - dict_list_small[i]['charge_fC_rectangle_view0']) / dict_list_small[i]['charge_fC_rectangle_view0'])
-        max_x_coordinate_boxes_view0.append(np.max(dict_list_large[i]['rectangle_points_view0']['rectangle_points'][:, 1]))
-        charge_ratios_view1.append((dict_list_large[i]['charge_fC_rectangle_view1'] - dict_list_small[i]['charge_fC_rectangle_view1']) / dict_list_small[i]['charge_fC_rectangle_view1'])
-        max_x_coordinate_boxes_view1.append(np.max(dict_list_large[i]['rectangle_points_view1']['rectangle_points'][:, 1]))
-
-    inds_view0 = np.array(max_x_coordinate_boxes_view0).argsort()
-    sorted_charge_ratios_view0 = np.array(charge_ratios_view0)[inds_view0]
-    inds_view1 = np.array(max_x_coordinate_boxes_view1).argsort()
-    sorted_charge_ratios_view1 = np.array(charge_ratios_view1)[inds_view1]
-
-    print 'Charge ratios View0 (from lowest box to highest): ' + str(np.round(np.array(sorted_charge_ratios_view0), 3))
-    print 'Charge ratios View1 (from lowest box to highest): ' + str(np.round(np.array(sorted_charge_ratios_view1), 3))
-
-    plt.show()
-'''
-
 def splitPath(filename):
 
     path = filename.split( "/" )
@@ -820,12 +602,14 @@ def splitPath(filename):
     return path, name
 
 def isroot(filename):
+
     isroot = False
     if filename.endswith('.root'):
         isroot = True
     return isroot
 
 def isreco( path, recoversion ):
+    
     found = False
     for entry in path:
         if entry == recoversion:
@@ -835,7 +619,9 @@ def isreco( path, recoversion ):
 #TODO: remove hardcoded filename in functions.
 #Temporary fix: check on the reco version chosen
 def getRunAndSubrun(filename, recoversion = '2018_June_24' ):
-    """ Assume filename given in the form /path/to/file/run-subrun-RecoFull-Parser.root"""
+    """
+    Assume filename given in the form /path/to/file/run-subrun-RecoFull-Parser.root
+    """
 
     path, name = splitPath( filename )
 
@@ -849,6 +635,7 @@ def getRunAndSubrun(filename, recoversion = '2018_June_24' ):
 
 #here starts the main code
 def main():
+
     #/eos/experiment/wa105/offline/LArSoft/Data/Reco/2018_June_24/ROOT/recofull/' + str(run) + '/' + str(run) + '-' + str(subrun) + '-RecoFull-Parser.root'
     parser = argparse.ArgumentParser(description='3x1x1 track selection.')
     parser.add_argument('-i', '--input', help="Input file", default='')
@@ -858,21 +645,20 @@ def main():
     filename = args.input
     opath = args.outdir
 
-    #extract run and subrun number from input
-
     if isroot( filename ):
         run, subrun = getRunAndSubrun( filename )
     else:
         print "File is not a .root file"
         sys.exit()
 
-    select tracks using only length and position
-    #initial_track_selection = select_tracks_based_on_length_position(run, subrun , max_number_of_tracks=10000000, min_track_length=20.0 )
-    #np.save(opath+'initial_track_selection_run' + str(run) + '_subrun' + str(subrun) + '.npy', initial_track_selection)
+    #select tracks using only length and position
+    initial_track_selection = select_tracks_based_on_length_position(run, subrun , max_number_of_tracks=10000000, min_track_length=20.0 )
+    np.save(opath+'initial_track_selection_run' + str(run) + '_subrun' + str(subrun) + '.npy', initial_track_selection)
 
     #select tracks using highway algorithm
-    #box_charge_ratios = get_box_charge_ratios_multiple_boxes(run, initial_track_selection, small_rectangle_width=0.035, large_rectangle_width=0.1, number_of_boxes=1, min_box_length=50.0)
-    #np.save(opath+'highway_output/box_charge_ratios_run' + str(run) + '_subrun' + str(subrun) + '.npy', box_charge_ratios)
+    initial_track_selection_file = opath+'initial_track_selection_run' + str(run) + '_subrun' + str(subrun) + '.npy'
+    box_charge_ratios = get_box_charge_ratios_multiple_boxes(run, initial_track_selection, small_rectangle_width=0.035, large_rectangle_width=0.1, number_of_boxes=1, min_box_length=50.0)
+    np.save(opath+'box_charge_ratios_run' + str(run) + '_subrun' + str(subrun) + '.npy', box_charge_ratios)
 
     print 'all done'
 

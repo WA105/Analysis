@@ -1,11 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Macro to calculate the rms for the given run and subrun
-// TODO loop over subrubs to process
 //
 //mailto:andrea.scarpelli@cern.ch
 ////////////////////////////////////////////////////////////////////////////////
-
-//TODO dynamic path to input and output file
 
 //c++ includes
 #include <glob.h>
@@ -28,9 +25,9 @@
 
 using namespace std;
 
+////////////////////////////////////////////////////////////////////////////////
 
 void GetMeanAndRMS(vector<double> array, double & mean, double & rms){
-
   //use welford method..consisted with qScan
 
   mean = 0;
@@ -42,9 +39,7 @@ void GetMeanAndRMS(vector<double> array, double & mean, double & rms){
   double A = 0;
   double Q = 0;
 
-  size_t istart = 3; //exclude first 3 point, can give crazy results
-
-  for(size_t i=istart;i<array.size();i++){
+  for(size_t i=0;i<array.size();i++){
 
     double d  = (double)array[i];
     double Ak = A + (d - A)/(i+1);
@@ -59,6 +54,45 @@ void GetMeanAndRMS(vector<double> array, double & mean, double & rms){
   return;
 }
 
+bool hasChannel( vector<Hit> hits ){
+  //check if the vector exists
+
+  if( !hits.size() ){ return false; }
+  else { return true; }
+
+}
+
+bool inROI( double t, vector<Hit> hits ){
+  //check if every time deposit is in a ROI
+
+  int padSize = 10; //ticks to ignore before and after each hit
+
+  //now check if the time falls in the ROI identified by one hits
+  vector<Hit>::iterator pos = find_if( hits.begin(), hits.end(),
+  [t, padSize]( Hit & h )->bool
+    {
+      return ( (h.startTime-padSize <= t) && (t <= h.endTime+padSize) );
+    }
+  );
+
+  if ( pos == hits.end() ) { return false; }
+  else { return true; }
+
+}
+
+double getMeanVector( vector<double> v ){
+  //quick evaluate the mean of one vector
+  double mean = 0;
+
+  if( v.size() == 0 ){
+    return mean;
+  }
+  else{
+    double sum = accumulate(std::begin(v), std::end(v), 0.0);
+    mean = sum/(double)v.size();
+    return mean;
+  }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Main macro
@@ -66,18 +100,28 @@ void GetMeanAndRMS(vector<double> array, double & mean, double & rms){
 int main( int argc, char* argv[] ){
 
   //parse the input argument ===================================================
-  int runNum, nSubruns;
+
+  int runNum; // run to process
+  int subrun; // subrun to process
+  string filter; //incoherent or coherent
 
   for ( int i=1; i<argc; i=i+2 ) {
    if      ( string(argv[i]) == "-run" ) runNum= atoi(argv[i+1]);
-   else if ( string(argv[i]) == "-subrun" ) nSubruns = atoi(argv[i+1]);
+   else if ( string(argv[i]) == "-subrun" ) subrun = atoi(argv[i+1]);
+   else if ( string(argv[i]) == "-filter" ) filter = argv[i+1];
    else {
      //PrintUsage();
      return 1;
    }
   }
 
-  //define output ==============================================================
+  bool filterOn = false;
+  if( filter == "yes" ){
+    cout << " calculate noise after coherent noise removal " << endl;
+    filterOn = true;
+  }
+
+  //define and variables =======================================================
 
   int fRun;
   int fSubrun;
@@ -86,9 +130,12 @@ int main( int argc, char* argv[] ){
   int fEventNanoSeconds;
   double fMeanView1, fMeanView0;
   double fRMSView0, fRMSView1;
-  int fChannelsCoverage;
 
-  string outputFilename = "/eos/user/a/ascarpel/Noise/rms/noiseRms-"+to_string(runNum)+".root";
+  string filterName = "";
+  if( filterOn )
+    filterName = "coherent";
+
+  string outputFilename = "/eos/user/a/ascarpel/Noise/rms/"+filterName+"NoiseRms-"+to_string(runNum)+"-"+to_string(subrun)+".root";
   TFile *ofile = new TFile(outputFilename.c_str(), "RECREATE");
   if(!ofile->IsOpen()){
     cout << "File: " << outputFilename << " cannot be open!" << endl;
@@ -99,129 +146,149 @@ int main( int argc, char* argv[] ){
   noiseTree->Branch("Run", &fRun, "Run/I");
   noiseTree->Branch("Subrun", &fSubrun, "Subrun/I");
   noiseTree->Branch("Event", &fEvent, "Event/I");
-  noiseTree->Branch("EventSeconds", fEventSeconds, "EventSeconds/I");
-  noiseTree->Branch("EventNanoSeconds", fEventNanoSeconds, "EventNanoSeconds/I");
+  noiseTree->Branch("EventSeconds", &fEventSeconds, "EventSeconds/I");
+  noiseTree->Branch("EventNanoSeconds", &fEventNanoSeconds, "EventNanoSeconds/I");
   noiseTree->Branch("MeanView0", &fMeanView0, "MeanView0/D");
   noiseTree->Branch("RMSView0", &fRMSView0, "RMSView0/D");
   noiseTree->Branch("MeanView1", &fMeanView1, "MeanView1/D");
   noiseTree->Branch("RMSView1", &fRMSView1, "RMSView1/D");
-  noiseTree->Branch("ChannelsCoverage", &fChannelsCoverage, "ChannelsCoverage/I" );
 
-  TH1D *hChMean = new TH1D("hChMean", ";Channel number; Mean (adc counts)", Ch_0+Ch_1, 0, Ch_0+Ch_1);
-  TH1D *hChRMS = new TH1D("hChRMS", ";Channel number; Rms (adc counts)", Ch_0+Ch_1, 0, Ch_0+Ch_1);
+  map<int, vector<double> > view2mean;
+  map<int, vector<double> > view2rms;
 
-  //here I initialize the parser object ========================================
+  //Prepare inputs =============================================================
 
-  //subrun looper ==============================================================
+  string commonPath = "/eos/experiment/wa105/offline/LArSoft/Data/";
+  string recoFile =  commonPath+"Reco/2018_June_24/ROOT/recofull/"+to_string(runNum)+"/"+to_string(runNum)+"-"+to_string(subrun)+"-RecoFull-Parser.root";
 
-  map<int, vector<double> > view2adc;
-  map<int, int > channleMultiplicity;
+  LArParser *rawParser = new LArParser();
+  LArParser *recoParser = new LArParser();
 
-  //for( size_t subrun = 0; subrun < nSubruns; subrun++ ){
+  TTree *recoTree = getTTree( recoFile );
 
-    size_t subrun = nSubruns;
-    string commonPath = "/eos/experiment/wa105/offline/LArSoft/Data/";
-    string rawFile =  commonPath+"/Raw/ROOT/"+to_string(runNum)+"/"+to_string(runNum)+"-"+to_string(subrun)+"-RawWaveform-Parser.root" ;
-    string recoFile =  commonPath+"Reco/2018_June_24/ROOT/recofast/"+to_string(runNum)+"/"+to_string(runNum)+"-"+to_string(subrun)+"-RecoFast-Parser.root";
+  Run *run = new Run(runNum, "metadata/test.db");
 
-    LArParser *rawParser = new LArParser();
-    LArParser *recoParser = new LArParser();
+  recoParser->setTTree(recoTree);
+  recoParser->setRun(run);
 
-    Run *run = new Run(runNum, "metadata/test.db");
+  //check if the tree exists and has been correctly set
+  if( !recoParser->isTreeGood() ){
+     cout << "Invalid ttree" << endl;
+     return 1;
+  }
+
+  if( !filterOn ){
+
+    //in this case you want to use the raw files
+    string rawFile =  commonPath+"Raw/ROOT/"+to_string(runNum)+"/"+to_string(runNum)+"-"+to_string(subrun)+"-RawWaveform-Parser.root" ;
 
     TTree *rawTree = getTTree( rawFile );
-    TTree *recoTree = getTTree( recoFile );
 
     rawParser->setTTree(rawTree);
     rawParser->setRun(run);
 
-    recoParser->setTTree(recoTree);
-    recoParser->setRun(run);
-
-      //check if the tree exists and has been correctly set
-    if( !recoParser->isTreeGood() || !recoParser->isTreeGood() ){
-     cout << "Invalid ttree" << endl;
-     return 1;
+    //check if the tree exists and has been correctly set
+    if( !recoParser->isTreeGood() || !rawParser->isTreeGood() ){
+       cout << "Invalid ttree" << endl;
+       return 1;
     }
 
-  //Event looper ===============================================================
-    for(int evt=0; evt<recoTree->GetEntries(); evt++){
+    if( recoTree->GetEntries() != rawTree->GetEntries() ){
+      cout << "Error! Trees havent the same number of entries! " << endl;
+      return 1;
+    }
 
-      //reco objects
+  }
+
+//Event looper ===============================================================
+
+int mod = 6;
+if( recoTree->GetEntries() < 300 ){
+  mod = recoTree->GetEntries()/50; //it will process event by event only max 100 events
+}
+
+  for(int evt=0; evt<recoTree->GetEntries(); evt++){
+
+    if( evt % mod !=0 ){ continue; } //process one event every 6 ( about 50 events per subrun w 335 events )
+      cout << " Processing event " << evt << endl;
+
+      //reco objects ----------------------------------------------------------
       vector<Hit> recoHits;
       recoParser->getRecoHitsEvent( recoHits, evt );
 
+      //make an hit channels map
+      map<int, vector<Hit> > ch2hits;
+      for(auto recoHit : recoHits)
+        ch2hits[ recoHit.channel ].push_back( recoHit );
+
       //raw objects
       vector<Channel> rawChannels;
-      rawParser->getChannelsEvent( rawChannels, evt );
-
-      //loop over channels
+      if( filterOn ){
+        recoParser->getRecoChannelsEvent( rawChannels, evt );
+      }else{
+        rawParser->getRawChannelsEvent( rawChannels, evt );
+      }
+      //loop over channels -----------------------------------------------------
       for(auto rawChannel : rawChannels){
 
-        fRun = rawChannel.run.getRunNumber();
-        fSubrun = rawChannel.subRun;
-        fEvent = rawChannel.event;
-        fEventSeconds = rawChannel.timeSeconds;
-        fEventNanoSeconds = rawChannel.timeNanoSeconds;
+        if( !hasChannel( ch2hits[ rawChannel.channel ] ) ){ continue; }
+        if ( rawChannel.isDead() ){ continue; }
 
-        int ch = rawChannel.channel;
+        vector<double> adc = rawChannel.signal; //real ADCs
+        vector<double> noiseAdc; // only noisy ADCs
 
-        //find if the channel has a reco hit
-        vector<Hit>:: iterator pos = find_if(recoHits.begin(), recoHits.end(),
-        [ch]( Hit & recoHit ) -> bool { return  recoHit.channel == ch; });
+        for( int t=2; t<(int)adc.size(); t++  ){
 
-        if (  pos == recoHits.end()  ){
+          if ( !inROI( t, ch2hits[ rawChannel.channel ] ) ){
 
-          if ( !rawChannel.isDead() && channleMultiplicity[ ch ] == 0){
+            noiseAdc.push_back( adc.at(t) );
+          }
+        } //end adc loop
 
-            double mean, rms;
-            GetMeanAndRMS( rawChannel.signal, mean, rms);
+        //calculate Mean and RMS here --------------------------------------------
+        double mean, rms;
+        GetMeanAndRMS( noiseAdc, mean, rms );
 
-            hChMean->Fill( ch, mean );
-            hChRMS->Fill( ch, rms );
+        if(rms > 0){
+          view2mean[ rawChannel.view ].push_back( mean );
+          view2rms[ rawChannel.view ].push_back( rms );
+        }
 
-            //add the adc vector to the vector calculating the rms
-            for ( auto adc : rawChannel.signal ){
-              if ( adc < 150 ){
-                view2adc[ rawChannel.view ].push_back( adc );
-              }
-            }
+        noiseAdc.clear();
 
-            //add the channel multiplicity if the condition is statisified
-            channleMultiplicity[ ch ] = 1;
+      } //end ch loop
 
-          } //end if bad and dead channels
-        }//end if criteria
-      } //end ch
+      fRun = rawChannels.at(1).run.getRunNumber();
+      fSubrun = rawChannels.at(1).subRun;
+      fEvent = rawChannels.at(1).event;
+      fEventSeconds = rawChannels.at(1).timeSeconds;
+      fEventNanoSeconds = rawChannels.at(1).timeNanoSeconds;
 
-    }//end event loop
-  //}//end subrun loops
+      //calulate the mean mean and the meam rms
+      fMeanView0 = getMeanVector( view2mean[0] );
+      fRMSView0 = getMeanVector( view2rms[0] );
+      fMeanView1 = getMeanVector( view2mean[1] );
+      fRMSView1 = getMeanVector( view2rms[1] );
 
-  //Get mean and rms =========================================================
+      //fill the tree
+      noiseTree->Fill();
 
-  //calculate mean and rms for each view
-  GetMeanAndRMS( view2adc[0], fMeanView0, fRMSView0 );
-  GetMeanAndRMS( view2adc[1], fMeanView1, fRMSView1 );
+      view2mean[0].clear();
+      view2rms[0].clear();
+      view2mean[1].clear();
+      view2rms[1].clear();
 
-  //get channel coverage ( number of unique channels without hits )
-  for( auto it : channleMultiplicity ){
-    if ( it.second > 0 )
-      fChannelsCoverage++;
-  }
+  }//end event loop
 
-  //fill the tree
-  noiseTree->Fill();
-
-  //fill and close file
+  //fill and close file ========================================================
   ofile->cd();
 
-  ofile->Write();
-  hChMean->Write();
-  hChRMS->Write();
+  noiseTree->Write();
 
   ofile->Close();
 
   cout << "All done! " << endl;
 
   return 0;
+
 }//end main

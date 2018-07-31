@@ -51,10 +51,10 @@ TTree *getTTree( string filename ){
       if( file->IsOpen() )
         ttree = (TTree*)file->Get("analysistree/anatree");
       else
-        cout << "getTTree::Error: Invalid TTree name" << endl;
+        cout << "getTTree::Error: Invalid TFile" << endl;
 
     }else{
-      cout << "getTTree::Error: Invalid file name " << filename << endl;
+      cout << "getTTree::Error: file doesn't exist " << filename << endl;
     }
 
     return ttree;

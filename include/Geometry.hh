@@ -23,6 +23,8 @@ const double ADC2CHARGE = 45.31875; //ADC*ticks (from qScan)
 const int  maxNumChannels = 1280;
 const int maxNumTdc = maxNumChannels*tdc;
 
+unsigned int ViewToDAQChan(unsigned int ViewChan);
+
 //int find_lem(double y, double z);
 
 //bool isGood_lem( int lem );

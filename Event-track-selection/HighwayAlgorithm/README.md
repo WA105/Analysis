@@ -1,7 +1,7 @@
 #Highway algorithm
 
 ##Prerequisites
-In order to perform efficently swiss_highway_data_2018_jun_24_reco_functions.py expects some packages:
+In order to perform efficently swiss_highway.py expects some packages:
   *numpy
   *matplotlib
   *scipy

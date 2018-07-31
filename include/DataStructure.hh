@@ -176,7 +176,8 @@ class LArParser
     void setRun(Run *run){fRun = run;}
 
     //getters
-    void getChannelsEvent( vector<Channel> & channels, int event  );
+    void getRawChannelsEvent( vector<Channel> & channels, int event  );
+    void getRecoChannelsEvent( vector<Channel> & channels, int event  );
     void getMCTracksEvent( vector<MCTrack>  & mctracks, int event );
     void getRecoHitsEvent( vector<Hit> & hits, int event );
     void getRecoTracksEvent( vector<Track> & tracks, int event );
@@ -192,6 +193,7 @@ class LArParser
     void setRecoBranches();
     void setMCBranches();
     void fillRawChannels( vector<Channel> & channels );
+    void fillRecoChannels( vector<Channel> & channels );
     void fillMCTrack( vector<MCTrack> & tracks );
     void fillRecoHits( vector<Hit> & hits );
     void fillRecoTrack( vector<Track> & tracks );
@@ -245,6 +247,13 @@ class LArParser
     float tEndZ[NMaxGeantTrackPerEvent];
 
     //Reco /////////////////////////////////////////////////////////////////////
+
+    //reco wires
+    int tRecoWaveform_NumberOfChannels;
+    int tRecoWaveform_NumberOfTicks;
+    int tRecoWaveform_Channel[nMaxNumChannels];
+    int tRecoWaveform_NumberOfTicksInAllChannels[nMaxNumChannels];
+    short tRecoWaveform_ADC[nMaxNumTdc];
 
     //Hit variables
     int tNumberOfHits;

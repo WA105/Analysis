@@ -3,9 +3,7 @@
 //
 //mailto:andrea.scarpelli@cern.ch
 ////////////////////////////////////////////////////////////////////////////////
-
-//TODO add missing branches to MCTrack
-
+#include <algorithm>
 #include <iostream>
 #include <fstream>
 #include <stdlib.h>
@@ -32,12 +30,14 @@ bool Channel::isDead(){
 }
 
 bool Channel::isBad(){
-  //tag for bad channels: channels with weird adc values (+/- 1000 adc)
 
-  vector<double>:: iterator pos = find_if( signal.begin(), signal.end(),
-  []( double & adc ) -> bool { return  abs(adc) < 10000; });
+  //NB: ok for now...but this value shoudl depend on the pedestal
 
-  return ( pos == signal.end() );
+  //tag for bad channels: channels with weird adc values (+/- 100 adc everywhere)
+  bool forAll = all_of( signal.begin(), signal.end(),
+  []( double & adc ) -> bool { return  abs(adc) > 150; });
+
+  return forAll;
 
 }
 
@@ -67,11 +67,11 @@ LArParser::~LArParser(){}
 void LArParser::setRawBranches(){
 
   //Link brances in root file containg raw data
-
   fTree->SetBranchAddress("Run",&tRun);
   fTree->SetBranchAddress("Subrun",&tSubrun);
   fTree->SetBranchAddress("EventNumberInRun",&tEventNumberInRun);
   fTree->SetBranchAddress("EventTimeSeconds",&tEventTimeSeconds);
+  fTree->SetBranchAddress("EventTimeNanoseconds", &tEventTimeNanoseconds);
   fTree->SetBranchAddress("RawWaveform_NumberOfChannels",&tRawWaveform_NumberOfChannels);
   fTree->SetBranchAddress("RawWaveform_NumberOfTicks",&tRawWaveform_NumberOfTicks);
   fTree->SetBranchAddress("RawWaveform_NumberOfTicksInAllChannels",&tRawWaveform_NumberOfTicksInAllChannels);
@@ -79,6 +79,8 @@ void LArParser::setRawBranches(){
   fTree->SetBranchAddress("RawWaveform_ADC",&tRawWaveform_ADC);
 
 }
+
+
 
 void LArParser::setMCBranches(){
 
@@ -108,14 +110,19 @@ void LArParser::setMCBranches(){
 
 void LArParser::setRecoBranches(){
 
-    //Link branches in the ROOT file to variables
-    //Metadata
+    //event metadata
     fTree->SetBranchAddress("Run",&tRun);
     fTree->SetBranchAddress("Subrun",&tSubrun);
     fTree->SetBranchAddress("EventNumberInRun",&tEventNumberInRun);
-    //fTree->SetBranchAddress("EventTimeSeconds",&tEventTimeSeconds);
-    //fTree->SetBranchAddress("EventTimeNanoseconds",&tEventTimeNanoseconds);
-    //fTree->SetBranchAddress("IsData",&tIsData);
+    fTree->SetBranchAddress("EventTimeSeconds",&tEventTimeSeconds);
+    fTree->SetBranchAddress("EventTimeNanoseconds", &tEventTimeNanoseconds);
+
+    //Link brances in root file containg raw data
+    fTree->SetBranchAddress("RecoWaveforms_NumberOfChannels",&tRecoWaveform_NumberOfChannels);
+    fTree->SetBranchAddress("RecoWaveform_NTicks",&tRecoWaveform_NumberOfTicks);
+    fTree->SetBranchAddress("RecoWaveform_NumberOfTicksInAllChannels",&tRecoWaveform_NumberOfTicksInAllChannels);
+    fTree->SetBranchAddress("RecoWaveform_Channel",&tRecoWaveform_Channel);
+    fTree->SetBranchAddress("RecoWaveform_ADC",&tRecoWaveform_ADC);
 
     //Hit variables
     fTree->SetBranchAddress("NumberOfHits",&tNumberOfHits);
@@ -231,6 +238,37 @@ void LArParser::fillRawChannels( vector<Channel> & channels ){
       dummyChannel.channel = tRawWaveform_Channel[j];
       dummyChannel.nTicks = tRawWaveform_NumberOfTicks;
       dummyChannel.signal.push_back( tRawWaveform_ADC[j*tRawWaveform_NumberOfTicks+k] );
+
+      if(dummyChannel.channel < Ch_0){
+        dummyChannel.view = 0;
+      }
+      else{
+        dummyChannel.view = 1;
+      }
+    } //end loop on tdc ticks
+
+    channels.push_back( dummyChannel );
+  }
+
+  return;
+}
+
+void LArParser::fillRecoChannels( vector<Channel> & channels ){
+
+  for(int j=0; j < tRecoWaveform_NumberOfChannels; j++){
+
+    Channel dummyChannel;
+
+    for(int k=0; k < tRecoWaveform_NumberOfTicks; k++){
+
+      dummyChannel.run = *fRun;
+      dummyChannel.subRun = tSubrun;
+      dummyChannel.event = tEventNumberInRun;
+      dummyChannel.timeSeconds = tEventTimeSeconds;
+      dummyChannel.timeNanoSeconds = tEventTimeNanoseconds;
+      dummyChannel.channel = tRecoWaveform_Channel[j];
+      dummyChannel.nTicks = tRecoWaveform_NumberOfTicks;
+      dummyChannel.signal.push_back( tRecoWaveform_ADC[j*tRecoWaveform_NumberOfTicks+k] );
 
       if(dummyChannel.channel < Ch_0){
         dummyChannel.view = 0;
@@ -390,13 +428,25 @@ void LArParser::fillRecoTrack( vector<Track> & tracks ){
   return;
 }
 
-void LArParser::getChannelsEvent( vector<Channel> & channels, int event  ){
+void LArParser::getRawChannelsEvent( vector<Channel> & channels, int event  ){
   //just fill the hit array for a specific event
 
   this->setRawBranches();
 
   fTree->GetEntry(event);
   this->fillRawChannels( channels );
+
+  return;
+
+}
+
+void LArParser::getRecoChannelsEvent( vector<Channel> & channels, int event  ){
+  //just fill the hit array for a specific event
+
+  this->setRecoBranches();
+
+  fTree->GetEntry(event);
+  this->fillRecoChannels( channels );
 
   return;
 
