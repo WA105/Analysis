@@ -4,7 +4,7 @@
 2. additional cut on track-length: take only tracks with more than 50 cm
 
 3. depending on the analysis remmber to remove track hits belonging to corner LEMs (operated at a lower gain). 
-keep only 48 < (start point Z) < 248
+keep only 48 < (hit point Z) < 248. Keep the track (only remove the hits belonging to corner LEMs).
 
 4. You may want to also remove the channels corresponding to where the extraction grid wires where un-tensed.
 
