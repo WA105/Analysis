@@ -4,8 +4,11 @@
 2. additional cut on track-length: take only tracks with more than 50 cm
 
 3. depending on the analysis remmber to remove track hits belonging to corner LEMs (operated at a lower gain). 
+keep only 48 < (start point Z) < 248
 
-4. for computation of electron lifetime keep only tracks which travers anode and cathode
+4. You may want to also remove the channels corresponding to where the extraction grid wires where un-tensed.
+
+5. for computation of electron lifetime keep only tracks which travers anode and cathode
 
 **ADC to charge converstion:** use 55 (ADC x ticks)/fC for view 0 and 67 (ADC x ticks) /fC for view 1.
 This is based on charge injection in the range of 14-150 fC during cold operation of the detector. See presentation from July 6th-2018 on indico. 
