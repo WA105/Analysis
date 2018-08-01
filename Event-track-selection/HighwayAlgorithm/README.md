@@ -41,7 +41,7 @@ python swiss_highway.py -i /path/to/my/file/file.root -o /my/output/directory/
 The script expects an input file name in the format: run-subrun-RecoFull-Parser.root. For the moment the only reconstruction version supported is '2018_June_24'
 
 ### Run the algorithm as batch job ###
-In the folder gridSub are available two scripts to run "swiss_highway.py" as batch job on the NP02 computing grid. The scripts are intended as examples, every uses must adapt them following the comments withing the scripts themselves. 
+In the folder gridSub are available two scripts to run "swiss_highway.py" as batch job on the NP02 computing grid. The scripts are intended as examples, every user must adapt them following the commented lines. 
 * **makefile.sh** will create a text file with the list of argument required by "swiss_highway.py". Each line of this file corresponds to a different jobs. 
 * **submit.sub** is the submission file for the batch service.
 In order to submit your jobs do:
