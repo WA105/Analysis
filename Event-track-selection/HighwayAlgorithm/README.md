@@ -65,4 +65,4 @@ The default settings (which you can all change in the .ipynb script) are:
 * maximum number of tracks in event: 10000000 (effectively infinity)
 
 ## Contacts ##
-For every question about the algorithm contact <a href="mailto:caspar.maria.schloesser@cern.ch" target="_blank"> caspar.maria.schloesser@cern.ch </a>. For questions about the job submission and the environment creation contact For any question contact: <a href="mailto:andrea.scarpelli@cern.ch" target="_blank"> andrea.scarpelli@cern.ch </a> 
+For every question about the algorithm contact <a href="mailto:caspar.maria.schloesser@cern.ch" target="_blank"> caspar.maria.schloesser@cern.ch </a>. For questions about the job submission and the environment creation contact: <a href="mailto:andrea.scarpelli@cern.ch" target="_blank"> andrea.scarpelli@cern.ch </a> 
