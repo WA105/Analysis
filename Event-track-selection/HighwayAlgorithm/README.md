@@ -15,7 +15,8 @@ Some of the packages necessary are unfortunately not available natively on lxplu
 ```
 scl enable python27 bash
 ```
-Once logged in, you need to source the binaries of a recent ( > 6.0 ) version of ROOT available on `/asf/`: <a href="https://root.cern.ch/content/release-60606" target="_blank"> https://root.cern.ch/content/release-60606 </a>. It is particular 
+You can verify to be in the correct environment by just checking the current running version of python. If it is 2.7 or higher, then the environment has been properly configured.  
+Once logged in, you need to source the binaries of a recent ( > 6.0 ) version of ROOT available on `/afs/`: <a href="https://root.cern.ch/content/release-60606" target="_blank"> https://root.cern.ch/content/release-60606 </a>. It is particular 
 importat to have the correct version of ROOT configured in order to install root_numpy properly and be able to use ROOT within python. 
 To install the packages you are missing you can use the `pip` command:
 ```
