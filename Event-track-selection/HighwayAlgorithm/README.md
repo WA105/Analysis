@@ -4,8 +4,9 @@
 In order to perform efficently, swiss_highway.py expects some packages:
   * [numpy](http://www.numpy.org/)
   * [scipy](https://www.scipy.org/)
-  * [root](https://root.cern.ch/pyroot)
+  * [ROOT](https://root.cern.ch/pyroot) (should be automatically configured sourcing the latest root version on `/afs` - see later)
   * [root_numpy](http://scikit-hep.org/root_numpy/)
+  * [python-dateutil](https://dateutil.readthedocs.io/en/stable/)
 
 ## Run the algorithm ##
 The following tutorial is valid for the lxplus machines at CERN.
