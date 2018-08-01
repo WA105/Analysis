@@ -2,7 +2,7 @@
 ## Basic configuration of the submit file
 ################################################################################
 
-notify_user = andrea.scarpelli@cern.ch    #include there your email address for notifications
+notify_user = andrea.scarpelli@cern.ch   
 notification = Error
 Universe = vanilla
 Executable = /afs/cern.ch/work/a/ascarpel/Analysis/Event-track-selection/HighwayAlgorithm/swiss_highway.py
