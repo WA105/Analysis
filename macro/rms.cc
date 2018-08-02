@@ -139,6 +139,8 @@ void rms(string filename){
 
         double mean, rms;
 
+        rawChannel.subtractPedestal(true); //allow pedestal subtraction for that channel
+
         GetMeanAndRMS( rawChannel.signal, mean, rms );
 
         fCh2Mean[rawChannel.channel].push_back(mean);

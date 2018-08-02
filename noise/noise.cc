@@ -160,61 +160,38 @@ int main( int argc, char* argv[] ){
 
   string commonPath = "/eos/experiment/wa105/offline/LArSoft/Data/";
   string recoFile =  commonPath+"Reco/2018_June_24/ROOT/recofull/"+to_string(runNum)+"/"+to_string(runNum)+"-"+to_string(subrun)+"-RecoFull-Parser.root";
+  string rawFile =  commonPath+"Raw/ROOT/"+to_string(runNum)+"/"+to_string(runNum)+"-"+to_string(subrun)+"-RawWaveform-Parser.root" ;
 
   LArParser *rawParser = new LArParser();
   LArParser *recoParser = new LArParser();
 
+  TTree *rawTree = getTTree( rawFile );
   TTree *recoTree = getTTree( recoFile );
 
-  Run *run = new Run(runNum, "metadata/test.db");
+  //check if the tree has been correctly set ========================
 
-  recoParser->setTTree(recoTree);
-  recoParser->setRun(run);
-
-  //check if the tree exists and has been correctly set
-  if( !recoParser->isTreeGood() ){
-     cout << "Invalid ttree" << endl;
-     return 1;
-  }
-
-  if( !filterOn ){
-
-    //in this case you want to use the raw files
-    string rawFile =  commonPath+"Raw/ROOT/"+to_string(runNum)+"/"+to_string(runNum)+"-"+to_string(subrun)+"-RawWaveform-Parser.root" ;
-
-    TTree *rawTree = getTTree( rawFile );
-
-    rawParser->setTTree(rawTree);
-    rawParser->setRun(run);
-
-    //check if the tree exists and has been correctly set
-    if( !recoParser->isTreeGood() || !rawParser->isTreeGood() ){
-       cout << "Invalid ttree" << endl;
-       return 1;
-    }
-
-    if( recoTree->GetEntries() != rawTree->GetEntries() ){
-      cout << "Error! Trees havent the same number of entries! " << endl;
-      return 1;
-    }
-
+  if( recoTree->GetEntries() != rawTree->GetEntries() ){
+    cout << "Error! Trees havent the same number of entries! " << endl;
+    return 1;
   }
 
 //Event looper ===============================================================
 
+cout << "Start event looper" << endl;
+
 int mod = 6;
-if( recoTree->GetEntries() < 300 ){
-  mod = recoTree->GetEntries()/50; //it will process event by event only max 100 events
+if( rawTree->GetEntries() < 300 ){
+  mod = rawTree->GetEntries()/50; //it will process event by event only max 100 events
 }
 
-  for(int evt=0; evt<recoTree->GetEntries(); evt++){
+  for(int evt=0; evt<rawTree->GetEntries(); evt++){
 
     if( evt % mod !=0 ){ continue; } //process one event every 6 ( about 50 events per subrun w 335 events )
-      cout << " Processing event " << evt << endl;
+      cout << " Processing event " << evt;
 
       //reco objects ----------------------------------------------------------
       vector<Hit> recoHits;
-      recoParser->getRecoHitsEvent( recoHits, evt );
+      recoParser->getRecoHitsEvent( recoTree,  recoHits, evt );
 
       //make an hit channels map
       map<int, vector<Hit> > ch2hits;
@@ -223,13 +200,19 @@ if( recoTree->GetEntries() < 300 ){
 
       //raw objects
       vector<Channel> rawChannels;
-      if( filterOn ){
-        recoParser->getRecoChannelsEvent( rawChannels, evt );
-      }else{
-        rawParser->getRawChannelsEvent( rawChannels, evt );
+      rawParser->getRawChannelsEvent( rawTree, rawChannels, evt );
+
+      if(!rawChannels.size()){
+        cout << "ERROR:No rawChannels object created. Break event loop" << endl;
+        break;
       }
+
+      cout << "..";
+
       //loop over channels -----------------------------------------------------
       for(auto rawChannel : rawChannels){
+
+        rawChannel.subtractPedestal(true);
 
         if( !hasChannel( ch2hits[ rawChannel.channel ] ) ){ continue; }
         if ( rawChannel.isDead() ){ continue; }
@@ -240,12 +223,12 @@ if( recoTree->GetEntries() < 300 ){
         for( int t=2; t<(int)adc.size(); t++  ){
 
           if ( !inROI( t, ch2hits[ rawChannel.channel ] ) ){
-
             noiseAdc.push_back( adc.at(t) );
           }
         } //end adc loop
 
         //calculate Mean and RMS here --------------------------------------------
+
         double mean, rms;
         GetMeanAndRMS( noiseAdc, mean, rms );
 
@@ -257,6 +240,8 @@ if( recoTree->GetEntries() < 300 ){
         noiseAdc.clear();
 
       } //end ch loop
+
+      cout << "..";
 
       fRun = rawChannels.at(1).run.getRunNumber();
       fSubrun = rawChannels.at(1).subRun;
@@ -270,6 +255,8 @@ if( recoTree->GetEntries() < 300 ){
       fMeanView1 = getMeanVector( view2mean[1] );
       fRMSView1 = getMeanVector( view2rms[1] );
 
+      cout << "..";
+
       //fill the tree
       noiseTree->Fill();
 
@@ -278,6 +265,7 @@ if( recoTree->GetEntries() < 300 ){
       view2mean[1].clear();
       view2rms[1].clear();
 
+      cout << ".." << endl;
   }//end event loop
 
   //fill and close file ========================================================

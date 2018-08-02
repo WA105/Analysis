@@ -41,6 +41,40 @@ bool Channel::isBad(){
 
 }
 
+void Channel::subtractPedestal( bool subtractPedestal ){
+  //subtract pedestal
+
+  int ipedfinal = 0;  // an integer for raw digits
+	if (subtractPedestal){
+
+		   const int PedestalIterations = 3;
+		   double ped = 0.;
+		   double pedthreshold[PedestalIterations] = {10};
+
+		   for(int i=0; i < PedestalIterations; i++){
+		      double csum = 0.;
+		      double tickcounter = 0;
+		      for (size_t itick=0;itick<tdc;++itick){
+
+		          if( i == 0 || this->signal.at(itick) < ped + pedthreshold[i]){
+			         csum += this->signal.at(itick);
+			         tickcounter+=1;
+			        }
+		       }
+		       if(tickcounter < 100) break;
+		       csum /= tickcounter;
+		       ped = csum;
+		   }
+		   ipedfinal = ped;
+
+       for (size_t itick=0;itick<tdc;++itick){
+         this->signal.at(itick) -= ipedfinal;
+       }
+
+	  }
+    return;
+  }
+
 ////////////////////////////////////////////////////////////////////////////////
 Hit::Hit(){}
 Hit::~Hit(){}
@@ -67,6 +101,7 @@ LArParser::~LArParser(){}
 void LArParser::setRawBranches(){
 
   //Link brances in root file containg raw data
+
   fTree->SetBranchAddress("Run",&tRun);
   fTree->SetBranchAddress("Subrun",&tSubrun);
   fTree->SetBranchAddress("EventNumberInRun",&tEventNumberInRun);
@@ -428,25 +463,47 @@ void LArParser::fillRecoTrack( vector<Track> & tracks ){
   return;
 }
 
-void LArParser::getRawChannelsEvent( vector<Channel> & channels, int event  ){
+void LArParser::getRawChannelsEvent( TTree *tree,  vector<Channel> & channels, int event  ){
   //just fill the hit array for a specific event
 
-  this->setRawBranches();
+  fTree = tree;
+
+  if ( this->isTreeGood() ){
+
+    this->setRawBranches();
+    fRun = new Run(tRun, "metadata/test.db");
+
+  }else{
+    cout << "LArParser::getRawChannelsEvent ERROR:Tree doesn't exist!" << endl;
+    return;
+  }
 
   fTree->GetEntry(event);
   this->fillRawChannels( channels );
+
+  this->clean();
 
   return;
 
 }
 
-void LArParser::getRecoChannelsEvent( vector<Channel> & channels, int event  ){
+void LArParser::getRecoChannelsEvent( TTree *tree,  vector<Channel> & channels, int event  ){
   //just fill the hit array for a specific event
 
-  this->setRecoBranches();
+  fTree = tree;
+
+  if ( this->isTreeGood() ){
+      this->setRecoBranches();
+      fRun = new Run(tRun, "metadata/test.db");
+  }else{
+    cout << "LArParser::getRecoChannelsEvent ERROR:Tree doesn't exist!" << endl;
+    return;
+  }
 
   fTree->GetEntry(event);
   this->fillRecoChannels( channels );
+
+  this->clean();
 
   return;
 
@@ -464,13 +521,23 @@ void LArParser::getMCTracksEvent( vector<MCTrack> & tracks, int event  ){
 
 }
 
-void LArParser::getRecoHitsEvent( vector<Hit> & hits, int event  ){
+void LArParser::getRecoHitsEvent( TTree *tree,  vector<Hit> & hits, int event  ){
   //just fill the hit array for a specific event
 
-  this->setRecoBranches();
+  fTree = tree;
 
-  fTree->GetEntry(event);
+  if ( this->isTreeGood() ){
+      this->setRecoBranches();
+      fRun = new Run(tRun, "metadata/test.db");
+  }else{
+    cout << "LArParser::getRecoHitsEvent ERROR:Tree doesn't exist!" << endl;
+    return;
+  }
+
+  tree->GetEntry(event);
   this->fillRecoHits( hits );
+
+  this->clean();
 
   return;
 
@@ -528,4 +595,9 @@ void LArParser::getRecoTracks( vector<Track> & tracks ){
   }//Event loop
 
   return;
+}
+
+void LArParser::clean(){
+  fTree = 0;
+  fRun = 0;
 }

@@ -39,6 +39,9 @@ class Channel
 
     bool isDead();
     bool isBad();
+    void subtractPedestal( bool subtractPedestal );
+
+
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -176,10 +179,10 @@ class LArParser
     void setRun(Run *run){fRun = run;}
 
     //getters
-    void getRawChannelsEvent( vector<Channel> & channels, int event  );
-    void getRecoChannelsEvent( vector<Channel> & channels, int event  );
+    void getRawChannelsEvent(TTree *tree, vector<Channel> & channels, int event  );
+    void getRecoChannelsEvent(TTree *tree, vector<Channel> & channels, int event  );
     void getMCTracksEvent( vector<MCTrack>  & mctracks, int event );
-    void getRecoHitsEvent( vector<Hit> & hits, int event );
+    void getRecoHitsEvent(  TTree *tree, vector<Hit> & hits, int event );
     void getRecoTracksEvent( vector<Track> & tracks, int event );
     void getMCTracks( vector<MCTrack>  & mctracks );
     void getRecoHits( vector<Hit> & hits );
@@ -197,9 +200,10 @@ class LArParser
     void fillMCTrack( vector<MCTrack> & tracks );
     void fillRecoHits( vector<Hit> & hits );
     void fillRecoTrack( vector<Track> & tracks );
+    void clean();
 
-    TTree *fTree;
-    Run *fRun;
+    TTree *fTree = 0;
+    Run *fRun = 0;
 
     static const int NMaxGeantTrackPerEvent=10000;
     static const int NMaxHitsPerEvent=10000;;
@@ -212,67 +216,67 @@ class LArParser
 
     //Common ///////////////////////////////////////////////////////////////////
     int tRun;
-    int tSubrun;
-    int tEventNumberInRun;
-    int tEventTimeSeconds;
-    int tEventTimeNanoseconds;
+    int tSubrun=0;
+    int tEventNumberInRun=0;
+    int tEventTimeSeconds=0;
+    int tEventTimeNanoseconds=0;
 
     //Raw //////////////////////////////////////////////////////////////////////
-    int tRawWaveform_NumberOfChannels;
-    int tRawWaveform_NumberOfTicks;
-    int tRawWaveform_Channel[nMaxNumChannels];
-    int tRawWaveform_NumberOfTicksInAllChannels[nMaxNumChannels];
-    short tRawWaveform_ADC[nMaxNumTdc];
+    int tRawWaveform_NumberOfChannels=0;
+    int tRawWaveform_NumberOfTicks=0;
+    int tRawWaveform_Channel[nMaxNumChannels]={0};
+    int tRawWaveform_NumberOfTicksInAllChannels[nMaxNumChannels] = {0};
+    short tRawWaveform_ADC[nMaxNumTdc] = {0};
 
     //G4 //////////////////////////////////////////////////////////////////////
-    int tNGeantTrackPerEvent;
-    int tPdg[NMaxGeantTrackPerEvent];
-    int tParticleId[NMaxGeantTrackPerEvent];
-    int tIsInTPCAV[NMaxGeantTrackPerEvent];
-    float tStartE[NMaxGeantTrackPerEvent];
-    float tEndE[NMaxGeantTrackPerEvent];
-    float tMom[NMaxGeantTrackPerEvent];
-    float tMomX[NMaxGeantTrackPerEvent];
-    float tMomY[NMaxGeantTrackPerEvent];
-    float tMomZ[NMaxGeantTrackPerEvent];
-    float tStartTime[NMaxGeantTrackPerEvent];
-    float tStartX[NMaxGeantTrackPerEvent];
-    float tStartY[NMaxGeantTrackPerEvent];
-    float tStartZ[NMaxGeantTrackPerEvent];
-    float tStartPhi[NMaxGeantTrackPerEvent];
-    float tStartTheta[NMaxGeantTrackPerEvent];
-    float tLengthAV[NMaxGeantTrackPerEvent];
-    float tEndX[NMaxGeantTrackPerEvent];
-    float tEndY[NMaxGeantTrackPerEvent];
-    float tEndZ[NMaxGeantTrackPerEvent];
+    int tNGeantTrackPerEvent=0;
+    int tPdg[NMaxGeantTrackPerEvent]={0};
+    int tParticleId[NMaxGeantTrackPerEvent]={0};
+    int tIsInTPCAV[NMaxGeantTrackPerEvent]={0};
+    float tStartE[NMaxGeantTrackPerEvent]={0};
+    float tEndE[NMaxGeantTrackPerEvent]={0};
+    float tMom[NMaxGeantTrackPerEvent]={0};
+    float tMomX[NMaxGeantTrackPerEvent]={0};
+    float tMomY[NMaxGeantTrackPerEvent]={0};
+    float tMomZ[NMaxGeantTrackPerEvent]={0};
+    float tStartTime[NMaxGeantTrackPerEvent]={0};
+    float tStartX[NMaxGeantTrackPerEvent]={0};
+    float tStartY[NMaxGeantTrackPerEvent]={0};
+    float tStartZ[NMaxGeantTrackPerEvent]={0};
+    float tStartPhi[NMaxGeantTrackPerEvent]={0};
+    float tStartTheta[NMaxGeantTrackPerEvent]={0};
+    float tLengthAV[NMaxGeantTrackPerEvent]={0};
+    float tEndX[NMaxGeantTrackPerEvent]={0};
+    float tEndY[NMaxGeantTrackPerEvent]={0};
+    float tEndZ[NMaxGeantTrackPerEvent]={0};
 
     //Reco /////////////////////////////////////////////////////////////////////
 
     //reco wires
-    int tRecoWaveform_NumberOfChannels;
-    int tRecoWaveform_NumberOfTicks;
-    int tRecoWaveform_Channel[nMaxNumChannels];
-    int tRecoWaveform_NumberOfTicksInAllChannels[nMaxNumChannels];
-    short tRecoWaveform_ADC[nMaxNumTdc];
+    int tRecoWaveform_NumberOfChannels=0;
+    int tRecoWaveform_NumberOfTicks=0;
+    int tRecoWaveform_Channel[nMaxNumChannels]={0};
+    int tRecoWaveform_NumberOfTicksInAllChannels[nMaxNumChannels]={0};
+    short tRecoWaveform_ADC[nMaxNumTdc]={0};
 
     //Hit variables
-    int tNumberOfHits;
-    short tHit_TPC[NMaxHitsPerEvent];
-    short tHit_View[NMaxHitsPerEvent];
-    short tHit_Channel[NMaxHitsPerEvent];
-    float tHit_PeakTime[NMaxHitsPerEvent];
-    float tHit_ChargeSummedADC[NMaxHitsPerEvent];
-    float tHit_ChargeIntegral[NMaxHitsPerEvent];
-    float tHit_StartTime[NMaxHitsPerEvent];
-    float tHit_EndTime[NMaxHitsPerEvent];
-    float tHit_Width[NMaxHitsPerEvent];
-    float tHit_GoodnessOfFit[NMaxHitsPerEvent];
-    short tHit_Multiplicity[NMaxHitsPerEvent];
-    short tHit_TrackID[NMaxHitsPerEvent];
-    short tHit_ClusterID[NMaxHitsPerEvent];
-    int tHit_particleID[NMaxHitsPerEvent];
-    float tHit_TrueEnergy[NMaxHitsPerEvent];
-    float tHit_TrueEnergyFraction[NMaxHitsPerEvent];
+    int tNumberOfHits=0;
+    short tHit_TPC[NMaxHitsPerEvent]={0};
+    short tHit_View[NMaxHitsPerEvent]={0};
+    short tHit_Channel[NMaxHitsPerEvent]={0};
+    float tHit_PeakTime[NMaxHitsPerEvent]={0};
+    float tHit_ChargeSummedADC[NMaxHitsPerEvent]={0};
+    float tHit_ChargeIntegral[NMaxHitsPerEvent]={0};
+    float tHit_StartTime[NMaxHitsPerEvent]={0};
+    float tHit_EndTime[NMaxHitsPerEvent]={0};
+    float tHit_Width[NMaxHitsPerEvent]={0};
+    float tHit_GoodnessOfFit[NMaxHitsPerEvent]={0};
+    short tHit_Multiplicity[NMaxHitsPerEvent]={0};
+    short tHit_TrackID[NMaxHitsPerEvent]={0};
+    short tHit_ClusterID[NMaxHitsPerEvent]={0};
+    int tHit_particleID[NMaxHitsPerEvent]={0};
+    float tHit_TrueEnergy[NMaxHitsPerEvent]={0};
+    float tHit_TrueEnergyFraction[NMaxHitsPerEvent]={0};
 
     //Cluster variables
     //  short tNumberOfClusters;
@@ -290,51 +294,51 @@ class LArParser
     //  float tCluster_EndAngle[NMaxHitsPerEvent];
 
     //Track variables
-    short tNumberOfTracks;
-    short tTrackID[NMaxTracksPerEventTimesNViews];
-    short tTrack_NumberOfHits[NMaxTracksPerEventTimesNViews];
-    float tTrack_Length[NMaxTracksPerEventTimesNViews];
-    float tTrack_StartPoint_X[NMaxTracksPerEvent];
-    float tTrack_StartPoint_Y[NMaxTracksPerEvent];
-    float tTrack_StartPoint_Z[NMaxTracksPerEvent];
-    float tTrack_StartPoint_DistanceToBoundary[NMaxTracksPerEvent];
-    float tTrack_EndPoint_X[NMaxTracksPerEvent];
-    float tTrack_EndPoint_Y[NMaxTracksPerEvent];
-    float tTrack_EndPoint_Z[NMaxTracksPerEvent];
-    float tTrack_EndPoint_DistanceToBoundary[NMaxTracksPerEvent];
-    float tTrack_StartDirection_Theta[NMaxTracksPerEvent];
-    float tTrack_StartDirection_Phi[NMaxTracksPerEvent];
-    float tTrack_StartDirection_X[NMaxTracksPerEvent];
-    float tTrack_StartDirection_Y[NMaxTracksPerEvent];
-    float tTrack_StartDirection_Z[NMaxTracksPerEvent];
-    float tTrack_EndDirection_Theta[NMaxTracksPerEvent];
-    float tTrack_EndDirection_Phi[NMaxTracksPerEvent];
-    float tTrack_EndDirection_X[NMaxTracksPerEvent];
-    float tTrack_EndDirection_Y[NMaxTracksPerEvent];
-    float tTrack_EndDirection_Z[NMaxTracksPerEvent];
-    float tTrack_PitchInViews[NMaxTracksPerEvent];
-    short tTrack_NumberOfHitsPerView[NMaxTracksPerEvent][2];
+    short tNumberOfTracks=0;
+    short tTrackID[NMaxTracksPerEventTimesNViews]={0};
+    short tTrack_NumberOfHits[NMaxTracksPerEventTimesNViews]={0};
+    float tTrack_Length[NMaxTracksPerEventTimesNViews]={0};
+    float tTrack_StartPoint_X[NMaxTracksPerEvent]={0};
+    float tTrack_StartPoint_Y[NMaxTracksPerEvent]={0};
+    float tTrack_StartPoint_Z[NMaxTracksPerEvent]={0};
+    float tTrack_StartPoint_DistanceToBoundary[NMaxTracksPerEvent]={0};
+    float tTrack_EndPoint_X[NMaxTracksPerEvent]={0};
+    float tTrack_EndPoint_Y[NMaxTracksPerEvent]={0};
+    float tTrack_EndPoint_Z[NMaxTracksPerEvent]={0};
+    float tTrack_EndPoint_DistanceToBoundary[NMaxTracksPerEvent]={0};
+    float tTrack_StartDirection_Theta[NMaxTracksPerEvent]={0};
+    float tTrack_StartDirection_Phi[NMaxTracksPerEvent]={0};
+    float tTrack_StartDirection_X[NMaxTracksPerEvent]={0};
+    float tTrack_StartDirection_Y[NMaxTracksPerEvent]={0};
+    float tTrack_StartDirection_Z[NMaxTracksPerEvent]={0};
+    float tTrack_EndDirection_Theta[NMaxTracksPerEvent]={0};
+    float tTrack_EndDirection_Phi[NMaxTracksPerEvent]={0};
+    float tTrack_EndDirection_X[NMaxTracksPerEvent]={0};
+    float tTrack_EndDirection_Y[NMaxTracksPerEvent]={0};
+    float tTrack_EndDirection_Z[NMaxTracksPerEvent]={0};
+    float tTrack_PitchInViews[NMaxTracksPerEvent]={0};
+    short tTrack_NumberOfHitsPerView[NMaxTracksPerEvent][2]={};
 
     //Track hit variables
-    float tTrack_Hit_X[NMaxHitsPerEvent];
-    float tTrack_Hit_Y[NMaxHitsPerEvent];
-    float tTrack_Hit_Z[NMaxHitsPerEvent];
-    float tTrack_dx_LocalTrackDirection[NMaxHitsPerEvent];
-    float tTrack_dx_3DPosition[NMaxHitsPerEvent];
-    short tTrack_Hit_TPC[NMaxHitsPerEvent];
-    short tTrack_Hit_View[NMaxHitsPerEvent];
-    short tTrack_Hit_Channel[NMaxHitsPerEvent];
-    float tTrack_Hit_PeakTime[NMaxHitsPerEvent];
-    float tTrack_Hit_ChargeSummedADC[NMaxHitsPerEvent];
-    float tTrack_Hit_ChargeIntegral[NMaxHitsPerEvent];
-    float tTrack_Hit_StartTime[NMaxHitsPerEvent];
-    float tTrack_Hit_EndTime[NMaxHitsPerEvent];
-    float tTrack_Hit_Width[NMaxHitsPerEvent];
-    float tTrack_Hit_GoodnessOfFit[NMaxHitsPerEvent];
-    short tTrack_Hit_Multiplicity[NMaxHitsPerEvent];
-    int tTrack_Hit_particleID[NMaxHitsPerEvent];
-    float tTrack_Hit_TrueEnergy[NMaxHitsPerEvent];
-    float tTrack_Hit_TrueEnergyFraction[NMaxHitsPerEvent];
+    float tTrack_Hit_X[NMaxHitsPerEvent]={0};
+    float tTrack_Hit_Y[NMaxHitsPerEvent]={0};
+    float tTrack_Hit_Z[NMaxHitsPerEvent]={0};
+    float tTrack_dx_LocalTrackDirection[NMaxHitsPerEvent]={0};
+    float tTrack_dx_3DPosition[NMaxHitsPerEvent]={0};
+    short tTrack_Hit_TPC[NMaxHitsPerEvent]={0};
+    short tTrack_Hit_View[NMaxHitsPerEvent]={0};
+    short tTrack_Hit_Channel[NMaxHitsPerEvent]={0};
+    float tTrack_Hit_PeakTime[NMaxHitsPerEvent]={0};
+    float tTrack_Hit_ChargeSummedADC[NMaxHitsPerEvent]={0};
+    float tTrack_Hit_ChargeIntegral[NMaxHitsPerEvent]={0};
+    float tTrack_Hit_StartTime[NMaxHitsPerEvent]={0};
+    float tTrack_Hit_EndTime[NMaxHitsPerEvent]={0};
+    float tTrack_Hit_Width[NMaxHitsPerEvent]={0};
+    float tTrack_Hit_GoodnessOfFit[NMaxHitsPerEvent]={0};
+    short tTrack_Hit_Multiplicity[NMaxHitsPerEvent]={0};
+    int tTrack_Hit_particleID[NMaxHitsPerEvent]={0};
+    float tTrack_Hit_TrueEnergy[NMaxHitsPerEvent]={0};
+    float tTrack_Hit_TrueEnergyFraction[NMaxHitsPerEvent]={0};
 };
 
 #endif // __DATASTRUCTURE_H
