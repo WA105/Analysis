@@ -27,7 +27,7 @@ class Channel
     Channel();
     ~Channel();
 
-    Run run;
+    int run;
     int subRun;
     int event;
     int timeSeconds;
@@ -53,7 +53,7 @@ class Hit
     Hit();
     ~Hit();
 
-    Run run;
+    int run;
     int subRun;
     int event;
     int trackID;
@@ -93,7 +93,7 @@ class Track
     Track();
     ~Track();
 
-    Run run;
+    int run;
     int subRun;
     int event;
     int trackID;
@@ -132,7 +132,7 @@ class MCTrack
     MCTrack();
     ~MCTrack();
 
-    Run run;
+    int run;
     int event;
     int subrun;
     int eventNumber;
@@ -171,12 +171,12 @@ class LArParser
 {
   public:
     LArParser();
-    LArParser( TTree *tree, Run *run );
+    LArParser( TTree *tree );
     ~LArParser();
 
     //setters
     void setTTree( TTree *tree ){ fTree = tree; }
-    void setRun(Run *run){fRun = run;}
+    //void setRun(Run *run){fRun = run;}
 
     //getters
     void getRawChannelsEvent(TTree *tree, vector<Channel> & channels, int event  );
@@ -203,7 +203,7 @@ class LArParser
     void clean();
 
     TTree *fTree = 0;
-    Run *fRun = 0;
+    //Run *fRun = 0;
 
     static const int NMaxGeantTrackPerEvent=10000;
     static const int NMaxHitsPerEvent=10000;;

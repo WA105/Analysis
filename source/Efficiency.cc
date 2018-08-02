@@ -134,7 +134,7 @@ void Efficiency::fill(){
   //match with truth
   this->matchTruth();
 
-  fFileNumber = fParticleMap[ fBestTrackID ].run.getFileNumber();
+  fFileNumber = fParticleMap[ fBestTrackID ].run;
   fEvent = fFileNumber*100 + fParticleMap[ fBestTrackID ].eventNumber; //get to the event a progressive number across files
   fParticleId = fBestTrackID;
   fTrackId = fTrack.trackID;

@@ -243,7 +243,7 @@ if( rawTree->GetEntries() < 300 ){
 
       cout << "..";
 
-      fRun = rawChannels.at(1).run.getRunNumber();
+      fRun = rawChannels.at(1).run;
       fSubrun = rawChannels.at(1).subRun;
       fEvent = rawChannels.at(1).event;
       fEventSeconds = rawChannels.at(1).timeSeconds;

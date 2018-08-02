@@ -90,10 +90,9 @@ MCTrack::~MCTrack(){}
 ////////////////////////////////////////////////////////////////////////////////
 LArParser::LArParser(){}
 
-LArParser::LArParser( TTree *tree, Run *run ){
+LArParser::LArParser( TTree *tree ){
   //alternative constructor needs a tree and a run object
   fTree = tree;
-  fRun = run;
 }
 
 LArParser::~LArParser(){}
@@ -114,8 +113,6 @@ void LArParser::setRawBranches(){
   fTree->SetBranchAddress("RawWaveform_ADC",&tRawWaveform_ADC);
 
 }
-
-
 
 void LArParser::setMCBranches(){
 
@@ -265,7 +262,7 @@ void LArParser::fillRawChannels( vector<Channel> & channels ){
 
     for(int k=0; k < tRawWaveform_NumberOfTicks; k++){
 
-      dummyChannel.run = *fRun;
+      dummyChannel.run = tRun;
       dummyChannel.subRun = tSubrun;
       dummyChannel.event = tEventNumberInRun;
       dummyChannel.timeSeconds = tEventTimeSeconds;
@@ -296,7 +293,7 @@ void LArParser::fillRecoChannels( vector<Channel> & channels ){
 
     for(int k=0; k < tRecoWaveform_NumberOfTicks; k++){
 
-      dummyChannel.run = *fRun;
+      dummyChannel.run = tRun;
       dummyChannel.subRun = tSubrun;
       dummyChannel.event = tEventNumberInRun;
       dummyChannel.timeSeconds = tEventTimeSeconds;
@@ -326,7 +323,7 @@ void LArParser::fillMCTrack( vector<MCTrack> & tracks ){
 
     MCTrack dummyTrack;
 
-    dummyTrack.run = *fRun;
+    dummyTrack.run = tRun;
     dummyTrack.subrun = tSubrun;
     dummyTrack.event = tEventNumberInRun;
 
@@ -363,7 +360,7 @@ void LArParser::fillRecoHits( vector<Hit> & hits ){
 
     Hit dummyHits;
 
-    dummyHits.run=*fRun;
+    dummyHits.run=tRun;
     dummyHits.subRun=tSubrun;
     dummyHits.event=tEventNumberInRun;
     dummyHits.TPC=tHit_TPC[l];
@@ -397,7 +394,7 @@ void LArParser::fillRecoTrack( vector<Track> & tracks ){
   {
     Track dummyTrack;
 
-    dummyTrack.run = *fRun;
+    dummyTrack.run = tRun;
     dummyTrack.subRun=tSubrun;
     dummyTrack.event=tEventNumberInRun;
     dummyTrack.trackID=tTrackID[j];
@@ -428,7 +425,7 @@ void LArParser::fillRecoTrack( vector<Track> & tracks ){
       {
         Hit dummyHits;
 
-        dummyHits.run = *fRun;
+        dummyHits.run = tRun;
         dummyHits.subRun=tSubrun;
         dummyHits.event=tEventNumberInRun;
         dummyHits.X=tTrack_Hit_X[l];
@@ -469,10 +466,7 @@ void LArParser::getRawChannelsEvent( TTree *tree,  vector<Channel> & channels, i
   fTree = tree;
 
   if ( this->isTreeGood() ){
-
     this->setRawBranches();
-    fRun = new Run(tRun, "metadata/test.db");
-
   }else{
     cout << "LArParser::getRawChannelsEvent ERROR:Tree doesn't exist!" << endl;
     return;
@@ -494,7 +488,6 @@ void LArParser::getRecoChannelsEvent( TTree *tree,  vector<Channel> & channels, 
 
   if ( this->isTreeGood() ){
       this->setRecoBranches();
-      fRun = new Run(tRun, "metadata/test.db");
   }else{
     cout << "LArParser::getRecoChannelsEvent ERROR:Tree doesn't exist!" << endl;
     return;
@@ -528,7 +521,6 @@ void LArParser::getRecoHitsEvent( TTree *tree,  vector<Hit> & hits, int event  )
 
   if ( this->isTreeGood() ){
       this->setRecoBranches();
-      fRun = new Run(tRun, "metadata/test.db");
   }else{
     cout << "LArParser::getRecoHitsEvent ERROR:Tree doesn't exist!" << endl;
     return;
@@ -599,5 +591,4 @@ void LArParser::getRecoTracks( vector<Track> & tracks ){
 
 void LArParser::clean(){
   fTree = 0;
-  fRun = 0;
 }
