@@ -171,38 +171,39 @@ class LArParser
 {
   public:
     LArParser();
-    LArParser( TTree *tree );
+    //LArParser( TTree *tree );
     ~LArParser();
 
     //setters
-    void setTTree( TTree *tree ){ fTree = tree; }
+    //void setTTree( TTree *tree ){ fTree = tree; }
     //void setRun(Run *run){fRun = run;}
 
     //getters
     void getRawChannelsEvent(TTree *tree, vector<Channel> & channels, int event  );
     void getRecoChannelsEvent(TTree *tree, vector<Channel> & channels, int event  );
-    void getMCTracksEvent( vector<MCTrack>  & mctracks, int event );
-    void getRecoHitsEvent(  TTree *tree, vector<Hit> & hits, int event );
-    void getRecoTracksEvent( vector<Track> & tracks, int event );
-    void getMCTracks( vector<MCTrack>  & mctracks );
-    void getRecoHits( vector<Hit> & hits );
-    void getRecoTracks( vector<Track> & tracks );
+    void getMCTracksEvent(TTree *tree, vector<MCTrack>  & mctracks, int event );
+    void getRecoHitsEvent(TTree *tree, vector<Hit> & hits, int event );
+    void getRecoTracksEvent(TTree *tree, vector<Track> & tracks, int event );
+    void getMCTracks(TTree *tree, vector<MCTrack>  & mctracks );
+    void getRecoHits(TTree *tree, vector<Hit> & hits );
+    void getRecoTracks(TTree *tree, vector<Track> & tracks );
     //void readG4Tree( &vector<MCTracks> tracks );
 
-    bool isTreeGood();
+    bool isTreeGood(TTree *tree);
 
   private:
-    void setRawBranches();
-    void setRecoBranches();
-    void setMCBranches();
+    void setRawBranches(TTree *tree);
+    void setRecoChannelBranches(TTree *tree);
+    void setRecoBranches(TTree *tree);
+    void setMCBranches(TTree *tree);
     void fillRawChannels( vector<Channel> & channels );
     void fillRecoChannels( vector<Channel> & channels );
     void fillMCTrack( vector<MCTrack> & tracks );
     void fillRecoHits( vector<Hit> & hits );
     void fillRecoTrack( vector<Track> & tracks );
-    void clean();
+    //void clean();
 
-    TTree *fTree = 0;
+    //TTree *fTree = 0;
     //Run *fRun = 0;
 
     static const int NMaxGeantTrackPerEvent=10000;
@@ -254,10 +255,10 @@ class LArParser
 
     //reco wires
     int tRecoWaveform_NumberOfChannels=0;
-    int tRecoWaveform_NumberOfTicks=0;
+    int tRecoWaveform_NumberOfTicks[nMaxNumChannels]={0};
     int tRecoWaveform_Channel[nMaxNumChannels]={0};
-    int tRecoWaveform_NumberOfTicksInAllChannels[nMaxNumChannels]={0};
-    short tRecoWaveform_ADC[nMaxNumTdc]={0};
+    int tRecoWaveform_NumberOfTicksInAllChannels=0;
+    float tRecoWaveform_ADC[nMaxNumTdc]={0};
 
     //Hit variables
     int tNumberOfHits=0;

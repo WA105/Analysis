@@ -46,7 +46,7 @@ TTree *getTTree( string filename ){
   if( ExistTest(filename) ){
 
       cout << "Processing file: " << filename << endl;
-      TFile *file = new TFile(filename.c_str(), "READ");
+      TFile *file = new TFile( filename.c_str(), "READ" );
 
       if( file->IsOpen() )
         ttree = (TTree*)file->Get("analysistree/anatree");

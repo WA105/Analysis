@@ -100,13 +100,11 @@ double getMeanVector( vector<double> v ){
 int main( int argc, char* argv[] ){
 
   //parse the input argument ===================================================
-  string rawFile;
   string recoFile;
   string filter; //incoherent or coherent
 
   for ( int i=1; i<argc; i=i+2 ) {
-   if      ( string(argv[i]) == "-raw" ) rawFile= argv[i+1];
-   else if ( string(argv[i]) == "-reco" ) recoFile = argv[i+1];
+   if ( string(argv[i]) == "-reco" ) recoFile = argv[i+1];
    else if ( string(argv[i]) == "-filter" ) filter = argv[i+1];
    else {
      //PrintUsage();
@@ -157,22 +155,14 @@ int main( int argc, char* argv[] ){
 
   //Prepare inputs =============================================================
 
-  LArParser *rawParser = new LArParser();
   LArParser *recoParser = new LArParser();
-
-  TTree *rawTree = getTTree( rawFile );
   TTree *recoTree = getTTree( recoFile );
 
 
   //check if the tree has been correctly set ===================================
 
-  if(!rawTree || !recoTree){
+  if( !recoTree){
     cout << "Error! Trees doesn't exist! " << endl;
-    return 1;
-  }
-
-  if( recoTree->GetEntries() != rawTree->GetEntries() ){
-    cout << "Error! Trees havent the same number of entries! " << endl;
     return 1;
   }
 
@@ -190,10 +180,6 @@ if( recoTree->GetEntries() < 300 ){
     if( evt % mod !=0 ){ continue; } //process one event every 6 ( about 50 events per subrun w 335 events )
       cout << " Processing event " << evt;
 
-      //raw objects
-      vector<Channel> rawChannels;
-      rawParser->getRawChannelsEvent( rawTree, rawChannels, evt );
-
       //reco objects ----------------------------------------------------------
       vector<Hit> recoHits;
       recoParser->getRecoHitsEvent( recoTree,  recoHits, evt );
@@ -205,8 +191,13 @@ if( recoTree->GetEntries() < 300 ){
 
       //make an hit channels map
       map<int, vector<Hit> > ch2hits;
-      for(auto recoHit : recoHits)
+      for(auto recoHit : recoHits){
         ch2hits[ recoHit.channel ].push_back( recoHit );
+      }
+
+      //raw objects
+      vector<Channel> rawChannels;
+      recoParser->getRecoChannelsEvent( recoTree, rawChannels, evt );
 
       if(!rawChannels.size()){
         cout << "ERROR:No rawChannels object created. Break event loop" << endl;
@@ -221,7 +212,7 @@ if( recoTree->GetEntries() < 300 ){
         rawChannel.subtractPedestal(true);
 
         if( !hasChannel( ch2hits[ rawChannel.channel ] ) ){ continue; }
-        if ( rawChannel.isDead() ){ continue; }
+        if ( rawChannel.isDead() ){  continue; }
 
         vector<double> adc = rawChannel.signal; //real ADCs
         vector<double> noiseAdc; // only noisy ADCs

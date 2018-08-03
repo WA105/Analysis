@@ -90,164 +90,173 @@ MCTrack::~MCTrack(){}
 ////////////////////////////////////////////////////////////////////////////////
 LArParser::LArParser(){}
 
-LArParser::LArParser( TTree *tree ){
+//LArParser::LArParser( TTree *tree ){
   //alternative constructor needs a tree and a run object
-  fTree = tree;
-}
+  //fTree = tree;
+//}
 
 LArParser::~LArParser(){}
 
-void LArParser::setRawBranches(){
+void LArParser::setRawBranches(TTree *tree){
 
   //Link brances in root file containg raw data
 
-  fTree->SetBranchAddress("Run",&tRun);
-  fTree->SetBranchAddress("Subrun",&tSubrun);
-  fTree->SetBranchAddress("EventNumberInRun",&tEventNumberInRun);
-  fTree->SetBranchAddress("EventTimeSeconds",&tEventTimeSeconds);
-  fTree->SetBranchAddress("EventTimeNanoseconds", &tEventTimeNanoseconds);
-  fTree->SetBranchAddress("RawWaveform_NumberOfChannels",&tRawWaveform_NumberOfChannels);
-  fTree->SetBranchAddress("RawWaveform_NumberOfTicks",&tRawWaveform_NumberOfTicks);
-  fTree->SetBranchAddress("RawWaveform_NumberOfTicksInAllChannels",&tRawWaveform_NumberOfTicksInAllChannels);
-  fTree->SetBranchAddress("RawWaveform_Channel",&tRawWaveform_Channel);
-  fTree->SetBranchAddress("RawWaveform_ADC",&tRawWaveform_ADC);
+  tree->SetBranchAddress("Run",&tRun);
+  tree->SetBranchAddress("Subrun",&tSubrun);
+  tree->SetBranchAddress("EventNumberInRun",&tEventNumberInRun);
+  tree->SetBranchAddress("EventTimeSeconds",&tEventTimeSeconds);
+  tree->SetBranchAddress("EventTimeNanoseconds", &tEventTimeNanoseconds);
+  tree->SetBranchAddress("RawWaveform_NumberOfChannels",&tRawWaveform_NumberOfChannels);
+  tree->SetBranchAddress("RawWaveform_NumberOfTicks",&tRawWaveform_NumberOfTicks);
+  tree->SetBranchAddress("RawWaveform_NumberOfTicksInAllChannels",&tRawWaveform_NumberOfTicksInAllChannels);
+  tree->SetBranchAddress("RawWaveform_Channel",&tRawWaveform_Channel);
+  tree->SetBranchAddress("RawWaveform_ADC",&tRawWaveform_ADC);
 
 }
 
-void LArParser::setMCBranches(){
+void LArParser::setMCBranches(TTree *tree){
 
   //Link branches in the ROOT file to variables
   //Metadata
 
   //g4 particles
-  fTree->SetBranchAddress("MCTruth_GEANT4_NumberOfParticles", &tNGeantTrackPerEvent);
-  fTree->SetBranchAddress("MCTruth_GEANT4_PDGCode",&tPdg);
-  fTree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_ParticleID",&tParticleId);
-  fTree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_StartEnergy",&tStartE);
-  fTree->SetBranchAddress("MCTruth_GEANT4_IsInTPCAV",&tIsInTPCAV);
-  fTree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_StartTime",&tStartTime);
-  fTree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_StartMomentum",&tMom);
-  fTree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_StartMomentum_X",&tMomX);
-  fTree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_StartMomentum_Y",&tMomY);
-  fTree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_StartMomentum_Z",&tMomZ);
-  fTree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_StartPoint_X",&tStartX);
-  fTree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_StartPoint_Y",&tStartY);
-  fTree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_StartPoint_Z",&tStartZ);
-  fTree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_StartDirection_Phi",&tStartPhi);
-  fTree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_StartDirection_Theta",&tStartTheta);
-  fTree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_Pathlength",&tLengthAV);
-  fTree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_EndEnergy",&tEndE);
+  tree->SetBranchAddress("MCTruth_GEANT4_NumberOfParticles", &tNGeantTrackPerEvent);
+  tree->SetBranchAddress("MCTruth_GEANT4_PDGCode",&tPdg);
+  tree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_ParticleID",&tParticleId);
+  tree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_StartEnergy",&tStartE);
+  tree->SetBranchAddress("MCTruth_GEANT4_IsInTPCAV",&tIsInTPCAV);
+  tree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_StartTime",&tStartTime);
+  tree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_StartMomentum",&tMom);
+  tree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_StartMomentum_X",&tMomX);
+  tree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_StartMomentum_Y",&tMomY);
+  tree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_StartMomentum_Z",&tMomZ);
+  tree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_StartPoint_X",&tStartX);
+  tree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_StartPoint_Y",&tStartY);
+  tree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_StartPoint_Z",&tStartZ);
+  tree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_StartDirection_Phi",&tStartPhi);
+  tree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_StartDirection_Theta",&tStartTheta);
+  tree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_Pathlength",&tLengthAV);
+  tree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_EndEnergy",&tEndE);
 
 }
 
-void LArParser::setRecoBranches(){
+void LArParser::setRecoChannelBranches(TTree *tree){
+
+  //event metadata
+  tree->SetBranchAddress("Run",&tRun);
+  tree->SetBranchAddress("Subrun",&tSubrun);
+  tree->SetBranchAddress("EventNumberInRun",&tEventNumberInRun);
+  tree->SetBranchAddress("EventTimeSeconds",&tEventTimeSeconds);
+  tree->SetBranchAddress("EventTimeNanoseconds", &tEventTimeNanoseconds);
+
+  tree->SetBranchAddress("RecoWaveforms_NumberOfChannels",&tRecoWaveform_NumberOfChannels);
+  tree->SetBranchAddress("RecoWaveform_NTicks",&tRecoWaveform_NumberOfTicks);
+  tree->SetBranchAddress("RecoWaveform_NumberOfTicksInAllChannels",&tRecoWaveform_NumberOfTicksInAllChannels);
+  tree->SetBranchAddress("RecoWaveform_Channel",&tRecoWaveform_Channel);
+  tree->SetBranchAddress("RecoWaveform_ADC",&tRecoWaveform_ADC);
+
+}
+
+void LArParser::setRecoBranches(TTree *tree){
 
     //event metadata
-    fTree->SetBranchAddress("Run",&tRun);
-    fTree->SetBranchAddress("Subrun",&tSubrun);
-    fTree->SetBranchAddress("EventNumberInRun",&tEventNumberInRun);
-    fTree->SetBranchAddress("EventTimeSeconds",&tEventTimeSeconds);
-    fTree->SetBranchAddress("EventTimeNanoseconds", &tEventTimeNanoseconds);
+    tree->SetBranchAddress("Run",&tRun);
+    tree->SetBranchAddress("Subrun",&tSubrun);
+    tree->SetBranchAddress("EventNumberInRun",&tEventNumberInRun);
+    tree->SetBranchAddress("EventTimeSeconds",&tEventTimeSeconds);
+    tree->SetBranchAddress("EventTimeNanoseconds", &tEventTimeNanoseconds);
 
-    //Link brances in root file containg raw data
-    fTree->SetBranchAddress("RecoWaveforms_NumberOfChannels",&tRecoWaveform_NumberOfChannels);
-    fTree->SetBranchAddress("RecoWaveform_NTicks",&tRecoWaveform_NumberOfTicks);
-    fTree->SetBranchAddress("RecoWaveform_NumberOfTicksInAllChannels",&tRecoWaveform_NumberOfTicksInAllChannels);
-    fTree->SetBranchAddress("RecoWaveform_Channel",&tRecoWaveform_Channel);
-    fTree->SetBranchAddress("RecoWaveform_ADC",&tRecoWaveform_ADC);
+    //tree->SetBranchAddress("RecoWaveforms_NumberOfChannels",&tRecoWaveform_NumberOfChannels);
+    //tree->SetBranchAddress("RecoWaveform_NTicks",&tRecoWaveform_NumberOfTicks);
+    //tree->SetBranchAddress("RecoWaveform_NumberOfTicksInAllChannels",&tRecoWaveform_NumberOfTicksInAllChannels);
+    //tree->SetBranchAddress("RecoWaveform_Channel",&tRecoWaveform_Channel);
+    //tree->SetBranchAddress("RecoWaveform_ADC",&tRecoWaveform_ADC);
 
-    //Hit variables
-    fTree->SetBranchAddress("NumberOfHits",&tNumberOfHits);
-    fTree->SetBranchAddress("Hit_TPC",&tHit_TPC);
-    fTree->SetBranchAddress("Hit_View",&tHit_View);
-    fTree->SetBranchAddress("Hit_Channel",&tHit_Channel);
-    fTree->SetBranchAddress("Hit_ChargeSummedADC",&tHit_ChargeSummedADC);
-    fTree->SetBranchAddress("Hit_ChargeIntegral",&tHit_ChargeIntegral);
-    fTree->SetBranchAddress("Hit_PeakTime",&tHit_PeakTime);
-    fTree->SetBranchAddress("Hit_StartTime",&tHit_StartTime);
-    fTree->SetBranchAddress("Hit_EndTime",&tHit_EndTime);
-    fTree->SetBranchAddress("Hit_Width",&tHit_Width);
-    fTree->SetBranchAddress("Hit_GoodnessOfFit",&tHit_GoodnessOfFit);
-    fTree->SetBranchAddress("Hit_Multiplicity",&tHit_Multiplicity);
-    fTree->SetBranchAddress("Hit_TrackID",&tHit_TrackID);
-    fTree->SetBranchAddress("Hit_trueID",&tHit_particleID);
-    fTree->SetBranchAddress("Hit_trueEnergyMax",&tHit_TrueEnergy);
-    fTree->SetBranchAddress("Hit_trueEnergyFraction",&tHit_TrueEnergyFraction);
-    //fTree->SetBranchAddress("Hit_ClusterID",&tHit_ClusterID);
+    tree->SetBranchAddress("NumberOfHits",&tNumberOfHits);
+    tree->SetBranchAddress("Hit_TPC",&tHit_TPC);
+    tree->SetBranchAddress("Hit_View",&tHit_View);
+    tree->SetBranchAddress("Hit_Channel",&tHit_Channel);
+    tree->SetBranchAddress("Hit_ChargeSummedADC",&tHit_ChargeSummedADC);
+    tree->SetBranchAddress("Hit_ChargeIntegral",&tHit_ChargeIntegral);
+    tree->SetBranchAddress("Hit_PeakTime",&tHit_PeakTime);
+    tree->SetBranchAddress("Hit_StartTime",&tHit_StartTime);
+    tree->SetBranchAddress("Hit_EndTime",&tHit_EndTime);
+    tree->SetBranchAddress("Hit_Width",&tHit_Width);
+    tree->SetBranchAddress("Hit_GoodnessOfFit",&tHit_GoodnessOfFit);
+    tree->SetBranchAddress("Hit_Multiplicity",&tHit_Multiplicity);
+    tree->SetBranchAddress("Hit_TrackID",&tHit_TrackID);
+    tree->SetBranchAddress("Hit_trueID",&tHit_particleID);
+    tree->SetBranchAddress("Hit_trueEnergyMax",&tHit_TrueEnergy);
+    tree->SetBranchAddress("Hit_trueEnergyFraction",&tHit_TrueEnergyFraction);
+    tree->SetBranchAddress("Hit_ClusterID",&tHit_ClusterID);
 
-    //  //Cluster variables
-    //  fTree->SetBranchAddress("NumberOfClusters",&tNumberOfClusters);
-    //  fTree->SetBranchAddress("ClusterID",&tClusterID);
-    //  fTree->SetBranchAddress("Cluster_View",&tCluster_View);
-    //  fTree->SetBranchAddress("Cluster_NumberOfHits",&tCluster_NumberOfHits);
-    //  fTree->SetBranchAddress("Cluster_ChargeIntegral",&tCluster_ChargeIntegral);
-    //  fTree->SetBranchAddress("Cluster_StartChannel",&tCluster_StartChannel);
-    //  fTree->SetBranchAddress("Cluster_StartTick",&tCluster_StartTick);
-    //  fTree->SetBranchAddress("Cluster_EndChannel",&tCluster_EndChannel);
-    //  fTree->SetBranchAddress("Cluster_EndTick",&tCluster_EndTick);
-    //  fTree->SetBranchAddress("Cluster_StartCharge",&tCluster_StartCharge);
-    //  fTree->SetBranchAddress("Cluster_StartAngle",&tCluster_StartAngle);
-    //  fTree->SetBranchAddress("Cluster_EndCharge",&tCluster_EndCharge);
-    //  fTree->SetBranchAddress("Cluster_EndAngle",&tCluster_EndAngle);
+    /*
+    treeTree->SetBranchAddress("NumberOfClusters",&tNumberOfClusters);
+    treeTree->SetBranchAddress("ClusterID",&tClusterID);
+    treeTree->SetBranchAddress("Cluster_View",&tCluster_View);
+    treeTree->SetBranchAddress("Cluster_NumberOfHits",&tCluster_NumberOfHits);
+    treeTree->SetBranchAddress("Cluster_ChargeIntegral",&tCluster_ChargeIntegral);
+    treeTree->SetBranchAddress("Cluster_StartChannel",&tCluster_StartChannel);
+    treeTree->SetBranchAddress("Cluster_StartTick",&tCluster_StartTick);
+    treeTree->SetBranchAddress("Cluster_EndChannel",&tCluster_EndChannel);
+    treeTree->SetBranchAddress("Cluster_EndTick",&tCluster_EndTick);
+    treeTree->SetBranchAddress("Cluster_StartCharge",&tCluster_StartCharge);
+    treeTree->SetBranchAddress("Cluster_StartAngle",&tCluster_StartAngle);
+    treeTree->SetBranchAddress("Cluster_EndCharge",&tCluster_EndCharge);
+    treeTree->SetBranchAddress("Cluster_EndAngle",&tCluster_EndAngle);
+    */
 
-    //  //Track variables
-    fTree->SetBranchAddress("NumberOfTracks",&tNumberOfTracks);
-    fTree->SetBranchAddress("TrackID",&tTrackID);
-    fTree->SetBranchAddress("Track_NumberOfHits",&tTrack_NumberOfHits);
-    fTree->SetBranchAddress("Track_Length_Trajectory",&tTrack_Length);
-
-    fTree->SetBranchAddress("Track_StartPoint_X", &tTrack_StartPoint_X);
-    fTree->SetBranchAddress("Track_StartPoint_Y", &tTrack_StartPoint_Y);
-    fTree->SetBranchAddress("Track_StartPoint_Z", &tTrack_StartPoint_Z);
-    fTree->SetBranchAddress("Track_StartPoint_DistanceToBoundary", &tTrack_StartPoint_DistanceToBoundary);
-    fTree->SetBranchAddress("Track_EndPoint_X", &tTrack_EndPoint_X);
-    fTree->SetBranchAddress("Track_EndPoint_Y", &tTrack_EndPoint_Y);
-    fTree->SetBranchAddress("Track_EndPoint_Z", &tTrack_EndPoint_Z);
-    fTree->SetBranchAddress("Track_EndPoint_DistanceToBoundary",&tTrack_EndPoint_DistanceToBoundary);
-
-    fTree->SetBranchAddress("Track_StartDirection_Theta",&tTrack_StartDirection_Theta);
-    fTree->SetBranchAddress("Track_StartDirection_Phi",&tTrack_StartDirection_Phi);
-    fTree->SetBranchAddress("Track_StartDirection_X", &tTrack_StartDirection_X);
-    fTree->SetBranchAddress("Track_StartDirection_Y", &tTrack_StartDirection_Y);
-    fTree->SetBranchAddress("Track_StartDirection_Z", &tTrack_StartDirection_Z);
-
-    fTree->SetBranchAddress("Track_EndDirection_Theta",&tTrack_EndDirection_Theta);
-    fTree->SetBranchAddress("Track_EndDirection_Phi",&tTrack_EndDirection_Phi);
-    fTree->SetBranchAddress("Track_EndDirection_X", &tTrack_EndDirection_X);
-    fTree->SetBranchAddress("Track_EndDirection_Y", &tTrack_EndDirection_Y);
-    fTree->SetBranchAddress("Track_EndDirection_Z", &tTrack_EndDirection_Z);
-
-    fTree->SetBranchAddress("Track_PitchInViews", &tTrack_PitchInViews);
-    fTree->SetBranchAddress("Track_NumberOfHitsPerView",&tTrack_NumberOfHitsPerView);
-
-  //  //Track hit variables
-    fTree->SetBranchAddress("Track_Hit_X", &tTrack_Hit_X);
-    fTree->SetBranchAddress("Track_Hit_Y", &tTrack_Hit_Y);
-    fTree->SetBranchAddress("Track_Hit_Z", &tTrack_Hit_Z);
-    fTree->SetBranchAddress("Track_Hit_ds_LocalTrackDirection", &tTrack_dx_LocalTrackDirection);
-    fTree->SetBranchAddress("Track_Hit_ds_3DPosition", &tTrack_dx_3DPosition);
-    fTree->SetBranchAddress("Track_Hit_TPC", &tTrack_Hit_TPC);
-    fTree->SetBranchAddress("Track_Hit_View", &tTrack_Hit_View);
-    fTree->SetBranchAddress("Track_Hit_Channel", &tTrack_Hit_Channel);
-    fTree->SetBranchAddress("Track_Hit_PeakTime", &tTrack_Hit_PeakTime);
-    fTree->SetBranchAddress("Track_Hit_ChargeSummedADC", &tTrack_Hit_ChargeSummedADC);
-    fTree->SetBranchAddress("Track_Hit_ChargeIntegral", &tTrack_Hit_ChargeIntegral);
-    fTree->SetBranchAddress("Track_Hit_StartTime", &tTrack_Hit_StartTime);
-    fTree->SetBranchAddress("Track_Hit_EndTime", &tTrack_Hit_EndTime);
-    fTree->SetBranchAddress("Track_Hit_Width", &tTrack_Hit_Width);
-    fTree->SetBranchAddress("Track_Hit_GoodnessOfFit", &tTrack_Hit_GoodnessOfFit);
-    fTree->SetBranchAddress("Track_Hit_Multiplicity", &tTrack_Hit_Multiplicity);
-    fTree->SetBranchAddress("Track_Hit_trueID", &tTrack_Hit_particleID);
-    fTree->SetBranchAddress("Track_Hit_trueEnergyMax", &tTrack_Hit_TrueEnergy);
-    fTree->SetBranchAddress("Track_Hit_trueEnergyFraction", &tTrack_Hit_TrueEnergyFraction);
+    tree->SetBranchAddress("NumberOfTracks",&tNumberOfTracks);
+    tree->SetBranchAddress("TrackID",&tTrackID);
+    tree->SetBranchAddress("Track_NumberOfHits",&tTrack_NumberOfHits);
+    tree->SetBranchAddress("Track_Length_Trajectory",&tTrack_Length);
+    tree->SetBranchAddress("Track_StartPoint_X", &tTrack_StartPoint_X);
+    tree->SetBranchAddress("Track_StartPoint_Y", &tTrack_StartPoint_Y);
+    tree->SetBranchAddress("Track_StartPoint_Z", &tTrack_StartPoint_Z);
+    tree->SetBranchAddress("Track_StartPoint_DistanceToBoundary", &tTrack_StartPoint_DistanceToBoundary);
+    tree->SetBranchAddress("Track_EndPoint_X", &tTrack_EndPoint_X);
+    tree->SetBranchAddress("Track_EndPoint_Y", &tTrack_EndPoint_Y);
+    tree->SetBranchAddress("Track_EndPoint_Z", &tTrack_EndPoint_Z);
+    tree->SetBranchAddress("Track_EndPoint_DistanceToBoundary",&tTrack_EndPoint_DistanceToBoundary);
+    tree->SetBranchAddress("Track_StartDirection_Theta",&tTrack_StartDirection_Theta);
+    tree->SetBranchAddress("Track_StartDirection_Phi",&tTrack_StartDirection_Phi);
+    tree->SetBranchAddress("Track_StartDirection_X", &tTrack_StartDirection_X);
+    tree->SetBranchAddress("Track_StartDirection_Y", &tTrack_StartDirection_Y);
+    tree->SetBranchAddress("Track_StartDirection_Z", &tTrack_StartDirection_Z);
+    tree->SetBranchAddress("Track_EndDirection_Theta",&tTrack_EndDirection_Theta);
+    tree->SetBranchAddress("Track_EndDirection_Phi",&tTrack_EndDirection_Phi);
+    tree->SetBranchAddress("Track_EndDirection_X", &tTrack_EndDirection_X);
+    tree->SetBranchAddress("Track_EndDirection_Y", &tTrack_EndDirection_Y);
+    tree->SetBranchAddress("Track_EndDirection_Z", &tTrack_EndDirection_Z);
+    tree->SetBranchAddress("Track_PitchInViews", &tTrack_PitchInViews);
+    tree->SetBranchAddress("Track_NumberOfHitsPerView",&tTrack_NumberOfHitsPerView);
+    tree->SetBranchAddress("Track_Hit_X", &tTrack_Hit_X);
+    tree->SetBranchAddress("Track_Hit_Y", &tTrack_Hit_Y);
+    tree->SetBranchAddress("Track_Hit_Z", &tTrack_Hit_Z);
+    tree->SetBranchAddress("Track_Hit_ds_LocalTrackDirection", &tTrack_dx_LocalTrackDirection);
+    tree->SetBranchAddress("Track_Hit_ds_3DPosition", &tTrack_dx_3DPosition);
+    tree->SetBranchAddress("Track_Hit_TPC", &tTrack_Hit_TPC);
+    tree->SetBranchAddress("Track_Hit_View", &tTrack_Hit_View);
+    tree->SetBranchAddress("Track_Hit_Channel", &tTrack_Hit_Channel);
+    tree->SetBranchAddress("Track_Hit_PeakTime", &tTrack_Hit_PeakTime);
+    tree->SetBranchAddress("Track_Hit_ChargeSummedADC", &tTrack_Hit_ChargeSummedADC);
+    tree->SetBranchAddress("Track_Hit_ChargeIntegral", &tTrack_Hit_ChargeIntegral);
+    tree->SetBranchAddress("Track_Hit_StartTime", &tTrack_Hit_StartTime);
+    tree->SetBranchAddress("Track_Hit_EndTime", &tTrack_Hit_EndTime);
+    tree->SetBranchAddress("Track_Hit_Width", &tTrack_Hit_Width);
+    tree->SetBranchAddress("Track_Hit_GoodnessOfFit", &tTrack_Hit_GoodnessOfFit);
+    tree->SetBranchAddress("Track_Hit_Multiplicity", &tTrack_Hit_Multiplicity);
+    tree->SetBranchAddress("Track_Hit_trueID", &tTrack_Hit_particleID);
+    tree->SetBranchAddress("Track_Hit_trueEnergyMax", &tTrack_Hit_TrueEnergy);
+    tree->SetBranchAddress("Track_Hit_trueEnergyFraction", &tTrack_Hit_TrueEnergyFraction);
 
     return;
 }
 
-bool LArParser::isTreeGood(){
+bool LArParser::isTreeGood(TTree *tree){
   //check if the fTree object exists
 
-  if(!fTree)
+  if(!tree)
     return false;
   else
     return true;
@@ -291,7 +300,7 @@ void LArParser::fillRecoChannels( vector<Channel> & channels ){
 
     Channel dummyChannel;
 
-    for(int k=0; k < tRecoWaveform_NumberOfTicks; k++){
+    for(int k=0; k < tRecoWaveform_NumberOfTicks[j]; k++){
 
       dummyChannel.run = tRun;
       dummyChannel.subRun = tSubrun;
@@ -299,8 +308,8 @@ void LArParser::fillRecoChannels( vector<Channel> & channels ){
       dummyChannel.timeSeconds = tEventTimeSeconds;
       dummyChannel.timeNanoSeconds = tEventTimeNanoseconds;
       dummyChannel.channel = tRecoWaveform_Channel[j];
-      dummyChannel.nTicks = tRecoWaveform_NumberOfTicks;
-      dummyChannel.signal.push_back( tRecoWaveform_ADC[j*tRecoWaveform_NumberOfTicks+k] );
+      dummyChannel.nTicks = tRecoWaveform_NumberOfTicks[j];
+      dummyChannel.signal.push_back( tRecoWaveform_ADC[j*tRecoWaveform_NumberOfTicks[j]+k] );
 
       if(dummyChannel.channel < Ch_0){
         dummyChannel.view = 0;
@@ -463,51 +472,53 @@ void LArParser::fillRecoTrack( vector<Track> & tracks ){
 void LArParser::getRawChannelsEvent( TTree *tree,  vector<Channel> & channels, int event  ){
   //just fill the hit array for a specific event
 
-  fTree = tree;
+  if ( this->isTreeGood(tree) ){
 
-  if ( this->isTreeGood() ){
-    this->setRawBranches();
+    this->setRawBranches(tree);
+
+    tree->GetEntry(event);
+    this->fillRawChannels( channels );
+
+    //this->clean();
+
+    return;
+
   }else{
     cout << "LArParser::getRawChannelsEvent ERROR:Tree doesn't exist!" << endl;
     return;
   }
-
-  fTree->GetEntry(event);
-  this->fillRawChannels( channels );
-
-  this->clean();
-
-  return;
 
 }
 
 void LArParser::getRecoChannelsEvent( TTree *tree,  vector<Channel> & channels, int event  ){
   //just fill the hit array for a specific event
 
-  fTree = tree;
+  //fTree = tree;
 
-  if ( this->isTreeGood() ){
-      this->setRecoBranches();
+  if ( this->isTreeGood( tree ) ){
+
+      this->setRecoChannelBranches(tree);
+
+      tree->GetEntry(event);
+      this->fillRecoChannels( channels );
+
+      //this->clean();
+
+      return;
+
   }else{
     cout << "LArParser::getRecoChannelsEvent ERROR:Tree doesn't exist!" << endl;
     return;
   }
 
-  fTree->GetEntry(event);
-  this->fillRecoChannels( channels );
-
-  this->clean();
-
-  return;
-
 }
 
-void LArParser::getMCTracksEvent( vector<MCTrack> & tracks, int event  ){
+void LArParser::getMCTracksEvent(TTree *tree, vector<MCTrack> & tracks, int event  ){
   //just fill the hit array for a specific event
 
-  this->setMCBranches();
+  this->setMCBranches(tree);
 
-  fTree->GetEntry(event);
+  tree->GetEntry(event);
   this->fillMCTrack( tracks );
 
   return;
@@ -517,78 +528,75 @@ void LArParser::getMCTracksEvent( vector<MCTrack> & tracks, int event  ){
 void LArParser::getRecoHitsEvent( TTree *tree,  vector<Hit> & hits, int event  ){
   //just fill the hit array for a specific event
 
-  fTree = tree;
+  if ( this->isTreeGood(tree) ){
 
-  if ( this->isTreeGood() ){
-      this->setRecoBranches();
+      this->setRecoBranches(tree);
+
+      tree->GetEntry(event);
+      this->fillRecoHits( hits );
+
+      return;
   }else{
     cout << "LArParser::getRecoHitsEvent ERROR:Tree doesn't exist!" << endl;
     return;
   }
 
-  tree->GetEntry(event);
-  this->fillRecoHits( hits );
-
-  this->clean();
-
-  return;
-
 }
 
-void LArParser::getRecoTracksEvent( vector<Track> & tracks, int event  ){
+void LArParser::getRecoTracksEvent(TTree *tree, vector<Track> & tracks, int event  ){
   //just fill the hit array for a specific event
 
-  this->setRecoBranches();
+  this->setRecoBranches(tree);
 
-  fTree->GetEntry(event);
+  tree->GetEntry(event);
   this->fillRecoTrack( tracks );
 
   return;
 
 }
 
-void LArParser::getMCTracks( vector<MCTrack> & tracks ){
+void LArParser::getMCTracks(TTree *tree, vector<MCTrack> & tracks ){
   //return an array holding the reconstruced track
 
-  this->setMCBranches();
+  this->setMCBranches(tree);
 
-  for(int i=0; i<fTree->GetEntries(); i++) //Event loop
+  for(int i=0; i<tree->GetEntries(); i++) //Event loop
   {
-    fTree->GetEntry(i);
+    tree->GetEntry(i);
     this->fillMCTrack( tracks );
   }//Event loop
 
   return;
 }
 
-void LArParser::getRecoHits( vector<Hit> & hits ){
+void LArParser::getRecoHits(TTree *tree, vector<Hit> & hits ){
   //return a vector holding the free reconstructed hits
 
-  this->setRecoBranches();
+  this->setRecoBranches(tree);
 
-  for(int i=0; i<fTree->GetEntries(); i++){ //Event loop
+  for(int i=0; i<tree->GetEntries(); i++){ //Event loop
 
-    fTree->GetEntry(i);
+    tree->GetEntry(i);
     this->fillRecoHits( hits );
   }//Event loop
 
   return;
 }
 
-void LArParser::getRecoTracks( vector<Track> & tracks ){
+void LArParser::getRecoTracks(TTree *tree, vector<Track> & tracks ){
   //return an array holding the reconstruced track
 
-  this->setRecoBranches();
+  this->setRecoBranches(tree);
 
-  for(int i=0; i<fTree->GetEntries(); i++) //Event loop
+  for(int i=0; i<tree->GetEntries(); i++) //Event loop
   {
-    fTree->GetEntry(i);
+    tree->GetEntry(i);
     this->fillRecoTrack( tracks );
   }//Event loop
 
   return;
 }
 
-void LArParser::clean(){
-  fTree = 0;
-}
+//void LArParser::clean(){
+  //fTree->Delete();
+//}
