@@ -1,7 +1,17 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Macro to calculate the rms for the given run and subrun
+// Routine to calculate the noise mean and rms for a given subrun
 //
-//mailto:andrea.scarpelli@cern.ch
+// Input is a recofull file with noise hits
+// Output is a TTree with the average noise rms and mean for that event in ADCs
+// Output are a TH1D with the rms and the mean as function of the channel number
+// Usage: ./build/noise -i path/to/input.root -o path/to/output.root -h no -p no
+// -i input
+// -o output
+// -h exclude ROI checking at hits ( "yes" or "no" )
+// -p remove pedestal ( "yes" or "no" )
+//
+// mailto:andrea.scarpelli@cern.ch
+//
 ////////////////////////////////////////////////////////////////////////////////
 
 //c++ includes
@@ -27,7 +37,7 @@ using namespace std;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void GetMeanAndRMS(vector<double> array, double & mean, double & rms){
+void GetMeanAndRMS(vector<float> array, float & mean, float & rms){
   //use welford method..consisted with qScan
 
   mean = 0;
@@ -36,14 +46,14 @@ void GetMeanAndRMS(vector<double> array, double & mean, double & rms){
   if( array.size() == 0 )
     return;
 
-  double A = 0;
-  double Q = 0;
+  float A = 0;
+  float Q = 0;
 
   for(size_t i=0;i<array.size();i++){
 
-    double d  = (double)array[i];
-    double Ak = A + (d - A)/(i+1);
-    double Qk = Q + (d - Ak)*(d-A);
+    float d  = (float)array[i];
+    float Ak = A + (d - A)/(i+1);
+    float Qk = Q + (d - Ak)*(d-A);
     A = Ak;
     Q = Qk;
   }
@@ -62,8 +72,13 @@ bool hasChannel( vector<Hit> hits ){
 
 }
 
-bool inROI( double t, vector<Hit> hits ){
+bool inROI( float t, vector<Hit> hits ){
   //check if every time deposit is in a ROI
+
+  //if no hit, also no ROI
+  if( hits.size() == 0 ){
+    return false;
+  }
 
   int padSize = 10; //ticks to ignore before and after each hit
 
@@ -80,18 +95,41 @@ bool inROI( double t, vector<Hit> hits ){
 
 }
 
-double getMeanVector( vector<double> v ){
+float getMeanVector( vector<float> v ){
   //quick evaluate the mean of one vector
-  double mean = 0;
+  float mean = 0;
 
   if( v.size() == 0 ){
     return mean;
   }
   else{
-    double sum = accumulate(std::begin(v), std::end(v), 0.0);
-    mean = sum/(double)v.size();
+    float sum = accumulate(std::begin(v), std::end(v), 0.0);
+    mean = sum/(float)v.size();
     return mean;
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+string getFileNumber( string filename ){
+  //assuming the filename encorded in a format /path/to/file/run-subrun-Parser.root
+
+  //isolate filenumber from path
+  string s = filename;
+  string delimiter = "/";
+
+  size_t pos = 0;
+  string token;
+
+  while ((pos = s.find(delimiter)) != string::npos) {
+    token = s.substr(0, pos);
+    s.erase(0, pos + delimiter.length());
+  }
+
+  pos = s.find("-");
+  string number = s.substr(0, pos);
+
+  return number;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -100,24 +138,22 @@ double getMeanVector( vector<double> v ){
 int main( int argc, char* argv[] ){
 
   //parse the input argument ===================================================
-  string rawFile;
   string recoFile;
+  string outputFilename;
   string filter; //incoherent or coherent
+  string useHits;
+  string removePedestal;
 
-  for ( int i=1; i<argc; i=i+2 ) {
-   if      ( string(argv[i]) == "-raw" ) rawFile= argv[i+1];
-   else if ( string(argv[i]) == "-reco" ) recoFile = argv[i+1];
-   else if ( string(argv[i]) == "-filter" ) filter = argv[i+1];
+  for ( int i=1; i<argc; i=i+2 )
+  {
+   if ( string(argv[i]) == "-i" ) recoFile = argv[i+1];
+   else if ( string(argv[i]) == "-o" ) outputFilename = argv[i+1];
+   else if ( string(argv[i]) == "-h" ) useHits = argv[i+1];
+   else if ( string(argv[i]) == "-p" ) removePedestal = argv[i+1];
    else {
-     //PrintUsage();
+     cout << "Invalid option!" << endl;
      return 1;
    }
-  }
-
-  bool filterOn = false;
-  if( filter == "yes" ){
-    cout << " calculate noise after coherent noise removal " << endl;
-    filterOn = true;
   }
 
   //define and variables =======================================================
@@ -127,16 +163,13 @@ int main( int argc, char* argv[] ){
   int fEvent;
   int fEventSeconds;
   int fEventNanoSeconds;
-  double fMeanView1, fMeanView0;
-  double fRMSView0, fRMSView1;
+  float fMeanView1, fMeanView0;
+  float fRMSView0, fRMSView1;
 
-  string filterName = "";
-  if( filterOn )
-    filterName = "coherent";
-
-  string outputFilename = filterName+"NoiseRms.root";
+  //string outputFilename = filterName+"NoiseRms.root";
   TFile *ofile = new TFile(outputFilename.c_str(), "RECREATE");
-  if(!ofile->IsOpen()){
+  if(!ofile->IsOpen())
+  {
     cout << "File: " << outputFilename << " cannot be open!" << endl;
     return 1;
   }
@@ -152,102 +185,149 @@ int main( int argc, char* argv[] ){
   noiseTree->Branch("MeanView1", &fMeanView1, "MeanView1/D");
   noiseTree->Branch("RMSView1", &fRMSView1, "RMSView1/D");
 
-  map<int, vector<double> > view2mean;
-  map<int, vector<double> > view2rms;
+  map<int, vector<float> > view2mean;
+  map<int, vector<float> > view2rms;
+
+  string runNum = getFileNumber( recoFile );
+
+  string name = "_"+ runNum;
+  string title = "Run: " + runNum;
+
+  TH1D *hChMean = new TH1D( ("hChMean"+name).c_str(), (""+title).c_str(),
+                                                    Ch_0+Ch_1, -Ch_0, Ch_1 );
+  TH1D *hChRMS = new TH1D( ("hChRMS"+name).c_str(), (""+title).c_str(),
+                                                    Ch_0+Ch_1, -Ch_0, Ch_1 );
 
   //Prepare inputs =============================================================
 
-  LArParser *rawParser = new LArParser();
   LArParser *recoParser = new LArParser();
-
-  TTree *rawTree = getTTree( rawFile );
   TTree *recoTree = getTTree( recoFile );
-
 
   //check if the tree has been correctly set ===================================
 
-  if(!rawTree || !recoTree){
+  if( !recoTree){
     cout << "Error! Trees doesn't exist! " << endl;
-    return 1;
-  }
-
-  if( recoTree->GetEntries() != rawTree->GetEntries() ){
-    cout << "Error! Trees havent the same number of entries! " << endl;
     return 1;
   }
 
 //Event looper =================================================================
 
-cout << "Start event looper" << endl;
+map<int, vector<float>> fCh2Mean;
+map<int, vector<float>> fCh2RMS;
 
 int mod = 6;
-if( recoTree->GetEntries() < 300 ){
+if( recoTree->GetEntries() < 300 )
+{
   mod = recoTree->GetEntries()/50; //it will process event by event only max 100 events
+
+  //protect the case when mod=0
+  if(mod == 0) { mod = 1; }
+
 }
 
-  for(int evt=0; evt<recoTree->GetEntries(); evt++){
-
+for(int evt=0; evt<recoTree->GetEntries(); evt++)
+{
     if( evt % mod !=0 ){ continue; } //process one event every 6 ( about 50 events per subrun w 335 events )
-      cout << " Processing event " << evt;
+      cout << " Processing event " << evt << endl;
+
+      //reco objects -----------------------------------------------------------
+      bool hasHits;
+
+      if(useHits == "yes")
+        hasHits=true;
+      else
+        hasHits=false;
+
+      vector<Hit> recoHits;
+      map<int, vector<Hit> > ch2hits;
+
+      if(hasHits)
+        recoParser->getRecoHitsEvent( recoTree,  recoHits, evt );
+
+      if(!recoHits.size())
+      {
+        cout << "WARNING: No recoHits object created. ROIs may be accounted in the noise " << endl;
+        hasHits=false;
+      }
+      else
+      {
+        //make an hit channels map
+        for(auto recoHit : recoHits){
+          ch2hits[ recoHit.channel ].push_back( recoHit );
+        }
+      }
 
       //raw objects
       vector<Channel> rawChannels;
-      rawParser->getRawChannelsEvent( rawTree, rawChannels, evt );
-
-      //reco objects ----------------------------------------------------------
-      vector<Hit> recoHits;
-      recoParser->getRecoHitsEvent( recoTree,  recoHits, evt );
-
-      if(!recoHits.size()){
-        cout << "ERROR:No recoHits object created. Break event loop" << endl;
-        break;
-      }
-
-      //make an hit channels map
-      map<int, vector<Hit> > ch2hits;
-      for(auto recoHit : recoHits)
-        ch2hits[ recoHit.channel ].push_back( recoHit );
+      recoParser->getRecoChannelsEvent( recoTree, rawChannels, evt );
 
       if(!rawChannels.size()){
-        cout << "ERROR:No rawChannels object created. Break event loop" << endl;
-        break;
+        //a channel info must be found in every event
+        cout << "ERROR: No rawChannels object created." << endl;
+        return 1;
       }
-
-      cout << "..";
 
       //loop over channels -----------------------------------------------------
       for(auto rawChannel : rawChannels){
 
+      if(removePedestal=="yes")
         rawChannel.subtractPedestal(true);
+      else
+        rawChannel.subtractPedestal(false);
 
-        if( !hasChannel( ch2hits[ rawChannel.channel ] ) ){ continue; }
-        if ( rawChannel.isDead() ){ continue; }
+         //skip dead or bad channels
+        if ( rawChannel.isDead() || rawChannel.isBad() ){  continue; }
 
-        vector<double> adc = rawChannel.signal; //real ADCs
-        vector<double> noiseAdc; // only noisy ADCs
+        vector<float> adc = rawChannel.signal; //real ADCs
+        vector<float> noiseAdc; // only noise ADCs after ROI excluded
 
-        for( int t=2; t<(int)adc.size(); t++  ){
-
-          if ( !inROI( t, ch2hits[ rawChannel.channel ] ) ){
+        //loop over the timesignal, skip the first two digits
+        for( int t=2; t<(int)adc.size(); t++  )
+        {
+          if(hasHits)
+          {
+            if (  !inROI( t, ch2hits[ rawChannel.channel ] ) ) //exclude ROIs
+            {
+              noiseAdc.push_back( adc.at(t) );
+            }
+          }
+          else //if no hits are found, there are no ROIs
+          {
             noiseAdc.push_back( adc.at(t) );
           }
         } //end adc loop
 
         //calculate Mean and RMS here --------------------------------------------
 
-        double mean, rms;
+        float mean, rms;
         GetMeanAndRMS( noiseAdc, mean, rms );
 
         if(rms > 0){
           view2mean[ rawChannel.view ].push_back( mean );
           view2rms[ rawChannel.view ].push_back( rms );
+
+          fCh2Mean[rawChannel.channel].push_back(mean);
+          fCh2RMS[rawChannel.channel].push_back(rms);
+
+        }
+
+        map<int, vector<float>>::iterator mapIt;
+        for( mapIt = fCh2Mean.begin(); mapIt != fCh2Mean.end(); ++mapIt ){
+
+          float mean = getMeanVector( fCh2Mean[ mapIt->first ] );
+          float rms = getMeanVector( fCh2RMS[ mapIt->first ] );
+
+          int channel = ViewToDAQChan( mapIt->first );
+
+          if ( channel < 320 ){ channel = -channel; }
+          hChMean->SetBinContent( channel, mean );
+          hChRMS->SetBinContent( channel, rms );
+
         }
 
         noiseAdc.clear();
 
       } //end ch loop
-
-      cout << "..";
 
       fRun = rawChannels.at(1).run;
       fSubrun = rawChannels.at(1).subRun;
@@ -261,8 +341,6 @@ if( recoTree->GetEntries() < 300 ){
       fMeanView1 = getMeanVector( view2mean[1] );
       fRMSView1 = getMeanVector( view2rms[1] );
 
-      cout << "..";
-
       //fill the tree
       noiseTree->Fill();
 
@@ -271,14 +349,14 @@ if( recoTree->GetEntries() < 300 ){
       view2mean[1].clear();
       view2rms[1].clear();
 
-      cout << ".." << endl;
   }//end event loop
 
   //fill and close file ========================================================
   ofile->cd();
 
   noiseTree->Write();
-
+  hChMean->Write();
+  hChRMS->Write();
   ofile->Close();
 
   cout << "All done! " << endl;

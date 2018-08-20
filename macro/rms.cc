@@ -28,7 +28,7 @@ using namespace std;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void GetMeanAndRMS(vector<double> array, double & mean, double & rms){
+void GetMeanAndRMS(vector<float> array, float & mean, float & rms){
   //use welford method..consisted with qScan
 
   mean = 0;
@@ -37,14 +37,14 @@ void GetMeanAndRMS(vector<double> array, double & mean, double & rms){
   if( array.size() == 0 )
     return;
 
-  double A = 0;
-  double Q = 0;
+  float A = 0;
+  float Q = 0;
 
   for(size_t i=2;i<array.size();i++){
 
-    double d  = (double)array[i];
-    double Ak = A + (d - A)/(i+1);
-    double Qk = Q + (d - Ak)*(d-A);
+    float d  = (float)array[i];
+    float Ak = A + (d - A)/(i+1);
+    float Qk = Q + (d - Ak)*(d-A);
     A = Ak;
     Q = Qk;
   }
@@ -57,16 +57,16 @@ void GetMeanAndRMS(vector<double> array, double & mean, double & rms){
 
 ////////////////////////////////////////////////////////////////////////////////
 
-double getMeanVector( vector<double> v ){
+float getMeanVector( vector<float> v ){
   //quick evaluate the mean of one vector
-  double mean = 0;
+  float mean = 0;
 
   if( v.size() == 0 ){
     return mean;
   }
   else{
-    double sum = accumulate(std::begin(v), std::end(v), 0.0);
-    mean = sum/(double)v.size();
+    float sum = accumulate(std::begin(v), std::end(v), 0.0);
+    mean = sum/(float)v.size();
     return mean;
   }
 }
@@ -95,7 +95,7 @@ int getFileNumber( std::string filename ){
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void rms(string filename){
+void rms(string filename, string ofilename){
 
   //----------------------------------------------------------------------------
 
@@ -114,30 +114,25 @@ void rms(string filename){
   LArParser *rawParser = new LArParser();
   TTree *rawTree = getTTree( filename );
 
-  Run *run = new Run(runNum, "metadata/test.db");
+  map<int, vector<float>> fCh2Mean;
+  map<int, vector<float>> fCh2RMS;
 
-  rawParser->setTTree(rawTree);
-  rawParser->setRun(run);
-
-  //check if the tree exists and has been correctly set
-  if( !rawParser->isTreeGood() ){
-     cout << "Invalid ttree" << endl;
-     return 1;
+  int mod = 6;
+  if( rawTree->GetEntries() < 300 ){
+    mod = rawTree->GetEntries()/50; //it will process event by event only max 100 events
   }
-
-  map<int, vector<double>> fCh2Mean;
-  map<int, vector<double>> fCh2RMS;
 
   for(int evt=0; evt<rawTree->GetEntries(); evt++){
 
-      cout << "Processing event: " << evt << endl;
+      if( evt % mod != 0 ){ continue; } //process one event every 6 ( about 50 events per subrun w 335 events )
+      cout << " Processing event " << evt << endl;
 
       vector<Channel> rawChannels;
-      rawParser->getRawChannelsEvent( rawChannels, evt );
+      rawParser->getRecoChannelsEvent( rawTree, rawChannels, evt );
 
       for(auto rawChannel : rawChannels){
 
-        double mean, rms;
+        float mean, rms;
 
         rawChannel.subtractPedestal(true); //allow pedestal subtraction for that channel
 
@@ -149,11 +144,11 @@ void rms(string filename){
       } //end ch loop
 
 
-    map<int, vector<double>>::iterator mapIt;
+    map<int, vector<float>>::iterator mapIt;
     for( mapIt = fCh2Mean.begin(); mapIt != fCh2Mean.end(); ++mapIt ){
 
-      double mean = getMeanVector( fCh2Mean[ mapIt->first ] );
-      double rms = getMeanVector( fCh2RMS[ mapIt->first ] );
+      float mean = getMeanVector( fCh2Mean[ mapIt->first ] );
+      float rms = getMeanVector( fCh2RMS[ mapIt->first ] );
 
       int channel = ViewToDAQChan( mapIt->first );
 
@@ -165,7 +160,7 @@ void rms(string filename){
   }//end event loop
 
   //define output filename and write the histograms in it ----------------------
-  string ofilename = "chMeanAndRMS_"+to_string(runNum)+".root";
+  //string ofilename = "chMeanAndRMS_"+to_string(runNum)+".root";
   TFile *ofile = new TFile(ofilename.c_str(), "RECREATE");
 
   ofile->cd();

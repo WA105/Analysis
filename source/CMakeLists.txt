@@ -2,6 +2,7 @@
 ROOT_GENERATE_DICTIONARY(  CustomClassesDict
                             ../include/Run.hh
                            ../include/DataStructure.hh
+                           ../include/Utils.hh
 	                         LINKDEF
                            ../include/CustomClasses_LinkDef.h
                         )
@@ -19,6 +20,7 @@ add_library(  CustomClasses
               SHARED
               Run.cc
               DataStructure.cc
+              Utils.cc
 	            CustomClassesDict.cxx
             )
 

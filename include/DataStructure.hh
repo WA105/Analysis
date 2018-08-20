@@ -35,7 +35,7 @@ class Channel
     int channel;
     int nTicks;
     int view;
-    std::vector<double> signal;
+    std::vector<float> signal;
 
     bool isDead();
     bool isBad();
@@ -194,7 +194,9 @@ class LArParser
   private:
     void setRawBranches(TTree *tree);
     void setRecoChannelBranches(TTree *tree);
-    void setRecoBranches(TTree *tree);
+    void setRecoHitBranches(TTree *tree);
+    void setRecoClusterBranches(TTree *tree);
+    void setRecoTrackBranches(TTree *tree);
     void setMCBranches(TTree *tree);
     void fillRawChannels( vector<Channel> & channels );
     void fillRecoChannels( vector<Channel> & channels );

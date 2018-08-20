@@ -15,13 +15,14 @@
 const int NUM_OF_VIEWS = 2;
 const int NUM_OF_LEMS = 12;
 const int tpc_boundaries[6] = {-50, 50, -50, 50, 0, 300}; //minx,maxx,miny,maxy,minz,max
-const double Ch_0 = 320;
-const double Ch_1 = 960;
+const int Ch_0 = 320;
+const int Ch_1 = 960;
 const double pitch = 0.3;
 const int tdc = 1667;
 const double ADC2CHARGE = 45.31875; //ADC*ticks (from qScan)
 const int  maxNumChannels = 1280;
 const int maxNumTdc = maxNumChannels*tdc;
+const float sampling_freq = 2.5;    //sampling feq in MHz
 
 unsigned int ViewToDAQChan(unsigned int ViewChan);
 
