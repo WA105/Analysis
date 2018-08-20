@@ -1,7 +1,10 @@
 ////////////////////////////////////////////////////////////////////////////////
-// ROOT macro to calculate the chan rms for one event
+// ROOT macro to calculate the chan rms for one fullreco file
 //
-//mailto:andrea.scarpelli@cern.ch
+// Usage: root -l loadLib.cc rms.cc
+// [0] .x rms("path/to/fullreco.file")
+//
+// mailto:andrea.scarpelli@cern.ch
 ////////////////////////////////////////////////////////////////////////////////
 
 //c++ includes
@@ -73,7 +76,7 @@ float getMeanVector( vector<float> v ){
 
 ////////////////////////////////////////////////////////////////////////////////
 
-int getFileNumber( std::string filename ){
+int getFileNumber( std::string filename, subtra ){
   //assuming the filename encorded in a format /path/to/file/run-subrun-Parser.root
 
   //isolate filenumber from path
