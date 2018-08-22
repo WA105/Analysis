@@ -319,7 +319,7 @@ for(int evt=0; evt<recoTree->GetEntries(); evt++)
 
           int channel = ViewToDAQChan( mapIt->first );
 
-          if ( channel < 320 ){ channel = -channel; }
+          if ( channel < Ch_0 ){ channel -= Ch_0; }
           hChMean->SetBinContent( channel, mean );
           hChRMS->SetBinContent( channel, rms );
 
