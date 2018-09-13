@@ -74,6 +74,18 @@ void Channel::subtractPedestal( bool subtractPedestal ){
     return;
   }
 
+double Channel::sumAdcInROI( int startTime, int endTime ){
+  //return the summed adc of the signal between startTime and endTime
+
+  double sum=0;
+  for( int t=startTime; t< endTime; t++ ){
+    sum+= signal.at(t);
+  }
+
+  return sum;
+
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 Hit::Hit(){}
 Hit::~Hit(){}
@@ -88,11 +100,6 @@ MCTrack::~MCTrack(){}
 
 ////////////////////////////////////////////////////////////////////////////////
 LArParser::LArParser(){}
-
-//LArParser::LArParser( TTree *tree ){
-  //alternative constructor needs a tree and a run object
-  //fTree = tree;
-//}
 
 LArParser::~LArParser(){}
 

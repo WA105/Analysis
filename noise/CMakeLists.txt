@@ -26,7 +26,11 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/../include/*.hh)
 
 #add here the name of your executable
 add_executable(noise ${PROJECT_SOURCE_DIR}/noise.cc ${sources} ${headers})
+add_executable(signal-to-noise ${PROJECT_SOURCE_DIR}/signal-to-noise.cc ${sources} ${headers})
 add_executable(fft ${PROJECT_SOURCE_DIR}/fft.cc ${sources} ${headers})
+add_executable(cnr ${PROJECT_SOURCE_DIR}/cnr.cc ${sources} ${headers})
 
 target_link_libraries(noise ${ROOT_LIBRARIES} sqlite3 CustomClasses)
+target_link_libraries(signal-to-noise ${ROOT_LIBRARIES} sqlite3 CustomClasses)
 target_link_libraries(fft ${ROOT_LIBRARIES} sqlite3 CustomClasses)
+target_link_libraries(cnr ${ROOT_LIBRARIES} sqlite3 CustomClasses)

@@ -194,9 +194,9 @@ int main( int argc, char* argv[] ){
   string title = "Run: " + runNum;
 
   TH1D *hChMean = new TH1D( ("hChMean"+name).c_str(), (""+title).c_str(),
-                                                    Ch_0+Ch_1, -Ch_0, Ch_1 );
+                                                    Ch_0+Ch_1, 0, Ch_0+Ch_1 );
   TH1D *hChRMS = new TH1D( ("hChRMS"+name).c_str(), (""+title).c_str(),
-                                                    Ch_0+Ch_1, -Ch_0, Ch_1 );
+                                                    Ch_0+Ch_1, 0, Ch_0+Ch_1 );
 
   //Prepare inputs =============================================================
 
@@ -276,7 +276,7 @@ for(int evt=0; evt<recoTree->GetEntries(); evt++)
         rawChannel.subtractPedestal(false);
 
          //skip dead or bad channels
-        if ( rawChannel.isDead() || rawChannel.isBad() ){  continue; }
+        if ( rawChannel.isDead() ){  continue; }
 
         vector<float> adc = rawChannel.signal; //real ADCs
         vector<float> noiseAdc; // only noise ADCs after ROI excluded
@@ -303,6 +303,7 @@ for(int evt=0; evt<recoTree->GetEntries(); evt++)
         GetMeanAndRMS( noiseAdc, mean, rms );
 
         if(rms > 0){
+
           view2mean[ rawChannel.view ].push_back( mean );
           view2rms[ rawChannel.view ].push_back( rms );
 
@@ -319,7 +320,8 @@ for(int evt=0; evt<recoTree->GetEntries(); evt++)
 
           int channel = ViewToDAQChan( mapIt->first );
 
-          if ( channel < Ch_0 ){ channel -= Ch_0; }
+          //if ( channel < Ch_0 ){ channel -= Ch_0; }
+
           hChMean->SetBinContent( channel, mean );
           hChRMS->SetBinContent( channel, rms );
 

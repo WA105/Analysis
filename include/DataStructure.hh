@@ -40,6 +40,7 @@ class Channel
     bool isDead();
     bool isBad();
     void subtractPedestal( bool subtractPedestal );
+    double sumAdcInROI( int startTime, int endTime );
 
 
 };
