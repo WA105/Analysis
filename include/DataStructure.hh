@@ -80,9 +80,14 @@ class Hit
     double trueEnergy;
     double trueEnergyFraction;
 
-    //find lem
+    int lem;
     //project view
     //deprecated channels
+    void calibrateCharge( double calo0=0, double calo1=0 );
+    double getdQdx();
+    void findLem();
+    bool isGoodLem( vector<int> lems );
+
 };
 
 ////////////////////////////////////////////////////////////////////////////////

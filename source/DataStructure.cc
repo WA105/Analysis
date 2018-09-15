@@ -11,6 +11,7 @@
 
 #include "Run.hh"
 #include "DataStructure.hh"
+#include "Geometry.hh"
 //#include "Cuts.hh"
 
 using namespace std;
@@ -89,6 +90,71 @@ double Channel::sumAdcInROI( int startTime, int endTime ){
 ////////////////////////////////////////////////////////////////////////////////
 Hit::Hit(){}
 Hit::~Hit(){}
+
+void Hit::calibrateCharge( double calo0, double calo1 ){
+  //correct the charge with the appropriate calibration constants from ADC to fC
+
+  //apply the nominal calibration if calo* is 0
+  if( calo0 == 0 ){ calo0 = adc2fc0; }
+  if( calo1 == 0 ){ calo1 = adc2fc1; }
+
+  if( view == 0 ){ chargeIntegral *= adc2fc0; chargeSummedADC *= adc2fc0; }
+  else if( view == 1 ){ chargeIntegral *= adc2fc1; chargeSummedADC *= adc2fc1; }
+  else{
+    //don't correct and prompt an error message
+    cout << "Hit::calibrateCharge ERROR! Invalid view " << endl;
+  }
+
+  return;
+}
+
+double Hit::getdQdx(){
+  //get the dqdx
+
+  double dqdx=0;
+  if( dxLocalTrackDirection ==0 ){ return dqdx; }
+  else{
+    dqdx = chargeIntegral/dxLocalTrackDirection;
+  }
+
+  return dqdx;
+}
+
+void Hit::findLem(){
+  //for the 311 geometry retun the lem nubmer associated to a certain geometry
+  lem =-99999;
+
+
+  //TODO Hardcoded z coodinates
+ //fist of all check if the set of coodinate is valid (tolerance on boundaries)
+ if( fabs(Z) > 300 || fabs(Y) > 50){
+   cout << "Unknown coordinates: LEM not found!" << endl;
+   return;
+ }
+
+  int module = (int)Z/100;
+  int pos = (int)Z % 100; //I base the classification on the first module and then rescale
+
+  if(pos < lem_size && Y >= 0 )       { lem = (module*lem_in_module) + 1; }
+  else if( pos < lem_size && Y < 0 )  { lem = (module*lem_in_module) + 3; }
+  else if( pos >= lem_size && Y >= 0 ){ lem = (module*lem_in_module) + 2; }
+  else if( pos >= lem_size && Y < 0 ) { lem = (module*lem_in_module) + 4; }
+  else {
+    cout << "Unknown coordinates: LEM not found!" << endl;
+    return;
+  }
+
+  return;
+}
+
+bool Hit::isGoodLem( vector<int> lems ){
+  //select only good lems among a list
+  if (find(lems.begin(),lems.end(), lem) != lems.end())
+     return true;
+  else
+      return false;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 Track::Track(){}
@@ -463,7 +529,7 @@ void LArParser::fillRecoTrack( vector<Track> & tracks ){
         dummyHits.event=tEventNumberInRun;
         dummyHits.X=tTrack_Hit_X[l];
         dummyHits.Y=tTrack_Hit_Y[l];
-        dummyHits.Z=tTrack_Hit_X[l];
+        dummyHits.Z=tTrack_Hit_Z[l];
         dummyHits.dxLocalTrackDirection=tTrack_dx_LocalTrackDirection[l];
         dummyHits.dx3DPosition=tTrack_dx_3DPosition[l];
         dummyHits.TPC=tTrack_Hit_TPC[l];
@@ -480,7 +546,8 @@ void LArParser::fillRecoTrack( vector<Track> & tracks ){
         dummyHits.particleID= tTrack_Hit_particleID[l];
         dummyHits.trueEnergy = tTrack_Hit_TrueEnergy[l];
         dummyHits.trueEnergyFraction = tTrack_Hit_TrueEnergyFraction[l];
-        //dummyHits.lem=dummyHits.findLEM(dummyHits.Y, dummyHits.Z);
+
+        dummyHits.findLem(); //use 3D info to fetch
 
         dummyTrack.hitsTrk.push_back(dummyHits);
       } //end hits
