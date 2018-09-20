@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Cuts class methods
 //
-//This class holds the cuts the user may want to apply on data
+// This class holds the cuts the user may want to apply on data
 //
 //mailto:andrea.scarpelli@cern.ch
 ////////////////////////////////////////////////////////////////////////////////
@@ -16,7 +16,7 @@
 
 Cut::Cut(){
   //standard constructor
-  this->initActiveVolumeBounds();
+
 }
 
 Cut::Cut( vector<int> volumeCut, double length ){
@@ -75,3 +75,15 @@ bool Cut::isCrossingTPC(){
 
   return fIsPassingCut;
 }
+
+/*
+void Cut::cutsFromFile( string filename ){
+  //import an external list of cuts from a file, make a map with a list of cuts
+
+}
+
+bool Cut::checkCutFile( Track *track ){
+  //check if the track is among the list of cuts imported
+
+}
+*/

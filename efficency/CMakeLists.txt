@@ -9,7 +9,7 @@ cmake_minimum_required(VERSION 2.8)
 
 #ROOT libraries
 list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})
-find_package(ROOT REQUIRED)
+find_package(ROOT REQUIRED COMPONENTS FFTW)
 include(${ROOT_USE_FILE})
 include_directories(${ROOT_INCLUDE_DIRS})
 link_directories(${ROOT_LIBRARY_DIR})

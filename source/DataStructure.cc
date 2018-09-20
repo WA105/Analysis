@@ -140,7 +140,7 @@ void Hit::findLem(){
   else if( pos >= lem_size && Y >= 0 ){ lem = (module*lem_in_module) + 2; }
   else if( pos >= lem_size && Y < 0 ) { lem = (module*lem_in_module) + 4; }
   else {
-    cout << "Unknown coordinates: LEM not found!" << endl;
+    //cout << "Unknown coordinates: LEM not found!" << endl;
     return;
   }
 
@@ -605,12 +605,19 @@ void LArParser::getRecoChannelsEvent( TTree *tree,  vector<Channel> & channels, 
 void LArParser::getMCTracksEvent(TTree *tree, vector<MCTrack> & tracks, int event  ){
   //just fill the hit array for a specific event
 
-  this->setMCBranches(tree);
+  if ( this->isTreeGood(tree) ){
 
-  tree->GetEntry(event);
-  this->fillMCTrack( tracks );
+    this->setMCBranches(tree);
 
-  return;
+    tree->GetEntry(event);
+    this->fillMCTrack( tracks );
+
+    return;
+
+  }else{
+    cout << "LArParser::getMCTracksEvent ERROR:Tree doesn't exist!" << endl;
+    return;
+  }
 
 }
 

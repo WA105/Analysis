@@ -177,7 +177,6 @@ class LArParser
 {
   public:
     LArParser();
-    //LArParser( TTree *tree );
     ~LArParser();
 
     //setters
@@ -210,9 +209,6 @@ class LArParser
     void fillRecoHits( vector<Hit> & hits );
     void fillRecoTrack( vector<Track> & tracks );
     //void clean();
-
-    //TTree *fTree = 0;
-    //Run *fRun = 0;
 
     static const int NMaxGeantTrackPerEvent=10000;
     static const int NMaxHitsPerEvent=10000;;

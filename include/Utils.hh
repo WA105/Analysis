@@ -31,6 +31,9 @@ inline bool ExistTest (const std::string& name);
 
 TTree *getTTree( string filename );
 
+string getFileNumber( string filename );
+
+// FFT Class ///////////////////////////////////////////////////////////////////
 class fftUtils{
   public:
     fftUtils(int time_samples, float sampling_freq, bool roundup = false);

@@ -4,8 +4,6 @@
 //mailto:andrea.scarpelli@cern.ch
 ////////////////////////////////////////////////////////////////////////////////
 
-//TODO dynamic path to input and output file
-
 //c++ includes
 #include <glob.h>
 #include <iostream>
@@ -19,7 +17,7 @@
 #include "TEfficiency.h"
 
 //projects include
-#include "Run.hh"
+#include "Utils.hh"
 #include "DataStructure.hh"
 #include "Cuts.hh"
 #include "Efficiency.hh"
@@ -27,66 +25,6 @@
 using namespace std;
 
 ////////////////////////////////////////////////////////////////////////////////
-// Functions
-
-inline bool ExistTest (const std::string& name) {
-  struct stat buffer;
-  return (stat (name.c_str(), &buffer) == 0);
-}
-
-inline vector<string> glob(const string& pat){
-  glob_t glob_result;
-  glob(pat.c_str(),GLOB_TILDE,NULL,&glob_result);
-  vector<string> ret;
-  for(unsigned int i=0;i<glob_result.gl_pathc;++i){
-      string full_path = string(glob_result.gl_pathv[i]);
-      string basename = full_path.substr(full_path.find_last_of("/")+1);
-      ret.push_back(basename.data());
-  }
-  globfree(&glob_result);
-  return ret;
-}
-
-TTree *getTTree( string filename ){
-
-  TTree *ttree;
-
-  if( ExistTest(filename) ){
-
-      cout << "Processing file: " << filename << endl;
-      TFile *file = new TFile(filename.c_str(), "READ");
-
-      if( file->IsOpen() )
-        ttree = (TTree*)file->Get("analysistree/anatree");
-      else
-        cout << "getTTree::Error: Invalid TTree name" << endl;
-
-    }else{
-      cout << "getTTree::Error: Invalid file name " << filename << endl;
-    }
-
-    return ttree;
-}
-
-int getFileNumber( std::string filename ){
-  //assuming the filename encorded in a format /path/to/file/0-somename-Parser.root
-
-  //isolate filenumber from path
-  std::string s = filename;
-  std::string delimiter = "/";
-
-  size_t pos = 0;
-  std::string token;
-
-  while ((pos = s.find(delimiter)) != std::string::npos) {
-    token = s.substr(0, pos);
-    s.erase(0, pos + delimiter.length());
-  }
-
-  pos = s.find("-");
-  std::string number = s.substr(0, pos);
-  return stoi(number);
-}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -94,45 +32,42 @@ int getFileNumber( std::string filename ){
 
 int main( int argc, char* argv[] ){
 
-  //parse the input argument
-  std::string simFile;
-  std::string recoFile;
-  int mockRun;
+  //parse the input argument ===================================================
+  string simFile;
+  string recoFile;
+  string outputFile;
 
   for ( int i=1; i<argc; i=i+2 ) {
    if      ( string(argv[i]) == "-s" ) simFile = argv[i+1];
    else if ( string(argv[i]) == "-r" ) recoFile = argv[i+1];
-   else if ( string(argv[i]) == "-n" ) mockRun = atoi(argv[i+1]);
+   else if ( string(argv[i]) == "-o" ) outputFile = argv[i+1];
    else {
-     //PrintUsage();
+     cout << "Unknown option" << endl;
      return 1;
    }
   }
 
+  //define and variables =======================================================
+
   //extract the filenumber from the simFile
-  int fileNumber = getFileNumber( simFile );
+  //int fileNumber = getFileNumber( simFile );
 
   //define here the output file
   Track recoTrack;
   MCTrack mcTrack;
 
   //define output file
-  string outputFilename = "recoEfficiency.root";
-  TFile *ofile = new TFile(outputFilename.c_str(), "RECREATE");
+
+  TFile *ofile = new TFile(outputFile.c_str(), "RECREATE");
   if(!ofile->IsOpen()){
-    cout << "File: " << outputFilename << " cannot be open!" << endl;
+    cout << "File: " << outputFile << " cannot be open!" << endl;
     return 1;
   }
 
-  //here I define the parser object
+  //Prepare inputs =============================================================
+
   LArParser *mcParser = new LArParser();
   LArParser *recoParser = new LArParser();
-
-  //define the Run object using the mockRun flag (always the same in this case)
-  //mockrun is the fake runnuber to extract the information from
-  //fileNumber is the actual progressive file id to uniquely select the tracks
-  Run *run = new Run(mockRun, "metadata/test.db");
-  run->setFileNumber( fileNumber );
 
   //and here i define the class efficiency
   Efficiency *recoEfficiency = new Efficiency();
@@ -140,25 +75,21 @@ int main( int argc, char* argv[] ){
   TTree *mcTree = getTTree( simFile );
   TTree *recoTree = getTTree( recoFile );
 
-  mcParser->setTTree(mcTree);
-  mcParser->setRun(run);
+  //check if the tree has been correctly set ===================================
 
-  recoParser->setTTree(recoTree);
-  recoParser->setRun(run);
-
-  //check if the tree exists and has been correctly set
-  if( !mcParser->isTreeGood() || !recoParser->isTreeGood() ){
-   cout << "Invalid ttree" << endl;
+  if( !mcTree || !recoTree ){
+   cout << "Error! Trees doesn't exist! " << endl;
    return 1;
   }
 
-  //check if the two trees have the same number of entries. I ideally want to loop over one of them
+  //check if the two trees have the same number of entries.
+  //I ideally want to loop over one of them
   if( mcTree->GetEntries() != recoTree->GetEntries() ){
     cout << "Not the same number of events" << endl;
     return 1;
   }
 
-  //loop over the events in mcTree. Should be the same for also recoTree
+  //Event looper ===============================================================
   for(int evt=0; evt<mcTree->GetEntries(); evt++){
 
       //data structures array
@@ -166,9 +97,9 @@ int main( int argc, char* argv[] ){
       vector<Track> recoTracks;
       vector<Hit> recoHits; //hits not associated to a track
 
-      mcParser->getMCTracksEvent(mcTracks, evt);
-      recoParser->getRecoTracksEvent(recoTracks, evt);
-      recoParser->getRecoHitsEvent( recoHits, evt );
+      mcParser->getMCTracksEvent(mcTree, mcTracks, evt);
+      recoParser->getRecoTracksEvent(recoTree, recoTracks, evt);
+      recoParser->getRecoHitsEvent( recoTree, recoHits, evt );
 
       for( auto track : mcTracks ){
         //order truth track into a map sorted by their id so is easier to make
