@@ -11,7 +11,10 @@
 #include <fstream>
 #include <stdlib.h>
 #include <stdio.h>
+
 #include "TTree.h"
+#include "TVector3.h"
+
 #include "Geometry.hh"
 #include "Run.hh"
 //#include "Cuts.hh"
@@ -119,6 +122,8 @@ class Track
     double startDirectionX;
     double startDirectionY;
     double startDirectionZ;
+    TVector3 startDirection;
+    TVector3 endDirection;
     double endDirectionTheta;
     double endDirectionPhi;
     double endDirectionX;
@@ -162,6 +167,9 @@ class MCTrack
     double endX;
     double endY;
     double endZ;
+    double length;
+    TVector3 startDirection;
+    TVector3 endDirection;
 
   };
 

@@ -45,6 +45,10 @@ Efficiency::Efficiency(){
   fRecoTTree->Branch("Theta", &fRecoTheta, "Theta/D");
   fRecoTTree->Branch("Phi", &fRecoPhi, "Phi/D");
   fRecoTTree->Branch("Energy", &fRecoE, "Energy/D");
+  fRecoTTree->Branch("Direction", &fDirection, "Direction/D");
+  fRecoTTree->Branch("DiffStartX", &fDiffStartX, "DiffStartX/D");
+  fRecoTTree->Branch("DiffStartY", &fDiffStartY, "DiffStartY/D");
+  fRecoTTree->Branch("DiffStartZ", &fDiffStartZ, "DiffStartZ/D");
   fRecoTTree->Branch("Completeness", &fCompleteness, "Completeness/D");
   fRecoTTree->Branch("Purity", &fPurirty, "Purity/D");
 
@@ -54,6 +58,10 @@ Efficiency::Efficiency(){
 
   for( size_t i =0; i< arraySize; i++ ){
 
+    TH1D* hThetaG4 = new TH1D(("hThetaG4"+pdgNames.at(i)).c_str(), ("#theta (geant) "+pdgNames.at(i)+";#theta (deg)").c_str() , nBinsTheta, thetaStart, thetaEnd);
+    TH1D* hPhiG4 = new TH1D(("hPhiG4"+pdgNames.at(i)).c_str(), ("#phi (geant) "+pdgNames.at(i)+";#phi (deg)").c_str() , nBinsPhi, phiStart, phiEnd);
+    //more geant info ?
+
     TH1D* hThetaTrue = new TH1D(("hThetaTrue"+pdgNames.at(i)).c_str(), ("#theta (true) "+pdgNames.at(i)+";#theta (deg)").c_str() , nBinsTheta, thetaStart, thetaEnd);
     TH1D* hPhiTrue = new TH1D(("hPhiTrue"+pdgNames.at(i)).c_str(), ("#phi (true) "+pdgNames.at(i)+";#phi (deg)").c_str() , nBinsPhi, phiStart, phiEnd);
     TH2D* hPhiThetaTrue = new TH2D(("hPhiThetaTrue"+pdgNames.at(i)).c_str(), ("#phi vs. #theta (true) "+pdgNames.at(i)+"; #theta (deg);#phi (deg)").c_str(), nBinsTheta, thetaStart, thetaEnd, nBinsPhi, phiStart, phiEnd); ;
@@ -62,6 +70,36 @@ Efficiency::Efficiency(){
     TH1D* hPhiReco = new TH1D(("hPhiReco"+pdgNames.at(i)).c_str(), ("#phi (reco) "+pdgNames.at(i)+";#phi (deg)").c_str() , nBinsPhi, phiStart, phiEnd);
     TH2D* hPhiThetaReco = new TH2D(("hPhiThetaReco"+pdgNames.at(i)).c_str(), ("#phi vs. #theta (true) "+pdgNames.at(i)+"; #theta (deg);#phi (deg)").c_str(), nBinsTheta, thetaStart, thetaEnd, nBinsPhi, phiStart, phiEnd);
 
+    TH1D *hDir = new TH1D(("hDir"+pdgNames.at(i)).c_str(), ("Direction "+pdgNames.at(i)+";true dir.dot( reco dir )").c_str() , nBinsDir, -1, 1);
+    TH2D *hDirTheta = new TH2D(("hDirTheta"+pdgNames.at(i)).c_str(), ("Direction  vs #theta"+pdgNames.at(i)+";true dir.dot( reco dir ); #theta (deg)").c_str() , nBinsDir, -1, 1, nBinsTheta, thetaStart, thetaEnd);
+    TH2D *hDirPhi = new TH2D(("hDirPhi"+pdgNames.at(i)).c_str(), ("Direction  vs #phi"+pdgNames.at(i)+";true dir.dot( reco dir ); #phi (deg)").c_str() , nBinsDir, -1, 1, nBinsPhi, phiStart, phiEnd);
+
+    TH1D *hPosX = new TH1D(("hPosX"+pdgNames.at(i)).c_str(), ("Start position X"+pdgNames.at(i)+";true start - reco start (cm) )").c_str() , nBinsPos, -5, 5);
+    TH2D *hPosXTheta = new TH2D(("hPosXTheta"+pdgNames.at(i)).c_str(), ("Start position X vs #theta"+pdgNames.at(i)+";true start - reco start (cm) ); #theta (deg)").c_str() , nBinsPos, -5, 5, nBinsTheta, thetaStart, thetaEnd);
+    TH2D *hPosXPhi = new TH2D(("hPosXPhi"+pdgNames.at(i)).c_str(), ("Start position X vs #phi"+pdgNames.at(i)+";true start - reco start (cm) ); #phi (deg)").c_str() , nBinsPos, -5, 5, nBinsPhi, phiStart, phiEnd);
+
+    TH1D *hPosY = new TH1D(("hPosY"+pdgNames.at(i)).c_str(), ("Start position Y"+pdgNames.at(i)+";true start - reco start (cm) )").c_str() , nBinsPos, -5, 5);
+    TH2D *hPosYTheta = new TH2D(("hPosYTheta"+pdgNames.at(i)).c_str(), ("Start position Y vs #theta"+pdgNames.at(i)+";true start - reco start (cm) ); #theta (deg)").c_str() , nBinsPos, -5, 5, nBinsTheta, thetaStart, thetaEnd);
+    TH2D *hPosYPhi = new TH2D(("hPosYPhi"+pdgNames.at(i)).c_str(), ("Start position Y vs #phi"+pdgNames.at(i)+";true start - reco start (cm) ); #phi (deg)").c_str() , nBinsPos, -5, 5, nBinsPhi, phiStart, phiEnd);
+
+    TH1D *hPosZ = new TH1D(("hPosZ"+pdgNames.at(i)).c_str(), ("Start position Z"+pdgNames.at(i)+";true start - reco start (cm) )").c_str() , nBinsPos, -5, 5);
+    TH2D *hPosZTheta = new TH2D(("hPosZTheta"+pdgNames.at(i)).c_str(), ("Start position Z vs #theta"+pdgNames.at(i)+";true start - reco start (cm) ); #theta (deg)").c_str() , nBinsPos, -5, 5, nBinsTheta, thetaStart, thetaEnd);
+    TH2D *hPosZPhi = new TH2D(("hPosZPhi"+pdgNames.at(i)).c_str(), ("Start position Z vs #phi"+pdgNames.at(i)+";true start - reco start (cm) ); #phi (deg)").c_str() , nBinsPos, -5, 5, nBinsPhi, phiStart, phiEnd);
+
+    fThetaG4Map[pdgCode.at(i)] = hThetaG4;
+    fPhiG4Map[pdgCode.at(i)] = hPhiG4;
+    fDirMap[pdgCode.at(i)] = hDir;
+    fDirThetaMap[pdgCode.at(i)] = hDirTheta;
+    fDirPhiMap[pdgCode.at(i)] = hDirPhi;
+    fPosXMap[pdgCode.at(i)] = hPosX;
+    fPosXThetaMap[pdgCode.at(i)] = hPosXTheta;
+    fPosXPhiMap[pdgCode.at(i)] = hPosXPhi;
+    fPosYMap[pdgCode.at(i)] = hPosY;
+    fPosYThetaMap[pdgCode.at(i)] = hPosYTheta;
+    fPosYPhiMap[pdgCode.at(i)] = hPosYPhi;
+    fPosZMap[pdgCode.at(i)] = hPosZ;
+    fPosZThetaMap[pdgCode.at(i)] = hPosZTheta;
+    fPosZPhiMap[pdgCode.at(i)] = hPosZPhi;
     fThetaTrueMap[pdgCode.at(i)] = hThetaTrue;
     fThetaRecoMap[pdgCode.at(i)] = hThetaReco;
     fPhiTrueMap[pdgCode.at(i)] = hPhiTrue;
@@ -70,7 +108,6 @@ Efficiency::Efficiency(){
     fPhiThetaRecoMap[pdgCode.at(i)] = hPhiThetaReco;
 
   }
-
 }
 
 Efficiency::~Efficiency(){}
@@ -120,16 +157,26 @@ void Efficiency::fillMap1D(int pdg, map<int, TH1D*> map, double fillIn ){
       map[0]->Fill( fillIn );
 }
 
-void Efficiency::fillMap2D(int pdg, map<int, TH2D*> map, double fillX, double fillY ){
+void Efficiency::fillMap2D(int pdg, map<int, TH2D*> map, double fillZ, double fillY ){
   //fill the map if the pdg code of the best tParticleId
   if( map.find(pdg) != map.end() )
-    map[pdg]->Fill( fillX, fillY );
+    map[pdg]->Fill( fillZ, fillY );
   else
-    map[0]->Fill( fillX, fillY );
+    map[0]->Fill( fillZ, fillY );
+}
+
+void Efficiency::setMapEntry(int id, MCTrack mctrack ){
+
+  fParticleMap[id] = mctrack;
+
+  //fill g4 histograms right afterwards
+  fillMap1D( abs( fParticleMap[id].pdgCode ), fThetaG4Map, fParticleMap[id].startTheta );
+  fillMap1D( abs( fParticleMap[id].pdgCode ), fPhiG4Map, fParticleMap[id].startPhi );
+
 }
 
 void Efficiency::fill(){
-  //fill the reco quantitiess
+  //fill the histograms
 
   //match with truth
   this->matchTruth();
@@ -147,10 +194,31 @@ void Efficiency::fill(){
   fRecoPhi = fParticleMap[fBestTrackID].startPhi;
   fRecoE = fParticleMap[fBestTrackID].startE;
 
+  fDirection = fTrack.startDirection.Dot( fParticleMap[fBestTrackID].startDirection );
+  fDiffStartX = fTrack.startPointX - fParticleMap[fBestTrackID].startX;
+  fDiffStartY = fTrack.startPointY - fParticleMap[fBestTrackID].startY;
+  fDiffStartZ = fTrack.startPointZ - fParticleMap[fBestTrackID].startZ;
+
   fMcTTree->Fill();
   fRecoTTree->Fill();
 
   //fill first the mc quanties
+  fillMap1D( abs(fPdg), fDirMap, fDirection);
+  fillMap2D( abs(fPdg), fDirThetaMap, fDirection, fParticleMap[fBestTrackID].startTheta);
+  fillMap2D( abs(fPdg), fDirPhiMap, fDirection, fParticleMap[fBestTrackID].startPhi);
+
+  fillMap1D( abs(fPdg), fPosXMap, fDiffStartX);
+  fillMap2D( abs(fPdg), fPosXThetaMap, fDiffStartX, fParticleMap[fBestTrackID].startTheta);
+  fillMap2D( abs(fPdg), fPosXPhiMap, fDiffStartX, fParticleMap[fBestTrackID].startPhi);
+
+  fillMap1D( abs(fPdg), fPosYMap, fDiffStartY);
+  fillMap2D( abs(fPdg), fPosYThetaMap, fDiffStartY, fParticleMap[fBestTrackID].startTheta);
+  fillMap2D( abs(fPdg), fPosYPhiMap, fDiffStartY, fParticleMap[fBestTrackID].startPhi);
+
+  fillMap1D( abs(fPdg), fPosZMap, fDiffStartZ);
+  fillMap2D( abs(fPdg), fPosZThetaMap, fDiffStartZ, fParticleMap[fBestTrackID].startTheta);
+  fillMap2D( abs(fPdg), fPosZPhiMap, fDiffStartZ, fParticleMap[fBestTrackID].startPhi);
+
   fillMap1D( abs(fPdg), fThetaTrueMap, fParticleMap[fBestTrackID].startTheta);
   fillMap1D( abs(fPdg), fPhiTrueMap, fParticleMap[fBestTrackID].startPhi );
   fillMap2D( abs(fPdg), fPhiThetaTrueMap, fParticleMap[fBestTrackID].startTheta, fParticleMap[fBestTrackID].startPhi);
@@ -158,9 +226,9 @@ void Efficiency::fill(){
   if(fCompleteness>0.5 && fPurirty>0.5){
 
     //fill the reco quantities
-    fillMap1D( abs(fPdg), fThetaRecoMap, fParticleMap[fBestTrackID].startTheta);
-    fillMap1D( abs(fPdg), fPhiRecoMap, fParticleMap[fBestTrackID].startPhi );
-    fillMap2D( abs(fPdg), fPhiThetaRecoMap, fParticleMap[fBestTrackID].startTheta, fParticleMap[fBestTrackID].startPhi);
+    this->fillMap1D( abs(fPdg), fThetaRecoMap, fParticleMap[fBestTrackID].startTheta);
+    this->fillMap1D( abs(fPdg), fPhiRecoMap, fParticleMap[fBestTrackID].startPhi );
+    this->fillMap2D( abs(fPdg), fPhiThetaRecoMap, fParticleMap[fBestTrackID].startTheta, fParticleMap[fBestTrackID].startPhi);
   }
 
 }
@@ -173,6 +241,7 @@ void Efficiency::makeEfficiencyPlot(){
 
   for( size_t i =0; i< arraySize; i++ ){
 
+    //Only for matched tracks
     if( TEfficiency::CheckConsistency(*fPhiRecoMap[pdgCode.at(i)], *fPhiTrueMap[pdgCode.at(i)]) )
       fPhiEfficiency[pdgCode.at(i)] = new TEfficiency(*fPhiRecoMap[pdgCode.at(i)], *fPhiTrueMap[pdgCode.at(i)]);
 
@@ -198,6 +267,20 @@ void Efficiency::write(){
 
   for( size_t i =0; i< arraySize; i++ ){
 
+    fThetaG4Map[pdgCode.at(i)]->Write();
+    fPhiG4Map[pdgCode.at(i)]->Write();
+    fDirMap[pdgCode.at(i)]->Write();
+    fDirThetaMap[pdgCode.at(i)]->Write();
+    fDirPhiMap[pdgCode.at(i)]->Write();
+    fPosXMap[pdgCode.at(i)]->Write();
+    fPosXThetaMap[pdgCode.at(i)]->Write();
+    fPosXPhiMap[pdgCode.at(i)]->Write();
+    fPosYMap[pdgCode.at(i)]->Write();
+    fPosYThetaMap[pdgCode.at(i)]->Write();
+    fPosYPhiMap[pdgCode.at(i)]->Write();
+    fPosZMap[pdgCode.at(i)]->Write();
+    fPosZThetaMap[pdgCode.at(i)]->Write();
+    fPosZPhiMap[pdgCode.at(i)]->Write();
     fThetaTrueMap[pdgCode.at(i)]->Write();
     fThetaRecoMap[pdgCode.at(i)]->Write();
     fPhiTrueMap[pdgCode.at(i)]->Write();

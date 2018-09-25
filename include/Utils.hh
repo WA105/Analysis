@@ -33,6 +33,8 @@ TTree *getTTree( string filename );
 
 string getFileNumber( string filename );
 
+double getModule( double x, double y , double z );
+
 // FFT Class ///////////////////////////////////////////////////////////////////
 class fftUtils{
   public:

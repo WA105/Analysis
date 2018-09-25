@@ -9,9 +9,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "TVector3.h"
+
 #include "Run.hh"
 #include "DataStructure.hh"
 #include "Geometry.hh"
+#include "Utils.hh"
 //#include "Cuts.hh"
 
 using namespace std;
@@ -445,7 +448,14 @@ void LArParser::fillMCTrack( vector<MCTrack> & tracks ){
     dummyTrack.endX=tEndX[l];
     dummyTrack.endY=tEndY[l];
     dummyTrack.endZ=tEndZ[l];
-
+    dummyTrack.length = getModule( abs( dummyTrack.endX - dummyTrack.startX ),
+                                   abs( dummyTrack.endY - dummyTrack.startY ),
+                                   abs( dummyTrack.endZ - dummyTrack.startZ )
+                                 );
+    dummyTrack.startDirection.SetXYZ( abs( dummyTrack.endX - dummyTrack.startX ) / dummyTrack.length,
+                                      abs( dummyTrack.endY - dummyTrack.startY ) / dummyTrack.length,
+                                      abs( dummyTrack.endZ - dummyTrack.startZ ) / dummyTrack.length
+                                     );
     tracks.push_back(dummyTrack);
   }
 
@@ -517,6 +527,14 @@ void LArParser::fillRecoTrack( vector<Track> & tracks ){
     dummyTrack.endDirectionX=tTrack_EndDirection_X[j];
     dummyTrack.endDirectionY=tTrack_EndDirection_Y[j];
     dummyTrack.endDirectionZ=tTrack_EndDirection_Z[j];
+    dummyTrack.startDirection.SetXYZ( dummyTrack.startDirectionX,
+                                      dummyTrack.startDirectionY,
+                                      dummyTrack.startDirectionZ
+                                    );
+    dummyTrack.endDirection.SetXYZ( dummyTrack.endDirectionX,
+                                      dummyTrack.endDirectionY,
+                                      dummyTrack.endDirectionZ
+                                    );
 
     for(int k=0; k<NUM_OF_VIEWS; k++) //View loop (for this track)
     {

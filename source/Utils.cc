@@ -90,6 +90,12 @@ string getFileNumber( string filename ){
 
 ////////////////////////////////////////////////////////////////////////////////
 
+double getModule( double x, double y , double z ){
+  return sqrt( x*x + y*y + z*z );
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 fftUtils::fftUtils(int time_samples, float sampling_freq, bool roundup){
 
   fDetectorTimeSize = time_samples;

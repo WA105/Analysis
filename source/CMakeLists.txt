@@ -1,8 +1,8 @@
 #Generate a ROOT dictionary.
 ROOT_GENERATE_DICTIONARY(  CustomClassesDict
+                            ../include/Utils.hh
                             ../include/Run.hh
                            ../include/DataStructure.hh
-                           ../include/Utils.hh
 	                         LINKDEF
                            ../include/CustomClasses_LinkDef.h
                         )

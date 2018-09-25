@@ -30,7 +30,7 @@ class Efficiency
     ~Efficiency();
 
     //setters
-    void setMapEntry(int id, MCTrack mctrack ){ fParticleMap[id] = mctrack; }
+    void setMapEntry(int id, MCTrack mctrack );
     void setRecoTrack( Track track ){ fTrack = track; }
     void setRecoHits( vector<Hit> hits ){ fHits = hits; }
     void setNumberOfTracksEvent( int nTracks ){ fNtracksEvent = nTracks;} //not elegant, but need that afterwards in the analysis
@@ -57,6 +57,13 @@ class Efficiency
     vector<string> pdgNames = { "Muons", "Electrons","Pions", "Protons", "Other" };
 
     //binning
+
+    //dir
+    int nBinsDir = 100;
+
+    //pos
+    int nBinsPos = 100;
+
     //theta
     int nBinsTheta = 100;
     double thetaStart = 0;
@@ -68,6 +75,20 @@ class Efficiency
     double phiEnd = 180;
 
     //histogram maps
+    map<int, TH1D*> fThetaG4Map;
+    map<int, TH1D*> fPhiG4Map;
+    map<int, TH1D*> fDirMap;
+    map<int, TH2D*> fDirThetaMap;
+    map<int, TH2D*> fDirPhiMap;
+    map<int, TH1D*> fPosXMap;
+    map<int, TH2D*> fPosXThetaMap;
+    map<int, TH2D*> fPosXPhiMap;
+    map<int, TH1D*> fPosYMap;
+    map<int, TH2D*> fPosYThetaMap;
+    map<int, TH2D*> fPosYPhiMap;
+    map<int, TH1D*> fPosZMap;
+    map<int, TH2D*> fPosZThetaMap;
+    map<int, TH2D*> fPosZPhiMap;
     map<int, TH1D*> fThetaTrueMap;
     map<int, TH1D*> fPhiTrueMap;
     map<int, TH2D*> fPhiThetaTrueMap;
@@ -102,6 +123,11 @@ class Efficiency
     double fRecoPhi;
     double fRecoTheta;
     double fRecoE;
+
+    double fDirection;
+    double fDiffStartX;
+    double fDiffStartY;
+    double fDiffStartZ;
 };
 
 #endif // __EFFICIENCY_H

@@ -1,5 +1,10 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Macro studying the reconstruction efficiency of one MC sample
+//  Routine to study the tracks reconstruction efficiency
+//
+//  Usage: ./build/recoEff -s /path/to/detsimg4.root -r /path/to/fastreco.root -o path/to/outputfile.root
+//  -s detsimg4 parser root file
+//  -r fastreco parser root file
+//  -o outputfile.root
 //
 //mailto:andrea.scarpelli@cern.ch
 ////////////////////////////////////////////////////////////////////////////////
@@ -10,7 +15,6 @@
 #include <fstream>
 #include <stdlib.h>
 #include <stdio.h>
-#include <sys/stat.h> //to use struct stat
 
 //root includes
 #include "TFile.h"
@@ -23,9 +27,6 @@
 #include "Efficiency.hh"
 
 using namespace std;
-
-////////////////////////////////////////////////////////////////////////////////
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Main macro
@@ -111,7 +112,6 @@ int main( int argc, char* argv[] ){
       recoEfficiency->setRecoHits( recoHits );
       recoEfficiency->setNumberOfTracksEvent( (int)recoTracks.size() );
 
-
       for( auto track : recoTracks ){
         //here we do the real efficiency analysis trying to match reconstructed
         //calculate efficiency for the track and fill the historams
@@ -123,7 +123,7 @@ int main( int argc, char* argv[] ){
 
   }//end event loop
 
-  //calculate the efficency plot
+  //calculate the root TEfficency plots
   recoEfficiency->makeEfficiencyPlot();
 
   ofile->cd();
