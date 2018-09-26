@@ -1,14 +1,14 @@
 #!/bin/bash
 
 ##########################################################################################################################
-## Create a text file with the arguments for the condor_subit file for swiss_highway_data_2018_jun_24_reco_functions.py ##
+## Create a text file with the arguments of swiss_highway.py for the submit.sub file ##
 ##########################################################################################################################
 
-#path to my files
+#path to the input files
 PathToRecoFiles="/eos/experiment/wa105/offline/LArSoft/Data/Reco/2018_June_24/ROOT/recofull"
-#path to the output directory where Condor will copy the files
+#path to the output directory where HTCondor will copy the files
 OutputDirectory=""
-#name of the .txt files holding the argument list for the Condor
+#name of the .txt files holding the argument list for submit.sub
 OutputList="arguments.txt"
 
 if [[ -f $OutputList ]];
@@ -18,7 +18,7 @@ if [[ -f $OutputList ]];
 
 touch $OutputList
 
-for run in 840; #enter here the range of run numbers you want to save to the OutputList, 633..1199
+for run in 840; #enter here the range of run numbers you want to process (every subrun of the specified runs will be processed)
 do
   for file in $PathToRecoFiles/$run/*.root;
   do
