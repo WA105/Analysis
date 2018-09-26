@@ -128,6 +128,17 @@ class Efficiency
     double fDiffStartX;
     double fDiffStartY;
     double fDiffStartZ;
+
+    double fStartX;
+    double fStartY;
+    double fStartZ;
+
+    double fEndX;
+    double fEndY;
+    double fEndZ;
+
+    double fRecoLength;
+    double fTrueLength;
 };
 
 #endif // __EFFICIENCY_H

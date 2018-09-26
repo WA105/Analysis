@@ -49,8 +49,16 @@ Efficiency::Efficiency(){
   fRecoTTree->Branch("DiffStartX", &fDiffStartX, "DiffStartX/D");
   fRecoTTree->Branch("DiffStartY", &fDiffStartY, "DiffStartY/D");
   fRecoTTree->Branch("DiffStartZ", &fDiffStartZ, "DiffStartZ/D");
-  fRecoTTree->Branch("Completeness", &fCompleteness, "Completeness/D");
+  fRecoTTree->Branch("StartX", &fStartX, "StartX/D");
+  fRecoTTree->Branch("StartY", &fStartY, "StartY/D");
+  fRecoTTree->Branch("StartZ", &fStartZ, "StartZ/D");
+  fRecoTTree->Branch("EndX", &fEndX, "EndX/D");
+  fRecoTTree->Branch("EndY", &fEndY, "EndY/D");
+  fRecoTTree->Branch("EndZ", &fEndZ, "EndZ/D");
+  fRecoTTree->Branch("RecoLength", &fRecoLength, "RecoLength/D");
+  fRecoTTree->Branch("TrueLength", &fTrueLength, "TrueLength/D");
   fRecoTTree->Branch("Purity", &fPurirty, "Purity/D");
+  fRecoTTree->Branch("Completeness", &fCompleteness, "Completeness/D");
 
 
   //histograms
@@ -198,6 +206,17 @@ void Efficiency::fill(){
   fDiffStartX = fTrack.startPointX - fParticleMap[fBestTrackID].startX;
   fDiffStartY = fTrack.startPointY - fParticleMap[fBestTrackID].startY;
   fDiffStartZ = fTrack.startPointZ - fParticleMap[fBestTrackID].startZ;
+
+  fStartX = fTrack.startPointX;
+  fStartY = fTrack.startPointY;
+  fStartZ = fTrack.startPointZ;
+
+  fEndX = fTrack.endPointX;
+  fEndY = fTrack.endPointY;
+  fEndZ = fTrack.endPointZ;
+
+  fRecoLength = fTrack.length;
+  fTrueLength = fParticleMap[fBestTrackID].length;
 
   fMcTTree->Fill();
   fRecoTTree->Fill();
