@@ -120,6 +120,12 @@ class Efficiency
     double fTruePhi;
     double fTrueTheta;
     double fTrueE;
+    double fTrueStartX;
+    double fTrueStartY;
+    double fTrueStartZ;
+    double fTrueEndX;
+    double fTrueEndY;
+    double fTrueEndZ;
     double fRecoPhi;
     double fRecoTheta;
     double fRecoE;

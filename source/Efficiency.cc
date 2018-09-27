@@ -35,6 +35,12 @@ Efficiency::Efficiency(){
   fMcTTree->Branch("Theta", &fTrueTheta, "Theta/D");
   fMcTTree->Branch("Phi", &fTruePhi, "Phi/D");
   fMcTTree->Branch("Energy", &fTrueE, "Energy/D");
+  fMcTTree->Branch("TrueStartX", &fTrueStartX, "TrueStartX/D");
+  fMcTTree->Branch("TrueStartY", &fTrueStartY, "TrueStartY/D");
+  fMcTTree->Branch("TrueStartZ", &fTrueStartZ, "TrueStartZ/D");
+  fMcTTree->Branch("TrueEndX", &fTrueEndX, "TrueEndX/D");
+  fMcTTree->Branch("TrueEndY", &fTrueEndY, "TrueEndY/D");
+  fMcTTree->Branch("TrueEndZ", &fTrueEndZ, "TrueEndZ/D");
 
   fRecoTTree->Branch("FileNumber", &fFileNumber, "FileNumber/I");
   fRecoTTree->Branch("Event", &fEvent, "Event/I");
@@ -181,6 +187,22 @@ void Efficiency::setMapEntry(int id, MCTrack mctrack ){
   fillMap1D( abs( fParticleMap[id].pdgCode ), fThetaG4Map, fParticleMap[id].startTheta );
   fillMap1D( abs( fParticleMap[id].pdgCode ), fPhiG4Map, fParticleMap[id].startPhi );
 
+  fFileNumber = fParticleMap[ id ].run;
+  fEvent = fFileNumber*100 + fParticleMap[ id ].eventNumber; //get to the event a progressive number across files
+  fParticleId = id;
+  fPdg = fParticleMap[ id ].pdgCode;
+  fTrueTheta = fParticleMap[ id ].startTheta;
+  fTruePhi = fParticleMap[ id ].startPhi;
+  fTrueE = fParticleMap[ id ].startE;
+  fTrueStartX = fParticleMap[ id ].startX;
+  fTrueStartY = fParticleMap[ id ].startY;
+  fTrueStartZ = fParticleMap[ id ].startZ;
+  fTrueEndX = fParticleMap[ id ].endX;
+  fTrueEndY = fParticleMap[ id ].endY;
+  fTrueEndZ = fParticleMap[ id ].endZ;
+
+  fMcTTree->Fill();
+
 }
 
 void Efficiency::fill(){
@@ -194,18 +216,15 @@ void Efficiency::fill(){
   fParticleId = fBestTrackID;
   fTrackId = fTrack.trackID;
   fPdg = fParticleMap[ fBestTrackID ].pdgCode;
-  fTrueTheta = fParticleMap[fBestTrackID].startTheta;
-  fTruePhi = fParticleMap[fBestTrackID].startPhi;
-  fTrueE = fParticleMap[fBestTrackID].startE;
-
   fRecoTheta = fParticleMap[fBestTrackID].startTheta;
   fRecoPhi = fParticleMap[fBestTrackID].startPhi;
   fRecoE = fParticleMap[fBestTrackID].startE;
 
   fDirection = fTrack.startDirection.Dot( fParticleMap[fBestTrackID].startDirection );
-  fDiffStartX = fTrack.startPointX - fParticleMap[fBestTrackID].startX;
-  fDiffStartY = fTrack.startPointY - fParticleMap[fBestTrackID].startY;
-  fDiffStartZ = fTrack.startPointZ - fParticleMap[fBestTrackID].startZ;
+
+  fDiffStartX = min(fTrack.startPointX - fParticleMap[fBestTrackID].startX, fTrack.endPointX - fParticleMap[fBestTrackID].startX);
+  fDiffStartY = min(fTrack.startPointY - fParticleMap[fBestTrackID].startY, fTrack.endPointY - fParticleMap[fBestTrackID].startY);
+  fDiffStartZ = min(fTrack.startPointZ - fParticleMap[fBestTrackID].startZ, fTrack.endPointZ - fParticleMap[fBestTrackID].startZ);
 
   fStartX = fTrack.startPointX;
   fStartY = fTrack.startPointY;
@@ -218,7 +237,7 @@ void Efficiency::fill(){
   fRecoLength = fTrack.length;
   fTrueLength = fParticleMap[fBestTrackID].length;
 
-  fMcTTree->Fill();
+
   fRecoTTree->Fill();
 
   //fill first the mc quanties
