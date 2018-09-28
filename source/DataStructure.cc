@@ -208,6 +208,9 @@ void LArParser::setMCBranches(TTree *tree){
   tree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_StartPoint_X",&tStartX);
   tree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_StartPoint_Y",&tStartY);
   tree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_StartPoint_Z",&tStartZ);
+  tree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_EndPoint_X",&tEndX);
+  tree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_EndPoint_Y",&tEndY);
+  tree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_EndPoint_Z",&tEndZ);
   tree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_StartDirection_Phi",&tStartPhi);
   tree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_StartDirection_Theta",&tStartTheta);
   tree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_Pathlength",&tLengthAV);
