@@ -22,7 +22,17 @@
 #include "Efficiency.hh"
 
 Efficiency::Efficiency(){
+  this->initClass();
+}
 
+Efficiency::Efficiency( int fileNumber ){
+  fFileNumber = fileNumber;
+  this->initClass();
+}
+
+Efficiency::~Efficiency(){}
+
+void Efficiency::initClass(){
   //constructor of the class: initialize here the TTree
   fMcTTree = new TTree("mctree", "Truth info");
   fRecoTTree = new TTree("recotree", "Reco information");
@@ -30,6 +40,7 @@ Efficiency::Efficiency(){
   //set branches
   fMcTTree->Branch("FileNumber", &fFileNumber, "FileNumber/I");
   fMcTTree->Branch("Event", &fEvent, "Event/I");
+  fMcTTree->Branch("UniqueEvent", &fUniqueEventLabel, "UniqueEvent/I");
   fMcTTree->Branch("ParticleId", &fParticleId, "ParticleId/I");
   fMcTTree->Branch("Pdg", &fPdg, "Pdg/D");
   fMcTTree->Branch("Theta", &fTrueTheta, "Theta/D");
@@ -41,9 +52,16 @@ Efficiency::Efficiency(){
   fMcTTree->Branch("TrueEndX", &fTrueEndX, "TrueEndX/D");
   fMcTTree->Branch("TrueEndY", &fTrueEndY, "TrueEndY/D");
   fMcTTree->Branch("TrueEndZ", &fTrueEndZ, "TrueEndZ/D");
+  fMcTTree->Branch("TrueStartDirectionX", &fTrueStartDirectionX, "TrueStartDirectionX/D");
+  fMcTTree->Branch("TrueStartDirectionY", &fTrueStartDirectionY, "TrueStartDirectionY/D");
+  fMcTTree->Branch("TrueStartDirectionZ", &fTrueStartDirectionZ, "TrueStartDirectionZ/D");
+  fMcTTree->Branch("TrueEndDirectionX", &fTrueEndDirectionX, "TrueEndDirectionX/D");
+  fMcTTree->Branch("TrueEndDirectionY", &fTrueEndDirectionY, "TrueEndDirectionY/D");
+  fMcTTree->Branch("TrueEndDirectionZ", &fTrueEndDirectionZ, "TrueEndDirectionZ/D");
 
   fRecoTTree->Branch("FileNumber", &fFileNumber, "FileNumber/I");
   fRecoTTree->Branch("Event", &fEvent, "Event/I");
+  fRecoTTree->Branch("UniqueEvent", &fUniqueEventLabel, "UniqueEvent/I");
   fRecoTTree->Branch("TrackId", &fTrackId, "TrackId/I");
   fRecoTTree->Branch("NtracksEvent", &fNtracksEvent, "NtracksEvent/I");
   fRecoTTree->Branch("ParticleId", &fParticleId, "ParticleId/I");
@@ -61,6 +79,12 @@ Efficiency::Efficiency(){
   fRecoTTree->Branch("EndX", &fEndX, "EndX/D");
   fRecoTTree->Branch("EndY", &fEndY, "EndY/D");
   fRecoTTree->Branch("EndZ", &fEndZ, "EndZ/D");
+  fRecoTTree->Branch("StartDirectionX", &fStartDirectionX, "StartDirectionX/D");
+  fRecoTTree->Branch("StartDirectionY", &fStartDirectionY, "StartDirectionY/D");
+  fRecoTTree->Branch("StartDirectionZ", &fStartDirectionZ, "StartDirectionZ/D");
+  fRecoTTree->Branch("EndDirectionX", &fEndDirectionX, "EndDirectionX/D");
+  fRecoTTree->Branch("EndDirectionY", &fEndDirectionY, "EndDirectionY/D");
+  fRecoTTree->Branch("EndDirectionZ", &fEndDirectionZ, "EndDirectionZ/D");
   fRecoTTree->Branch("RecoLength", &fRecoLength, "RecoLength/D");
   fRecoTTree->Branch("TrueLength", &fTrueLength, "TrueLength/D");
   fRecoTTree->Branch("Purity", &fPurirty, "Purity/D");
@@ -124,8 +148,6 @@ Efficiency::Efficiency(){
   }
 }
 
-Efficiency::~Efficiency(){}
-
 void Efficiency::matchTruth(){
   //match reco and truth, calculate purity and completeness of a reco track
 
@@ -187,8 +209,10 @@ void Efficiency::setMapEntry(int id, MCTrack mctrack ){
   fillMap1D( abs( fParticleMap[id].pdgCode ), fThetaG4Map, fParticleMap[id].startTheta );
   fillMap1D( abs( fParticleMap[id].pdgCode ), fPhiG4Map, fParticleMap[id].startPhi );
 
-  fFileNumber = fParticleMap[ id ].run;
-  fEvent = fFileNumber*100 + fParticleMap[ id ].eventNumber; //get to the event a progressive number across files
+  //fFileNumber = fParticleMap[ id ].run;
+
+  fEvent = fParticleMap[ id ].eventNumber; //get to the event a progressive number across files
+  fUniqueEventLabel = fFileNumber*100 + fEvent;
   fParticleId = id;
   fPdg = fParticleMap[ id ].pdgCode;
   fTrueTheta = fParticleMap[ id ].startTheta;
@@ -201,6 +225,13 @@ void Efficiency::setMapEntry(int id, MCTrack mctrack ){
   fTrueEndY = fParticleMap[ id ].endY;
   fTrueEndZ = fParticleMap[ id ].endZ;
 
+  fTrueStartDirectionX = fParticleMap[ id ].startDirection.X();
+  fTrueStartDirectionY = fParticleMap[ id ].startDirection.Y();
+  fTrueStartDirectionZ = fParticleMap[ id ].startDirection.Z();
+  fTrueEndDirectionX = fParticleMap[ id ].endDirection.X();
+  fTrueEndDirectionY = fParticleMap[ id ].endDirection.Y();
+  fTrueEndDirectionZ = fParticleMap[ id ].endDirection.Z();
+
   fMcTTree->Fill();
 
 }
@@ -211,8 +242,9 @@ void Efficiency::fill(){
   //match with truth
   this->matchTruth();
 
-  fFileNumber = fParticleMap[ fBestTrackID ].run;
-  fEvent = fFileNumber*100 + fParticleMap[ fBestTrackID ].eventNumber; //get to the event a progressive number across files
+  fEvent = fParticleMap[ fBestTrackID ].eventNumber; //get to the event a progressive number across files
+  fUniqueEventLabel = fFileNumber*100 + fEvent; //assumung 100 events per file
+
   fParticleId = fBestTrackID;
   fTrackId = fTrack.trackID;
   fPdg = fParticleMap[ fBestTrackID ].pdgCode;
@@ -221,6 +253,12 @@ void Efficiency::fill(){
   fRecoE = fParticleMap[fBestTrackID].startE;
 
   fDirection = fTrack.startDirection.Dot( fParticleMap[fBestTrackID].startDirection );
+  fStartDirectionX = fTrack.startDirection.X();
+  fStartDirectionY = fTrack.startDirection.Y();
+  fStartDirectionZ = fTrack.startDirection.Z();
+  fEndDirectionX = fTrack.endDirection.X();
+  fEndDirectionY = fTrack.endDirection.Y();
+  fEndDirectionZ = fTrack.endDirection.Z();
 
   fDiffStartX = min(fTrack.startPointX - fParticleMap[fBestTrackID].startX, fTrack.endPointX - fParticleMap[fBestTrackID].startX);
   fDiffStartY = min(fTrack.startPointY - fParticleMap[fBestTrackID].startY, fTrack.endPointY - fParticleMap[fBestTrackID].startY);
@@ -236,6 +274,7 @@ void Efficiency::fill(){
 
   fRecoLength = fTrack.length;
   fTrueLength = fParticleMap[fBestTrackID].length;
+
 
 
   fRecoTTree->Fill();

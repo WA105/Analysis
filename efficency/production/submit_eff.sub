@@ -1,5 +1,5 @@
 ## basic configuration of the submit file ##
-
+#EOS_MGM_URL             = root://eospublic.cern.ch
 notify_user             = andrea.scarpelli@cern.ch
 notification            = Error
 universe       		      = vanilla
@@ -15,5 +15,5 @@ should_transfer_files = YES
 when_to_transfer_output = ON_EXIT
 requirements            = (Arch == "INTEL" && OpSys == "LINUX") || (Arch == "X86_64" && OpSys =="LINUX" )
 priority 		            = 20
-transfer_output_remaps = "recoEfficiency.root = /eos/user/a/ascarpel/efficency/311/MCB/recoEfficiency_$(Process).root"
+transfer_output_remaps = "recoEfficiency.root = /eos/user/a/ascarpel/efficency/311/MCB/2/recoEfficiency_$(Process).root"
 queue arguments from arguments.txt

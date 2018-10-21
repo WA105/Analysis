@@ -27,6 +27,7 @@ class Efficiency
 {
   public:
     Efficiency();
+    Efficiency( int fileNumber );
     ~Efficiency();
 
     //setters
@@ -44,6 +45,7 @@ class Efficiency
     void clean();
 
   private:
+    void initClass();
     void matchTruth();
 
     void fillMap1D(int pdg, map<int, TH1D*> map, double fillIn );
@@ -110,6 +112,7 @@ class Efficiency
 
     int fFileNumber;
     int fEvent;
+    int fUniqueEventLabel;
     int fParticleId;
     int fTrackId;
     int fNtracksEvent;
@@ -126,6 +129,12 @@ class Efficiency
     double fTrueEndX;
     double fTrueEndY;
     double fTrueEndZ;
+    double fTrueStartDirectionX;
+    double fTrueStartDirectionY;
+    double fTrueStartDirectionZ;
+    double fTrueEndDirectionX;
+    double fTrueEndDirectionY;
+    double fTrueEndDirectionZ;
     double fRecoPhi;
     double fRecoTheta;
     double fRecoE;
@@ -142,6 +151,14 @@ class Efficiency
     double fEndX;
     double fEndY;
     double fEndZ;
+
+    double fStartDirectionX;
+    double fStartDirectionY;
+    double fStartDirectionZ;
+
+    double fEndDirectionX;
+    double fEndDirectionY;
+    double fEndDirectionZ;
 
     double fRecoLength;
     double fTrueLength;

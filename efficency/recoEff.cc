@@ -70,8 +70,10 @@ int main( int argc, char* argv[] ){
   LArParser *mcParser = new LArParser();
   LArParser *recoParser = new LArParser();
 
+  int fileNum = stoi( getFileNumber( simFile ) );
+  
   //and here i define the class efficiency
-  Efficiency *recoEfficiency = new Efficiency();
+  Efficiency *recoEfficiency = new Efficiency( fileNum );
 
   TTree *mcTree = getTTree( simFile );
   TTree *recoTree = getTTree( recoFile );

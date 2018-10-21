@@ -88,6 +88,32 @@ string getFileNumber( string filename ){
   return number;
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+
+/*
+string getMCFileNumber( string filename ){
+  //assuming the filename encorded in a format /path/to/file/run-Parser.root
+
+  //isolate filenumber from path
+  string s = filename;
+  string delimiter = "/";
+
+  size_t pos = 0;
+  string token;
+
+  while ((pos = s.find(delimiter)) != string::npos) {
+    token = s.substr(0, pos);
+    s.erase(0, pos + delimiter.length());
+  }
+
+  pos = s.find("-");
+  string number = s.substr(0, pos);
+
+  return number;
+}
+*/
+
 ////////////////////////////////////////////////////////////////////////////////
 
 double getModule( double x, double y , double z ){

@@ -195,6 +195,11 @@ void LArParser::setMCBranches(TTree *tree){
   //Metadata
 
   //g4 particles
+  tree->SetBranchAddress("Run",&tRun);
+  tree->SetBranchAddress("Subrun",&tSubrun);
+  tree->SetBranchAddress("EventNumberInRun",&tEventNumberInRun);
+  tree->SetBranchAddress("EventTimeSeconds",&tEventTimeSeconds);
+  tree->SetBranchAddress("EventTimeNanoseconds", &tEventTimeNanoseconds);
   tree->SetBranchAddress("MCTruth_GEANT4_NumberOfParticles", &tNGeantTrackPerEvent);
   tree->SetBranchAddress("MCTruth_GEANT4_PDGCode",&tPdg);
   tree->SetBranchAddress("MCTruth_GEANT4_InTPCAV_ParticleID",&tParticleId);
@@ -430,8 +435,7 @@ void LArParser::fillMCTrack( vector<MCTrack> & tracks ){
 
     dummyTrack.run = tRun;
     dummyTrack.subrun = tSubrun;
-    dummyTrack.event = tEventNumberInRun;
-
+    dummyTrack.eventNumber = tEventNumberInRun;
     dummyTrack.pdgCode=tPdg[l];
     dummyTrack.particleID=tParticleId[l];
     dummyTrack.isInTPCAV=tIsInTPCAV[l];
