@@ -90,7 +90,6 @@ void Efficiency::initClass(){
   fRecoTTree->Branch("Purity", &fPurirty, "Purity/D");
   fRecoTTree->Branch("Completeness", &fCompleteness, "Completeness/D");
 
-
   //histograms
   size_t arraySize = max(pdgCode.size(), pdgNames.size() );
 
@@ -212,6 +211,7 @@ void Efficiency::setMapEntry(int id, MCTrack mctrack ){
   //fFileNumber = fParticleMap[ id ].run;
 
   fEvent = fParticleMap[ id ].eventNumber; //get to the event a progressive number across files
+
   fUniqueEventLabel = fFileNumber*100 + fEvent;
   fParticleId = id;
   fPdg = fParticleMap[ id ].pdgCode;
@@ -242,6 +242,14 @@ void Efficiency::fill(){
   //match with truth
   this->matchTruth();
 
+  //check if fBestTrackID belongs to fParticleMap
+  if ( fParticleMap.find( fBestTrackID ) == fParticleMap.end() )
+  {
+    std::cout << "WARNING! Efficiency::fill(): key not found in fParticleMap" << std::endl;
+    return; //don't fill the ttree
+  }
+
+  //if the key exists, fill up all the quantities
   fEvent = fParticleMap[ fBestTrackID ].eventNumber; //get to the event a progressive number across files
   fUniqueEventLabel = fFileNumber*100 + fEvent; //assumung 100 events per file
 
@@ -274,8 +282,6 @@ void Efficiency::fill(){
 
   fRecoLength = fTrack.length;
   fTrueLength = fParticleMap[fBestTrackID].length;
-
-
 
   fRecoTTree->Fill();
 
