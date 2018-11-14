@@ -37,6 +37,8 @@ class Efficiency
     void setNumberOfTracksEvent( int nTracks ){ fNtracksEvent = nTracks;} //not elegant, but need that afterwards in the analysis
 
     //others
+    void getNHitsMatched( int id, int & nhits, int & nhits0, int & nhits1);
+    void checkUnmatch();
     void makeEfficiencyPlot();
     void fill();
     void write();
@@ -104,11 +106,13 @@ class Efficiency
     //more quantities
     TTree *fMcTTree;
     TTree *fRecoTTree;
+    TTree *fUnmatchTTree;
 
     map<int, MCTrack> fParticleMap; //particleID mctrack association
     map<int, double> fEnergyMap; //particleID energy association
     Track fTrack;
     vector<Hit> fHits;
+    vector<int>  fBestTrackIDs;
 
     int fFileNumber;
     int fEvent;
@@ -162,6 +166,10 @@ class Efficiency
 
     double fRecoLength;
     double fTrueLength;
+
+    int fNumberOfHits;
+    int fNumberOfHitsView0;
+    int fNumberOfHitsView1;
 };
 
 #endif // __EFFICIENCY_H

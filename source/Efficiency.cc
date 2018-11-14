@@ -36,6 +36,7 @@ void Efficiency::initClass(){
   //constructor of the class: initialize here the TTree
   fMcTTree = new TTree("mctree", "Truth info");
   fRecoTTree = new TTree("recotree", "Reco information");
+  fUnmatchTTree = new TTree("unmatchtree", "True track that didn't match with a reco track");
 
   //set branches
   fMcTTree->Branch("FileNumber", &fFileNumber, "FileNumber/I");
@@ -58,6 +59,10 @@ void Efficiency::initClass(){
   fMcTTree->Branch("TrueEndDirectionX", &fTrueEndDirectionX, "TrueEndDirectionX/D");
   fMcTTree->Branch("TrueEndDirectionY", &fTrueEndDirectionY, "TrueEndDirectionY/D");
   fMcTTree->Branch("TrueEndDirectionZ", &fTrueEndDirectionZ, "TrueEndDirectionZ/D");
+  fMcTTree->Branch("TrueLength", &fTrueLength, "TrueLength/D");
+  fMcTTree->Branch("NumberOfHits", &fNumberOfHits, "NumberOfHits/I");
+  fMcTTree->Branch("NumberOfHitsView0", &fNumberOfHitsView0, "NumberOfHitsView0/I");
+  fMcTTree->Branch("NumberOfHitsView1", &fNumberOfHitsView1, "NumberOfHitsView1/I");
 
   fRecoTTree->Branch("FileNumber", &fFileNumber, "FileNumber/I");
   fRecoTTree->Branch("Event", &fEvent, "Event/I");
@@ -69,6 +74,18 @@ void Efficiency::initClass(){
   fRecoTTree->Branch("Theta", &fRecoTheta, "Theta/D");
   fRecoTTree->Branch("Phi", &fRecoPhi, "Phi/D");
   fRecoTTree->Branch("Energy", &fRecoE, "Energy/D");
+  fRecoTTree->Branch("TrueStartX", &fTrueStartX, "TrueStartX/D");
+  fRecoTTree->Branch("TrueStartY", &fTrueStartY, "TrueStartY/D");
+  fRecoTTree->Branch("TrueStartZ", &fTrueStartZ, "TrueStartZ/D");
+  fRecoTTree->Branch("TrueEndX", &fTrueEndX, "TrueEndX/D");
+  fRecoTTree->Branch("TrueEndY", &fTrueEndY, "TrueEndY/D");
+  fRecoTTree->Branch("TrueEndZ", &fTrueEndZ, "TrueEndZ/D");
+  fRecoTTree->Branch("TrueStartDirectionX", &fTrueStartDirectionX, "TrueStartDirectionX/D");
+  fRecoTTree->Branch("TrueStartDirectionY", &fTrueStartDirectionY, "TrueStartDirectionY/D");
+  fRecoTTree->Branch("TrueStartDirectionZ", &fTrueStartDirectionZ, "TrueStartDirectionZ/D");
+  fRecoTTree->Branch("TrueEndDirectionX", &fTrueEndDirectionX, "TrueEndDirectionX/D");
+  fRecoTTree->Branch("TrueEndDirectionY", &fTrueEndDirectionY, "TrueEndDirectionY/D");
+  fRecoTTree->Branch("TrueEndDirectionZ", &fTrueEndDirectionZ, "TrueEndDirectionZ/D");
   fRecoTTree->Branch("Direction", &fDirection, "Direction/D");
   fRecoTTree->Branch("DiffStartX", &fDiffStartX, "DiffStartX/D");
   fRecoTTree->Branch("DiffStartY", &fDiffStartY, "DiffStartY/D");
@@ -89,6 +106,34 @@ void Efficiency::initClass(){
   fRecoTTree->Branch("TrueLength", &fTrueLength, "TrueLength/D");
   fRecoTTree->Branch("Purity", &fPurirty, "Purity/D");
   fRecoTTree->Branch("Completeness", &fCompleteness, "Completeness/D");
+  fRecoTTree->Branch("NumberOfHits", &fNumberOfHits, "NumberOfHits/I");
+  fRecoTTree->Branch("NumberOfHitsView0", &fNumberOfHitsView0, "NumberOfHitsView0/I");
+  fRecoTTree->Branch("NumberOfHitsView1", &fNumberOfHitsView1, "NumberOfHitsView1/I");
+
+  fUnmatchTTree->Branch("FileNumber", &fFileNumber, "FileNumber/I");
+  fUnmatchTTree->Branch("Event", &fEvent, "Event/I");
+  fUnmatchTTree->Branch("UniqueEvent", &fUniqueEventLabel, "UniqueEvent/I");
+  fUnmatchTTree->Branch("ParticleId", &fParticleId, "ParticleId/I");
+  fUnmatchTTree->Branch("Pdg", &fPdg, "Pdg/D");
+  fUnmatchTTree->Branch("Theta", &fTrueTheta, "Theta/D");
+  fUnmatchTTree->Branch("Phi", &fTruePhi, "Phi/D");
+  fUnmatchTTree->Branch("Energy", &fTrueE, "Energy/D");
+  fUnmatchTTree->Branch("TrueStartX", &fTrueStartX, "TrueStartX/D");
+  fUnmatchTTree->Branch("TrueStartY", &fTrueStartY, "TrueStartY/D");
+  fUnmatchTTree->Branch("TrueStartZ", &fTrueStartZ, "TrueStartZ/D");
+  fUnmatchTTree->Branch("TrueEndX", &fTrueEndX, "TrueEndX/D");
+  fUnmatchTTree->Branch("TrueEndY", &fTrueEndY, "TrueEndY/D");
+  fUnmatchTTree->Branch("TrueEndZ", &fTrueEndZ, "TrueEndZ/D");
+  fUnmatchTTree->Branch("TrueStartDirectionX", &fTrueStartDirectionX, "TrueStartDirectionX/D");
+  fUnmatchTTree->Branch("TrueStartDirectionY", &fTrueStartDirectionY, "TrueStartDirectionY/D");
+  fUnmatchTTree->Branch("TrueStartDirectionZ", &fTrueStartDirectionZ, "TrueStartDirectionZ/D");
+  fUnmatchTTree->Branch("TrueEndDirectionX", &fTrueEndDirectionX, "TrueEndDirectionX/D");
+  fUnmatchTTree->Branch("TrueEndDirectionY", &fTrueEndDirectionY, "TrueEndDirectionY/D");
+  fUnmatchTTree->Branch("TrueEndDirectionZ", &fTrueEndDirectionZ, "TrueEndDirectionZ/D");
+  fUnmatchTTree->Branch("TrueLength", &fTrueLength, "TrueLength/D");
+  fUnmatchTTree->Branch("NumberOfHits", &fNumberOfHits, "NumberOfHits/I");
+  fUnmatchTTree->Branch("NumberOfHitsView0", &fNumberOfHitsView0, "NumberOfHitsView0/I");
+  fUnmatchTTree->Branch("NumberOfHitsView1", &fNumberOfHitsView1, "NumberOfHitsView1/I");
 
   //histograms
   size_t arraySize = max(pdgCode.size(), pdgNames.size() );
@@ -147,6 +192,32 @@ void Efficiency::initClass(){
   }
 }
 
+void Efficiency::getNHitsMatched( int id, int & nhits, int & nhits0, int & nhits1)
+{
+  //return the number of hits matched with the given mctrack id
+
+  nhits=0; nhits0=0; nhits1=0;
+
+  if( fHits.size() == 0 )
+  {
+    //if the fHits variable is not initialized
+    return;
+  }
+  else
+  {
+    for( auto hit : fHits )
+    {
+      if( hit.particleID == id )
+      {
+        nhits++;
+        if ( hit.view == 0 ){ nhits0++; }
+        else if ( hit.view == 1 ){ nhits1++; }
+      }
+    }
+    return;
+  }
+}
+
 void Efficiency::matchTruth(){
   //match reco and truth, calculate purity and completeness of a reco track
 
@@ -166,6 +237,7 @@ void Efficiency::matchTruth(){
   fBestTrackID =0.;
   double maxe = 0.;
   for( auto const & val : fEnergyMap  ){
+
     if( maxe < val.second ){
       maxe = val.second;
       fBestTrackID= val.first;
@@ -204,6 +276,9 @@ void Efficiency::setMapEntry(int id, MCTrack mctrack ){
 
   fParticleMap[id] = mctrack;
 
+  //appy some cuts in order to discard mctracks which aren't well contained
+  //inside a buffer box
+
   //fill g4 histograms right afterwards
   fillMap1D( abs( fParticleMap[id].pdgCode ), fThetaG4Map, fParticleMap[id].startTheta );
   fillMap1D( abs( fParticleMap[id].pdgCode ), fPhiG4Map, fParticleMap[id].startPhi );
@@ -231,6 +306,8 @@ void Efficiency::setMapEntry(int id, MCTrack mctrack ){
   fTrueEndDirectionX = fParticleMap[ id ].endDirection.X();
   fTrueEndDirectionY = fParticleMap[ id ].endDirection.Y();
   fTrueEndDirectionZ = fParticleMap[ id ].endDirection.Z();
+  fTrueLength = fParticleMap[ id ].length;
+  getNHitsMatched( id, fNumberOfHits, fNumberOfHitsView0, fNumberOfHitsView1 );
 
   fMcTTree->Fill();
 
@@ -259,6 +336,19 @@ void Efficiency::fill(){
   fRecoTheta = fParticleMap[fBestTrackID].startTheta;
   fRecoPhi = fParticleMap[fBestTrackID].startPhi;
   fRecoE = fParticleMap[fBestTrackID].startE;
+  fTrueStartX = fParticleMap[ fBestTrackID ].startX;
+  fTrueStartY = fParticleMap[ fBestTrackID ].startY;
+  fTrueStartZ = fParticleMap[ fBestTrackID ].startZ;
+  fTrueEndX = fParticleMap[ fBestTrackID ].endX;
+  fTrueEndY = fParticleMap[ fBestTrackID ].endY;
+  fTrueEndZ = fParticleMap[ fBestTrackID ].endZ;
+
+  fTrueStartDirectionX = fParticleMap[ fBestTrackID ].startDirection.X();
+  fTrueStartDirectionY = fParticleMap[ fBestTrackID ].startDirection.Y();
+  fTrueStartDirectionZ = fParticleMap[ fBestTrackID ].startDirection.Z();
+  fTrueEndDirectionX = fParticleMap[ fBestTrackID ].endDirection.X();
+  fTrueEndDirectionY = fParticleMap[ fBestTrackID ].endDirection.Y();
+  fTrueEndDirectionZ = fParticleMap[ fBestTrackID ].endDirection.Z();
 
   fDirection = fTrack.startDirection.Dot( fParticleMap[fBestTrackID].startDirection );
   fStartDirectionX = fTrack.startDirection.X();
@@ -283,7 +373,19 @@ void Efficiency::fill(){
   fRecoLength = fTrack.length;
   fTrueLength = fParticleMap[fBestTrackID].length;
 
+  fNumberOfHits = fTrack.hitsTrk.size();
+  fNumberOfHitsView0=0;
+  fNumberOfHitsView1=0;
+
+  for ( auto const & hit : fTrack.hitsTrk )
+  {
+    if ( hit.view == 0 ){ fNumberOfHitsView0++; }
+    else if ( hit.view == 1 ){ fNumberOfHitsView1++; }
+  }
+
   fRecoTTree->Fill();
+
+  fBestTrackIDs.push_back( fBestTrackID );
 
   //fill first the mc quanties
   fillMap1D( abs(fPdg), fDirMap, fDirection);
@@ -316,6 +418,42 @@ void Efficiency::fill(){
 
 }
 
+void Efficiency::checkUnmatch()
+{
+  //build up a TTree with all the particles in the PartcileList that didn't get a match with a reco track
+
+  for( auto const & particleIt : fParticleMap )
+  {
+    int id = particleIt.first;
+
+    if ( std::find( fBestTrackIDs.begin(), fBestTrackIDs.end(), id ) == fBestTrackIDs.end() )
+    {
+      fEvent = fParticleMap[ id ].eventNumber;
+      fUniqueEventLabel = fFileNumber*100 + fEvent;
+      fParticleId = id;
+      fPdg = fParticleMap[ id ].pdgCode;
+      fTrueTheta = fParticleMap[ id ].startTheta;
+      fTruePhi = fParticleMap[ id ].startPhi;
+      fTrueE = fParticleMap[ id ].startE;
+      fTrueStartX = fParticleMap[ id ].startX;
+      fTrueStartY = fParticleMap[ id ].startY;
+      fTrueStartZ = fParticleMap[ id ].startZ;
+      fTrueEndX = fParticleMap[ id ].endX;
+      fTrueEndY = fParticleMap[ id ].endY;
+      fTrueEndZ = fParticleMap[ id ].endZ;
+      fTrueStartDirectionX = fParticleMap[ id ].startDirection.X();
+      fTrueStartDirectionY = fParticleMap[ id ].startDirection.Y();
+      fTrueStartDirectionZ = fParticleMap[ id ].startDirection.Z();
+      fTrueEndDirectionX = fParticleMap[ id ].endDirection.X();
+      fTrueEndDirectionY = fParticleMap[ id ].endDirection.Y();
+      fTrueEndDirectionZ = fParticleMap[ id ].endDirection.Z();
+      fTrueLength = fParticleMap[ id ].length;
+      getNHitsMatched( id, fNumberOfHits, fNumberOfHitsView0, fNumberOfHitsView1 );
+
+      fUnmatchTTree->Fill();
+    }
+  }
+}
 
 void Efficiency::makeEfficiencyPlot(){
   //calculate the efficieny plots
@@ -379,6 +517,7 @@ void Efficiency::write(){
   //write tree
   fMcTTree->Write();
   fRecoTTree->Write();
+  fUnmatchTTree->Write();
 }
 
 void Efficiency::clean(){
@@ -386,4 +525,5 @@ void Efficiency::clean(){
   //quantities to be reset after the event
   fParticleMap.clear();
   fHits.clear();
+  fBestTrackIDs.clear();
 }

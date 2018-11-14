@@ -25,8 +25,43 @@
 #include "DataStructure.hh"
 #include "Cuts.hh"
 #include "Efficiency.hh"
+#include "Geometry.hh"
 
 using namespace std;
+
+////////////////////////////////////////////////////////////////////////////////
+// Custom functions
+
+bool inBufferBox( MCTrack track , int buffer)
+{
+  //check if the mctrack starting-ending point are both too close to the tpc edges
+  //Ideally we'd prefer not to count those events because they don't containt much information
+
+  double buffMinX = tpc_boundaries[0]+buffer;
+  double buffMaxX = tpc_boundaries[1]-buffer;
+  double buffMinY = tpc_boundaries[2]+buffer;
+  double buffMaxY = tpc_boundaries[3]-buffer;
+  double buffMinZ = tpc_boundaries[4]+buffer;
+  double buffMaxZ = tpc_boundaries[5]-buffer;
+
+  bool inBufferX = ( ((track.startX < buffMinX) && ( track.endX < buffMinX)) || ((track.startX > buffMaxX) && ( track.endX > buffMaxX)) );
+  bool inBufferY = ( ((track.startY < buffMinY) && ( track.endY < buffMinY)) || ((track.startY > buffMaxY) && ( track.endY > buffMaxY)) );
+  bool inBufferZ = ( ((track.startZ < buffMinZ) && ( track.endZ < buffMinZ)) || ((track.startZ > buffMaxZ) && ( track.endZ > buffMaxZ)) );
+
+  return ( inBufferX || inBufferY || inBufferZ );
+
+}
+
+bool isGoodMcTrack( MCTrack track )
+{
+  //check if the mctrack is inside the active volume for a good portion
+  bool isInAv = ( track.isInTPCAV == 1 ); // first condition: be inside the tpc
+  bool inBuffer = inBufferBox( track, 10 ); //is start and end contained into a buffer box?
+  bool isLongEnough = ( track.length > 35 ); //third condition: have a decent length
+
+  return ( isInAv && ( !inBuffer || isLongEnough ) );
+
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Main macro
@@ -95,6 +130,8 @@ int main( int argc, char* argv[] ){
   //Event looper ===============================================================
   for(int evt=0; evt<mcTree->GetEntries(); evt++){
 
+      cout << "Processing event: " << evt << endl;
+
       //data structures array
       vector<MCTrack> mcTracks;
       vector<Track> recoTracks;
@@ -104,14 +141,19 @@ int main( int argc, char* argv[] ){
       recoParser->getRecoTracksEvent(recoTree, recoTracks, evt);
       recoParser->getRecoHitsEvent( recoTree, recoHits, evt );
 
+      //set recoHits
+      recoEfficiency->setRecoHits( recoHits );
+
       for( auto track : mcTracks ){
         //order truth track into a map sorted by their id so is easier to make
         //a match between true and reco
+
+        if ( !isGoodMcTrack( track ) ) { continue; } //jump tracks which aren't inside the active volume
+
         recoEfficiency->setMapEntry( track.particleID, track );
       }
 
       //insert the reconstruced hits inside the event
-      recoEfficiency->setRecoHits( recoHits );
       recoEfficiency->setNumberOfTracksEvent( (int)recoTracks.size() );
 
       for( auto track : recoTracks ){
@@ -121,6 +163,7 @@ int main( int argc, char* argv[] ){
         recoEfficiency->fill();
       }
 
+      recoEfficiency->checkUnmatch(); //build up a ttree with all the unmatched true particles in the event
       recoEfficiency->clean();
 
   }//end event loop

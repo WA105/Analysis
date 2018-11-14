@@ -14,7 +14,7 @@
 
 const int NUM_OF_VIEWS = 2;
 const int NUM_OF_LEMS = 12;
-const int tpc_boundaries[6] = {-50, 50, -50, 50, 0, 300}; //minx,maxx,miny,maxy,minz,max
+const double tpc_boundaries[6] = { -50, 50.0, -50.0, 50.0, 0, 300 }; //minx,maxx,miny,maxy,minz,max
 const int Ch_0 = 320;
 const int Ch_1 = 960;
 const double pitch = 0.3;

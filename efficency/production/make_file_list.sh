@@ -1,10 +1,11 @@
 #!/bin/bash
 
-#export PathToRecoFiles="/eos/user/a/ascarpel/stitch/MCB2/"
-export PathToRecoFiles="/eos/experiment/wa105/offline/LArSoft/MC/MCB/MCB1/MuonsCN/ROOT/recofast/"
-export PathToG4Files="/eos/experiment/wa105/offline/LArSoft/MC/MCB/MCB1/MuonsCN/ROOT/g4detsim/"
+export version=$1
+export PathToRecoFiles="/eos/user/a/ascarpel/stitch/MCB${version}/"
+#export PathToRecoFiles="/eos/experiment/wa105/offline/LArSoft/MC/MCB/MCB1/MuonsCN/ROOT/recofast/"
+export PathToG4Files="/eos/experiment/wa105/offline/LArSoft/MC/MCB/MCB${version}/MuonsCN/ROOT/g4detsim/"
 
-OutputList="arguments.txt"
+OutputList="arguments_MCB${version}.txt"
 
 rm $OutputList
 touch $OutputList
@@ -17,6 +18,7 @@ do
 
 		if [[ -f $RecoFile && -f $G4File ]];
 		then
+        echo 'processing file ' ${i}
 		    echo -s $G4File -r $RecoFile -o recoEfficiency.root >> $OutputList
 	  fi
 

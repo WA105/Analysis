@@ -445,24 +445,46 @@ void LArParser::fillMCTrack( vector<MCTrack> & tracks ){
     dummyTrack.momY=tMomY[l];
     dummyTrack.momZ=tMomZ[l];
     dummyTrack.startTime=tStartTime[l];
-    dummyTrack.startX=tStartX[l];
-    dummyTrack.startY=tStartY[l];
-    dummyTrack.startZ=tStartZ[l];
-    dummyTrack.startPhi=tStartPhi[l];
-    dummyTrack.startTheta=tStartTheta[l];
-    dummyTrack.lengthAV=tLengthAV[l];
-    dummyTrack.endE=tEndE[l];
-    dummyTrack.endX=tEndX[l];
-    dummyTrack.endY=tEndY[l];
-    dummyTrack.endZ=tEndZ[l];
-    dummyTrack.length = getModule( abs( dummyTrack.endX - dummyTrack.startX ),
-                                   abs( dummyTrack.endY - dummyTrack.startY ),
-                                   abs( dummyTrack.endZ - dummyTrack.startZ )
-                                 );
-    dummyTrack.startDirection.SetXYZ( abs( dummyTrack.endX - dummyTrack.startX ) / dummyTrack.length,
-                                      abs( dummyTrack.endY - dummyTrack.startY ) / dummyTrack.length,
-                                      abs( dummyTrack.endZ - dummyTrack.startZ ) / dummyTrack.length
-                                     );
+
+    if ( dummyTrack.isInTPCAV == 0 )
+    {
+      //those quantities are not inside the active volume initialize with -999
+      dummyTrack.startX=-999;
+      dummyTrack.startY=-999;
+      dummyTrack.startZ=-999;
+      dummyTrack.startPhi=-999;
+      dummyTrack.startTheta=-999;
+      dummyTrack.lengthAV=-999;
+      dummyTrack.endE=-999;
+      dummyTrack.endX=-999;
+      dummyTrack.endY=-999;
+      dummyTrack.endZ=-999;
+      dummyTrack.length =-999;
+      dummyTrack.startDirection.SetXYZ(-999,-999,-999);
+    }
+    else
+    {
+      dummyTrack.startX=tStartX[l];
+      dummyTrack.startY=tStartY[l];
+      dummyTrack.startZ=tStartZ[l];
+      dummyTrack.startPhi=tStartPhi[l];
+      dummyTrack.startTheta=tStartTheta[l];
+      dummyTrack.lengthAV=tLengthAV[l];
+      dummyTrack.endE=tEndE[l];
+      dummyTrack.endX=tEndX[l];
+      dummyTrack.endY=tEndY[l];
+      dummyTrack.endZ=tEndZ[l];
+      dummyTrack.length = getModule( abs( dummyTrack.endX - dummyTrack.startX ),
+                                     abs( dummyTrack.endY - dummyTrack.startY ),
+                                     abs( dummyTrack.endZ - dummyTrack.startZ )
+                                   );
+      dummyTrack.startDirection.SetXYZ( abs( dummyTrack.endX - dummyTrack.startX ) / dummyTrack.length,
+                                        abs( dummyTrack.endY - dummyTrack.startY ) / dummyTrack.length,
+                                        abs( dummyTrack.endZ - dummyTrack.startZ ) / dummyTrack.length
+                                       );
+    }
+
+
     tracks.push_back(dummyTrack);
   }
 
