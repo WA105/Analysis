@@ -27,3 +27,6 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/../include/*.hh)
 #add here the name of your executable
 add_executable(recoEff ${PROJECT_SOURCE_DIR}/recoEff.cc ${sources} ${headers})
 target_link_libraries(recoEff ${ROOT_LIBRARIES} sqlite3 CustomClasses)
+
+add_executable(hitEff ${PROJECT_SOURCE_DIR}/hitEff.cc ${sources} ${headers})
+target_link_libraries(hitEff ${ROOT_LIBRARIES} sqlite3 CustomClasses)

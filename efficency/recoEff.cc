@@ -6,7 +6,7 @@
 //  -r fastreco parser root file
 //  -o outputfile.root
 //
-//mailto:andrea.scarpelli@cern.ch
+//  mailto:andrea.scarpelli@cern.ch
 ////////////////////////////////////////////////////////////////////////////////
 
 //c++ includes
@@ -85,8 +85,9 @@ int main( int argc, char* argv[] ){
 
   //define and variables =======================================================
 
-  //extract the filenumber from the simFile
-  //int fileNumber = getFileNumber( simFile );
+  LArParser *mcParser = new LArParser();
+  LArParser *recoParser = new LArParser();
+  recoParser->setChannelNoise( "729-0-rms.root" );
 
   //define here the output file
   Track recoTrack;
@@ -95,20 +96,19 @@ int main( int argc, char* argv[] ){
   //define output file
 
   TFile *ofile = new TFile(outputFile.c_str(), "RECREATE");
-  if(!ofile->IsOpen()){
+  if(!ofile->IsOpen())
+  {
     cout << "File: " << outputFile << " cannot be open!" << endl;
     return 1;
   }
 
   //Prepare inputs =============================================================
 
-  LArParser *mcParser = new LArParser();
-  LArParser *recoParser = new LArParser();
-
   int fileNum = stoi( getFileNumber( simFile ) );
 
   //and here i define the class efficiency
   Efficiency *recoEfficiency = new Efficiency( fileNum );
+  recoEfficiency->makeHitsTree();
 
   TTree *mcTree = getTTree( simFile );
   TTree *recoTree = getTTree( recoFile );
@@ -148,7 +148,8 @@ int main( int argc, char* argv[] ){
         //order truth track into a map sorted by their id so is easier to make
         //a match between true and reco
 
-        if ( !isGoodMcTrack( track ) ) { continue; } //jump tracks which aren't inside the active volume
+        //jump tracks which aren't inside the active volume or that corresponds to EM activity
+        if ( !isGoodMcTrack( track ) || track.particleID < 0 ) { continue; }
 
         recoEfficiency->setMapEntry( track.particleID, track );
       }

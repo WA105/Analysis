@@ -2,6 +2,7 @@
 #include <fstream>
 #include <stdlib.h>
 #include <stdio.h>
+
 #include "Geometry.hh"
 
 using namespace std;
@@ -47,6 +48,39 @@ unsigned int ViewToDAQChan(unsigned int ViewChan){
   } // end of if/else statementi
 
   return Chan311;
+}
+
+
+double getCalAmpConstant( int view, string type )
+{
+
+  double adc2fc0=0; //ADC*ticks to fC view 0 (from pulsing)
+  double adc2fc1=0; //ADC*ticks to fC view 1 (from pulsing)
+
+  if(type == "Data")
+  {
+    adc2fc0=1./59.8; //ADC*ticks to fC view 0 (from pulsing)
+    adc2fc1=1./66.7; //ADC*ticks to fC view 1 (from pulsing)
+  }
+  else if( type == "Montecarlo" )
+  {
+    adc2fc0=1./42.68; //ADC*ticks to fC view 0 (from integral)
+    adc2fc1=1./56.66; //ADC*ticks to fC view 1 (from integral)
+  }
+  else
+  {
+    std::cout << "getCalAmpConstant(): invalid type. Possible are 'Data' or 'Montecarlo' " << std::endl;
+  }
+
+  switch (view) {
+    case 0:
+      return adc2fc0;
+    case 1:
+      return adc2fc1;
+    default:
+      std::cout << "getCalAmpConstant(): invalid view!" << std::endl;
+      return 0;
+  }
 }
 
 

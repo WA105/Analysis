@@ -17,6 +17,8 @@
 #include "Utils.hh"
 //#include "Cuts.hh"
 
+#include "TH1D.h"
+
 using namespace std;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -94,15 +96,16 @@ double Channel::sumAdcInROI( int startTime, int endTime ){
 Hit::Hit(){}
 Hit::~Hit(){}
 
-void Hit::calibrateCharge( double calo0, double calo1 ){
+void Hit::calibrateCharge( string type){
   //correct the charge with the appropriate calibration constants from ADC to fC
 
   //apply the nominal calibration if calo* is 0
-  if( calo0 == 0 ){ calo0 = adc2fc0; }
-  if( calo1 == 0 ){ calo1 = adc2fc1; }
+  double calo0, calo1;
+  if( calo0 == 0 ){ calo0 = getCalAmpConstant(0, type); }
+  if( calo1 == 0 ){ calo1 = getCalAmpConstant(1, type); }
 
-  if( view == 0 ){ chargeIntegral *= adc2fc0; chargeSummedADC *= adc2fc0; }
-  else if( view == 1 ){ chargeIntegral *= adc2fc1; chargeSummedADC *= adc2fc1; }
+  if( view == 0 ){ chargeIntegral *= calo0; chargeSummedADC *= calo0; }
+  else if( view == 1 ){ chargeIntegral *= calo1; chargeSummedADC *= calo1; }
   else{
     //don't correct and prompt an error message
     cout << "Hit::calibrateCharge ERROR! Invalid view " << endl;
@@ -158,6 +161,25 @@ bool Hit::isGoodLem( vector<int> lems ){
       return false;
 }
 
+double Hit::electronsFromSumADC(string type)
+{
+  //covert ADC from sumADC into electrons
+  double adc2fc = getCalAmpConstant(view, type);
+  double charge = 0;
+  charge = chargeSummedADC*adc2fc;
+
+  return charge/electronCharge; //return the number of electrons
+}
+
+double Hit::electronsFromIntegral(string type)
+{
+  //covert ADC from Integral into electrons
+  double adc2fc = getCalAmpConstant(view, type);
+  double charge = 0;
+  charge = chargeIntegral*adc2fc;
+
+  return charge/electronCharge; //return the number of electrons
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 Track::Track(){}
@@ -171,6 +193,41 @@ MCTrack::~MCTrack(){}
 LArParser::LArParser(){}
 
 LArParser::~LArParser(){}
+
+void LArParser::setChannelNoise( string model )
+{
+  fUseChannelNoise=true;
+
+  //open noise model tfile
+  TFile *file = new TFile(model.c_str(), "READ");
+
+  if( !file->IsOpen() )
+  {
+    cout << "setChannelNoise(): Cannot open noise model" << endl;
+    fUseChannelNoise = false;
+    file->Close();
+  }
+  else
+  {
+    TH1D *noiseHist = (TH1D*)file->Get("hChRMS_729");
+    if( !noiseHist )
+    {
+      cout << "setChannelNoise(): Cannot open noise model" << endl;
+      fUseChannelNoise = false;
+      file->Close();
+    }
+    else
+    {
+      for( int bin = 0; bin<noiseHist->GetNbinsX(); bin++ )
+      {
+        fChannelNoise[ bin ] = noiseHist->GetBinContent(bin);
+      }
+      file->Close();
+    }
+  }
+
+  file->Close();
+}
 
 void LArParser::setRawBranches(TTree *tree){
 
@@ -253,6 +310,7 @@ void LArParser::setRecoHitBranches(TTree *tree){
     tree->SetBranchAddress("Hit_TPC",&tHit_TPC);
     tree->SetBranchAddress("Hit_View",&tHit_View);
     tree->SetBranchAddress("Hit_Channel",&tHit_Channel);
+    tree->SetBranchAddress("Hit_Amplitude",&tHit_Amplitude);
     tree->SetBranchAddress("Hit_ChargeSummedADC",&tHit_ChargeSummedADC);
     tree->SetBranchAddress("Hit_ChargeIntegral",&tHit_ChargeIntegral);
     tree->SetBranchAddress("Hit_PeakTime",&tHit_PeakTime);
@@ -266,6 +324,9 @@ void LArParser::setRecoHitBranches(TTree *tree){
     tree->SetBranchAddress("Hit_trueEnergyMax",&tHit_TrueEnergy);
     tree->SetBranchAddress("Hit_trueEnergyFraction",&tHit_TrueEnergyFraction);
     tree->SetBranchAddress("Hit_ClusterID",&tHit_ClusterID);
+    tree->SetBranchAddress("hit_chanElectrons", &tHit_chanElectrons);
+    tree->SetBranchAddress("hit_chanMaxElectrons", &tHit_chanMaxElectrons);
+    tree->SetBranchAddress("hit_bestChanIDE", &tHit_bestChanIDE);
 
     return;
 }
@@ -310,6 +371,9 @@ void LArParser::setRecoTrackBranches(TTree *tree){
   tree->SetBranchAddress("NumberOfTracks",&tNumberOfTracks);
   tree->SetBranchAddress("TrackID",&tTrackID);
   tree->SetBranchAddress("Track_NumberOfHits",&tTrack_NumberOfHits);
+  tree->SetBranchAddress("Track_BestParticleID",&tTrack_BestParticleID);
+  tree->SetBranchAddress("Track_Purity",&tTrack_Purity);
+  tree->SetBranchAddress("Track_Completeness",&tTrack_Completeness);
   tree->SetBranchAddress("Track_Length_Trajectory",&tTrack_Length);
   tree->SetBranchAddress("Track_StartPoint_X", &tTrack_StartPoint_X);
   tree->SetBranchAddress("Track_StartPoint_Y", &tTrack_StartPoint_Y);
@@ -340,6 +404,7 @@ void LArParser::setRecoTrackBranches(TTree *tree){
   tree->SetBranchAddress("Track_Hit_View", &tTrack_Hit_View);
   tree->SetBranchAddress("Track_Hit_Channel", &tTrack_Hit_Channel);
   tree->SetBranchAddress("Track_Hit_PeakTime", &tTrack_Hit_PeakTime);
+  tree->SetBranchAddress("Track_Hit_Amplitude", &tTrack_Hit_Amplitude);
   tree->SetBranchAddress("Track_Hit_ChargeSummedADC", &tTrack_Hit_ChargeSummedADC);
   tree->SetBranchAddress("Track_Hit_ChargeIntegral", &tTrack_Hit_ChargeIntegral);
   tree->SetBranchAddress("Track_Hit_StartTime", &tTrack_Hit_StartTime);
@@ -350,6 +415,9 @@ void LArParser::setRecoTrackBranches(TTree *tree){
   tree->SetBranchAddress("Track_Hit_trueID", &tTrack_Hit_particleID);
   tree->SetBranchAddress("Track_Hit_trueEnergyMax", &tTrack_Hit_TrueEnergy);
   tree->SetBranchAddress("Track_Hit_trueEnergyFraction", &tTrack_Hit_TrueEnergyFraction);
+  tree->SetBranchAddress("Track_Hit_ChannelElectrons", &tTrack_Hit_ChannelElectrons);
+  tree->SetBranchAddress("Track_Hit_MaxChannelElectrons", &tTrack_Hit_MaxChannelElectrons);
+  tree->SetBranchAddress("Track_Hit_BestChanIDE", &tTrack_Hit_BestChanIDE);
 
   return;
 }
@@ -446,6 +514,7 @@ void LArParser::fillMCTrack( vector<MCTrack> & tracks ){
     dummyTrack.momZ=tMomZ[l];
     dummyTrack.startTime=tStartTime[l];
 
+
     if ( dummyTrack.isInTPCAV == 0 )
     {
       //those quantities are not inside the active volume initialize with -999
@@ -505,6 +574,7 @@ void LArParser::fillRecoHits( vector<Hit> & hits ){
     dummyHits.view=tHit_View[l];
     dummyHits.channel=tHit_Channel[l];
     dummyHits.peakTime=tHit_PeakTime[l];
+    dummyHits.amplitude=tHit_Amplitude[l];
     dummyHits.chargeSummedADC=tHit_ChargeSummedADC[l];
     dummyHits.chargeIntegral=tHit_ChargeIntegral[l];
     dummyHits.startTime=tHit_StartTime[l];
@@ -516,7 +586,16 @@ void LArParser::fillRecoHits( vector<Hit> & hits ){
     dummyHits.particleID= tHit_particleID[l];
     dummyHits.trueEnergy = tHit_TrueEnergy[l];
     dummyHits.trueEnergyFraction = tHit_TrueEnergyFraction[l];
+    dummyHits.chanElectrons = tHit_chanElectrons[l];
+    dummyHits.chanMaxElectrons = tHit_chanMaxElectrons[l];
+    dummyHits.chanBestID = tHit_bestChanIDE[l];
     //dummyHit.lem=dummyHits.findLEM(dummyHits.Y, dummyHits.Z);
+
+    if( fUseChannelNoise )
+    {
+      dummyHits.channelNoise = fChannelNoise[ dummyHits.channel ];
+    }
+    else{ dummyHits.channelNoise=0; }
 
     hits.push_back(dummyHits);
   }
@@ -537,6 +616,11 @@ void LArParser::fillRecoTrack( vector<Track> & tracks ){
     dummyTrack.event=tEventNumberInRun;
     dummyTrack.trackID=tTrackID[j];
     dummyTrack.numberOfHits=tTrack_NumberOfHits[j];
+
+    dummyTrack.bestParticleID = tTrack_BestParticleID[j];
+    dummyTrack.completeness = tTrack_Completeness[j];
+    dummyTrack.purity = tTrack_Purity[j];
+
     dummyTrack.length=tTrack_Length[j];
     dummyTrack.startPointX=tTrack_StartPoint_X[j];
     dummyTrack.startPointY=tTrack_StartPoint_Y[j];
@@ -583,6 +667,7 @@ void LArParser::fillRecoTrack( vector<Track> & tracks ){
         dummyHits.view=tTrack_Hit_View[l];
         dummyHits.channel=tTrack_Hit_Channel[l];
         dummyHits.peakTime=tTrack_Hit_PeakTime[l];
+        dummyHits.amplitude=tTrack_Hit_Amplitude[l];
         dummyHits.chargeSummedADC=tTrack_Hit_ChargeSummedADC[l];
         dummyHits.chargeIntegral=tTrack_Hit_ChargeIntegral[l];
         dummyHits.startTime=tTrack_Hit_StartTime[l];
@@ -593,8 +678,17 @@ void LArParser::fillRecoTrack( vector<Track> & tracks ){
         dummyHits.particleID= tTrack_Hit_particleID[l];
         dummyHits.trueEnergy = tTrack_Hit_TrueEnergy[l];
         dummyHits.trueEnergyFraction = tTrack_Hit_TrueEnergyFraction[l];
+        dummyHits.chanElectrons = tTrack_Hit_ChannelElectrons[l];
+        dummyHits.chanMaxElectrons = tTrack_Hit_MaxChannelElectrons[l];
+        dummyHits.chanBestID = tTrack_Hit_BestChanIDE[l];
 
         dummyHits.findLem(); //use 3D info to fetch
+
+        if( fUseChannelNoise )
+        {
+          dummyHits.channelNoise = fChannelNoise[ dummyHits.channel ];
+        }
+        else{ dummyHits.channelNoise=0; }
 
         dummyTrack.hitsTrk.push_back(dummyHits);
       } //end hits

@@ -12,6 +12,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+using namespace std;
+
 const int NUM_OF_VIEWS = 2;
 const int NUM_OF_LEMS = 12;
 const double tpc_boundaries[6] = { -50, 50.0, -50.0, 50.0, 0, 300 }; //minx,maxx,miny,maxy,minz,max
@@ -22,14 +24,15 @@ const int tdc = 1667;
 const int  maxNumChannels = 1280;
 const int maxNumTdc = maxNumChannels*tdc;
 const float sampling_freq = 2.5;    //sampling feq in MHz
-const double ADC2CHARGE = 45.31875; //ADC*ticks (from qScan)
-const double adc2fc0=1./56.5; //ADC*ticks to fC view 0 (from pulsing)
-const double adc2fc1=1./67.4; //ADC*ticks to fC view 1 (from pulsing)
 
 const int lem_in_module = 4; //num of minimal modules of 4 lems
 const double lem_size = 50; //in cm
 
+const double electronCharge = 1.60217662e-04; //in fC
+
 unsigned int ViewToDAQChan(unsigned int ViewChan);
+
+double getCalAmpConstant( int view, string type );
 
 //int find_lem(double y, double z);
 

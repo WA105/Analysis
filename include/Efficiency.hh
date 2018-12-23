@@ -22,6 +22,34 @@
 #include "DataStructure.hh"
 #include "TEfficiency.h"
 
+//==============================================================================
+
+class HitEfficiency
+{
+
+  public:
+    HitEfficiency( map< int, vector<Hit> > hitsMap );
+    ~HitEfficiency( );
+
+    //return the aggregated quantities for the given trackID
+    int getNumOfHits( int id, int view );
+    double getAvgCompleteness( int id, int view );
+    double getAvgPurity( int id, int view );
+    double getAvgSignalToNoise(int id, int view);
+    double getAvgIntegralToNoise(int id, int view);
+    double getAvgIntegral(int id, int view);
+    double getAvgAmplitude(int id, int view);
+    double getAvgWidth(int id, int view);
+
+  private:
+
+    void clean();
+
+    map< int, vector<Hit> > fHitsMap; //map< trackID, vector<Hit> >
+
+};
+
+//==============================================================================
 
 class Efficiency
 {
@@ -33,32 +61,32 @@ class Efficiency
     //setters
     void setMapEntry(int id, MCTrack mctrack );
     void setRecoTrack( Track track ){ fTrack = track; }
-    void setRecoHits( vector<Hit> hits ){ fHits = hits; }
+    void setRecoHits( vector<Hit> hits );
     void setNumberOfTracksEvent( int nTracks ){ fNtracksEvent = nTracks;} //not elegant, but need that afterwards in the analysis
 
     //others
-    void getNHitsMatched( int id, int & nhits, int & nhits0, int & nhits1);
+    //void getNHitsMatched( int id, int & nhits, int & nhits0, int & nhits1);
     void checkUnmatch();
     void makeEfficiencyPlot();
     void fill();
+    void fillHitTree(int id);
     void write();
+    void makeHitsTree() { fMakeHitsTree = true; }
 
     //cleaner
     void clean();
 
   private:
     void initClass();
-    void matchTruth();
 
     void fillMap1D(int pdg, map<int, TH1D*> map, double fillIn );
     void fillMap2D(int pdg, map<int, TH2D*> map, double fillX, double fillY );
 
-
     //Particle that I consider for the efficiency
-    vector<int> pdgCode = { 13, 11, 211, 2212, 0 }; // NB this can be custom set
+    vector<int> pdgCode = { 13, 0 }; // NB this can be custom set
 
     //NB: this can be fetched from a database (has ROOT something already)
-    vector<string> pdgNames = { "Muons", "Electrons","Pions", "Protons", "Other" };
+    vector<string> pdgNames = { "Muons", "Other" };
 
     //binning
 
@@ -107,9 +135,12 @@ class Efficiency
     TTree *fMcTTree;
     TTree *fRecoTTree;
     TTree *fUnmatchTTree;
+    TTree *fHitTree;
 
     map<int, MCTrack> fParticleMap; //particleID mctrack association
     map<int, double> fEnergyMap; //particleID energy association
+    map< int, vector<Hit> > fHitsMap; //hits trackId association
+
     Track fTrack;
     vector<Hit> fHits;
     vector<int>  fBestTrackIDs;
@@ -170,6 +201,44 @@ class Efficiency
     int fNumberOfHits;
     int fNumberOfHitsView0;
     int fNumberOfHitsView1;
+    double fAvgCompletenessView0;
+    double fAvgCompletenessView1;
+    double fAvgPurityView0;
+    double fAvgPurityView1;
+    double fAvgSignalToNoiseView0;
+    double fAvgSignalToNoiseView1;
+    double fAvgIntegralToNoiseView0;
+    double fAvgIntegralToNoiseView1;
+    double fAvgIntegralView0;
+    double fAvgIntegralView1;
+    double fAvgAmplitudeView0;
+    double fAvgAmplitudeView1;
+    double fAvgWidthView0;
+    double fAvgWidthView1;
+
+    int fView;
+    double fWire;
+    double fPeakTime;
+    double fAmplitude;
+    double fSummedADC;
+    double fIntegral;
+    double fStartTime;
+    double fEndTime;
+    double fWidth;
+    double fGoodnessOfFit;
+    double fMultiplicity;
+    int fHitParticleId;
+    double fHitPurity;
+    double fHitCompleteness;
+    double fIDERatio;
+
+    //signal-to-noise
+    double fIntegralToNoise;
+    double fPeakToNoise;
+
+    bool fMakeHitsTree = false;
+
+    HitEfficiency *fHitEfficiency;
 };
 
 #endif // __EFFICIENCY_H

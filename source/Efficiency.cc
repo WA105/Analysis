@@ -21,18 +21,228 @@
 
 #include "Efficiency.hh"
 
-Efficiency::Efficiency(){
+//==============================================================================
+
+HitEfficiency::HitEfficiency( map< int, vector<Hit> > hitsMap  )
+{
+  fHitsMap = hitsMap;
+}
+
+//------------------------------------------------------------------------------
+
+HitEfficiency::~HitEfficiency()
+{
+  clean();
+}
+
+//------------------------------------------------------------------------------
+
+void HitEfficiency::clean()
+{
+  fHitsMap.clear();
+}
+
+//------------------------------------------------------------------------------
+
+int HitEfficiency::getNumOfHits( int id, int view )
+{
+  int numOfHits = 0;
+
+  auto lambda = [ view ]( int accumulator, Hit h )
+  {
+     return h.view == view ? accumulator + 1 : accumulator;
+  };
+
+  numOfHits = accumulate( fHitsMap[id].begin(), fHitsMap[id].end(), 0, lambda );
+
+  return numOfHits;
+}
+
+//------------------------------------------------------------------------------
+
+double HitEfficiency::getAvgCompleteness( int id, int view )
+{
+  double sum = 0.;
+
+  auto lambda = [ view, &sum ]( double accumulator, Hit hit )
+  {
+     if( hit.view == view && hit.chanMaxElectrons > 0 )
+     {
+       ++sum;
+       return accumulator + hit.electronsFromSumADC("Montecarlo")/hit.chanMaxElectrons;
+     }
+     else
+     {
+       return accumulator;
+     }
+  };
+
+  double accumulated = accumulate( fHitsMap[id].begin(), fHitsMap[id].end(), 0.0, lambda );
+
+  return sum > 0. ? accumulated/sum : 0.;
+}
+
+//------------------------------------------------------------------------------
+
+double HitEfficiency::getAvgPurity( int id, int view )
+{
+  double sum = 0.;
+
+  auto lambda = [ view, &sum ]( double accumulator, Hit hit )
+  {
+     if( hit.view == view && hit.chanElectrons > 0 )
+     {
+       ++sum;
+       return accumulator + hit.electronsFromSumADC("Montecarlo")/hit.chanElectrons;
+     }
+     else
+     {
+       return accumulator;
+     }
+  };
+
+  double accumulated = accumulate( fHitsMap[id].begin(), fHitsMap[id].end(), 0.0, lambda );
+
+  return sum > 0. ? accumulated/sum : 0.;
+}
+
+//------------------------------------------------------------------------------
+
+double HitEfficiency::getAvgSignalToNoise( int id, int view )
+{
+  double sum = 0.;
+
+  auto lambda = [ view, &sum ]( double accumulator, Hit hit )
+  {
+     if( hit.view == view && hit.getPeakToNoise() > 0 )
+     {
+       ++sum;
+       return accumulator + hit.getPeakToNoise();
+     }
+     else
+     {
+       return accumulator;
+     }
+  };
+
+  double accumulated = accumulate( fHitsMap[id].begin(), fHitsMap[id].end(), 0.0, lambda );
+
+  return sum > 0. ? accumulated/sum : 0.;
+}
+
+//------------------------------------------------------------------------------
+
+double HitEfficiency::getAvgIntegralToNoise( int id, int view )
+{
+  double sum = 0.;
+
+  auto lambda = [ view, &sum ]( double accumulator, Hit hit )
+  {
+     if( hit.view == view && hit.getIntegralToNoise("Montecarlo") > 0 )
+     {
+       ++sum;
+       return accumulator + hit.getIntegralToNoise("Montecarlo");
+     }
+     else
+     {
+       return accumulator;
+     }
+  };
+
+  double accumulated = accumulate( fHitsMap[id].begin(), fHitsMap[id].end(), 0.0, lambda );
+
+  return sum > 0. ? accumulated/sum : 0.;
+}
+
+//------------------------------------------------------------------------------
+
+double HitEfficiency::getAvgIntegral( int id, int view )
+{
+  double sum = 0.;
+
+  auto lambda = [ view, &sum ]( double accumulator, Hit hit )
+  {
+     if( hit.view == view && hit.chargeIntegral > 0 )
+     {
+       ++sum;
+       return accumulator + hit.chargeIntegral;
+     }
+     else
+     {
+       return accumulator;
+     }
+  };
+
+  double accumulated = accumulate( fHitsMap[id].begin(), fHitsMap[id].end(), 0.0, lambda );
+
+  return sum > 0. ? accumulated/sum : 0.;
+}
+
+//------------------------------------------------------------------------------
+
+double HitEfficiency::getAvgAmplitude( int id, int view )
+{
+  double sum = 0.;
+
+  auto lambda = [ view, &sum ]( double accumulator, Hit hit )
+  {
+     if( hit.view == view && hit.amplitude > 0 )
+     {
+       ++sum;
+       return accumulator + hit.amplitude;
+     }
+     else
+     {
+       return accumulator;
+     }
+  };
+
+  double accumulated = accumulate( fHitsMap[id].begin(), fHitsMap[id].end(), 0.0, lambda );
+
+  return sum > 0. ? accumulated/sum : 0.;
+}
+
+//------------------------------------------------------------------------------
+
+double HitEfficiency::getAvgWidth( int id, int view )
+{
+  double sum = 0.;
+
+  auto lambda = [ view, &sum ]( double accumulator, Hit hit )
+  {
+     if( hit.view == view && hit.width > 0 )
+     {
+       ++sum;
+       return accumulator + hit.width;
+     }
+     else
+     {
+       return accumulator;
+     }
+  };
+
+  double accumulated = accumulate( fHitsMap[id].begin(), fHitsMap[id].end(), 0.0, lambda );
+
+  return sum > 0. ? accumulated/sum : 0.;
+}
+
+//==============================================================================
+
+Efficiency::Efficiency()
+{
   this->initClass();
 }
 
-Efficiency::Efficiency( int fileNumber ){
+Efficiency::Efficiency( int fileNumber )
+{
   fFileNumber = fileNumber;
   this->initClass();
 }
 
 Efficiency::~Efficiency(){}
 
-void Efficiency::initClass(){
+void Efficiency::initClass()
+{
   //constructor of the class: initialize here the TTree
   fMcTTree = new TTree("mctree", "Truth info");
   fRecoTTree = new TTree("recotree", "Reco information");
@@ -63,6 +273,21 @@ void Efficiency::initClass(){
   fMcTTree->Branch("NumberOfHits", &fNumberOfHits, "NumberOfHits/I");
   fMcTTree->Branch("NumberOfHitsView0", &fNumberOfHitsView0, "NumberOfHitsView0/I");
   fMcTTree->Branch("NumberOfHitsView1", &fNumberOfHitsView1, "NumberOfHitsView1/I");
+  fMcTTree->Branch("AvgCompletenessView0", &fAvgCompletenessView0, "AvgCompletenessView0/D");
+  fMcTTree->Branch("AvgCompletenessView1", &fAvgCompletenessView1, "AvgCompletenessView1/D");
+  fMcTTree->Branch("AvgPurityView0", &fAvgPurityView0, "AvgPurityView0/D");
+  fMcTTree->Branch("AvgPurityView1", &fAvgPurityView1, "AvgPurityView1/D");
+  fMcTTree->Branch("AvgSignalToNoiseView0", &fAvgSignalToNoiseView0, "AvgSignalToNoiseView0/D");
+  fMcTTree->Branch("AvgSignalToNoiseView1", &fAvgSignalToNoiseView1, "AvgSignalToNoiseView1/D");
+  fMcTTree->Branch("AvgIntegralToNoiseView0", &fAvgIntegralToNoiseView0, "AvgIntegralToNoiseView0/D");
+  fMcTTree->Branch("AvgIntegralToNoiseView1", &fAvgIntegralToNoiseView1, "AvgIntegralToNoiseView1/D");
+  fMcTTree->Branch("AvgIntegralView0", &fAvgIntegralView0, "AvgIntegralView0/D");
+  fMcTTree->Branch("AvgIntegralView1", &fAvgIntegralView1, "AvgIntegralView1/D");
+  fMcTTree->Branch("AvgIntegralView0", &fAvgAmplitudeView0, "AvgAmplitudeView0/D");
+  fMcTTree->Branch("AvgAmplitudeView1", &fAvgAmplitudeView1, "AvgAmplitudeView1/D");
+  fMcTTree->Branch("AvgIntegralView0", &fAvgWidthView0, "AvgWidthView0/D");
+  fMcTTree->Branch("AvgWidthView1", &fAvgWidthView1, "AvgWidthView1/D");
+
 
   fRecoTTree->Branch("FileNumber", &fFileNumber, "FileNumber/I");
   fRecoTTree->Branch("Event", &fEvent, "Event/I");
@@ -109,6 +334,16 @@ void Efficiency::initClass(){
   fRecoTTree->Branch("NumberOfHits", &fNumberOfHits, "NumberOfHits/I");
   fRecoTTree->Branch("NumberOfHitsView0", &fNumberOfHitsView0, "NumberOfHitsView0/I");
   fRecoTTree->Branch("NumberOfHitsView1", &fNumberOfHitsView1, "NumberOfHitsView1/I");
+  fRecoTTree->Branch("AvgSignalToNoiseView0", &fAvgSignalToNoiseView0, "AvgSignalToNoiseView0/D");
+  fRecoTTree->Branch("AvgSignalToNoiseView1", &fAvgSignalToNoiseView1, "AvgSignalToNoiseView1/D");
+  fRecoTTree->Branch("AvgIntegralToNoiseView0", &fAvgIntegralToNoiseView0, "AvgIntegralToNoiseView0/D");
+  fRecoTTree->Branch("AvgIntegralToNoiseView1", &fAvgIntegralToNoiseView1, "AvgIntegralToNoiseView1/D");
+  fRecoTTree->Branch("AvgIntegralView0", &fAvgIntegralView0, "AvgIntegralView0/D");
+  fRecoTTree->Branch("AvgIntegralView1", &fAvgIntegralView1, "AvgIntegralView1/D");
+  fRecoTTree->Branch("AvgIntegralView0", &fAvgAmplitudeView0, "AvgAmplitudeView0/D");
+  fRecoTTree->Branch("AvgAmplitudeView1", &fAvgAmplitudeView1, "AvgAmplitudeView1/D");
+  fRecoTTree->Branch("AvgIntegralView0", &fAvgWidthView0, "AvgWidthView0/D");
+  fRecoTTree->Branch("AvgWidthView1", &fAvgWidthView1, "AvgWidthView1/D");
 
   fUnmatchTTree->Branch("FileNumber", &fFileNumber, "FileNumber/I");
   fUnmatchTTree->Branch("Event", &fEvent, "Event/I");
@@ -135,14 +370,40 @@ void Efficiency::initClass(){
   fUnmatchTTree->Branch("NumberOfHitsView0", &fNumberOfHitsView0, "NumberOfHitsView0/I");
   fUnmatchTTree->Branch("NumberOfHitsView1", &fNumberOfHitsView1, "NumberOfHitsView1/I");
 
+  fHitTree = new TTree("hits", "All hits information");
+
+  fHitTree->Branch("FileNumber", &fFileNumber, "FileNumber/I");
+  fHitTree->Branch("Event" , &fEvent, "Event/I");
+  fHitTree->Branch("UniqueEvent", &fUniqueEventLabel, "UniqueEvent/I");
+  fHitTree->Branch("View" , &fView, "View/I");
+  fHitTree->Branch("Channel" , &fWire, "Channel/D");
+  fHitTree->Branch("PeakTime" , &fPeakTime, "PeakTime/D");
+  fHitTree->Branch("StartTime" , &fStartTime, "StartTime/D");
+  fHitTree->Branch("EndTime" , &fEndTime, "EndTime/D");
+  fHitTree->Branch("Width" , &fWidth, "Width/D");
+  fHitTree->Branch("Amplitude" , &fAmplitude, "Amplitude/D");
+  fHitTree->Branch("SummedADC" , &fSummedADC, "SummedADC/D");
+  fHitTree->Branch("Integral" , &fIntegral, "Integral/D");
+  fHitTree->Branch("GoodnessOfFit" , &fGoodnessOfFit, "GoodnessOfFit/D");
+  fHitTree->Branch("Multiplicity" , &fMultiplicity, "Multiplicity/D");
+  fHitTree->Branch("HitParticleId", &fHitParticleId, "HitParticleId/I");
+  fHitTree->Branch("HitPurity", &fHitPurity, "HitPurity/D");
+  fHitTree->Branch("HitCompleteness", &fHitCompleteness, "HitCompleteness/D");
+  fHitTree->Branch("fIDERatio", &fIDERatio, "IDERatio/D");
+  fHitTree->Branch("fIntegralToNoise", &fIntegralToNoise, "IntegralToNoise/D");
+  fHitTree->Branch("fPeakToNoise", &fPeakToNoise, "PeakToNoiseToNoise/D");
+  fHitTree->Branch("Pdg", &fPdg, "Pdg/D");
+  fHitTree->Branch("Theta", &fTrueTheta, "Theta/D");
+  fHitTree->Branch("Phi", &fTruePhi, "Phi/D");
+  fHitTree->Branch("TrueLength", &fTrueLength, "TrueLength/D");
+
   //histograms
   size_t arraySize = max(pdgCode.size(), pdgNames.size() );
 
-  for( size_t i =0; i< arraySize; i++ ){
-
+  for( size_t i =0; i< arraySize; i++ )
+  {
     TH1D* hThetaG4 = new TH1D(("hThetaG4"+pdgNames.at(i)).c_str(), ("#theta (geant) "+pdgNames.at(i)+";#theta (deg)").c_str() , nBinsTheta, thetaStart, thetaEnd);
     TH1D* hPhiG4 = new TH1D(("hPhiG4"+pdgNames.at(i)).c_str(), ("#phi (geant) "+pdgNames.at(i)+";#phi (deg)").c_str() , nBinsPhi, phiStart, phiEnd);
-    //more geant info ?
 
     TH1D* hThetaTrue = new TH1D(("hThetaTrue"+pdgNames.at(i)).c_str(), ("#theta (true) "+pdgNames.at(i)+";#theta (deg)").c_str() , nBinsTheta, thetaStart, thetaEnd);
     TH1D* hPhiTrue = new TH1D(("hPhiTrue"+pdgNames.at(i)).c_str(), ("#phi (true) "+pdgNames.at(i)+";#phi (deg)").c_str() , nBinsPhi, phiStart, phiEnd);
@@ -192,71 +453,56 @@ void Efficiency::initClass(){
   }
 }
 
-void Efficiency::getNHitsMatched( int id, int & nhits, int & nhits0, int & nhits1)
+void Efficiency::setRecoHits( vector<Hit> hits )
 {
-  //return the number of hits matched with the given mctrack id
+  //Handles the hit object, create map and fill hits ttree
+  fHits = hits;
 
-  nhits=0; nhits0=0; nhits1=0;
+  for(Hit hit : hits ) { fHitsMap[ hit.particleID ].push_back(hit); }
+  fHitEfficiency = new HitEfficiency( fHitsMap );
+}
 
-  if( fHits.size() == 0 )
+void Efficiency::fillHitTree( int id )
+{
+
+  for( auto hit : fHitsMap[id] )
   {
-    //if the fHits variable is not initialized
-    return;
-  }
-  else
-  {
-    for( auto hit : fHits )
-    {
-      if( hit.particleID == id )
-      {
-        nhits++;
-        if ( hit.view == 0 ){ nhits0++; }
-        else if ( hit.view == 1 ){ nhits1++; }
-      }
-    }
-    return;
+    fEvent = hit.event;
+    fUniqueEventLabel = fFileNumber*100 + fEvent;
+    fView = hit.view;
+    fWire = hit.channel;
+    fPeakTime = hit.peakTime;
+    fAmplitude = hit.amplitude;
+    fSummedADC = hit.chargeSummedADC;
+    fIntegral = hit.chargeIntegral;
+    fStartTime = hit.startTime;
+    fEndTime = hit.endTime;
+    fWidth = hit.width;
+    fGoodnessOfFit = hit.goodnessOfFit;
+    fMultiplicity = hit.multiplicity;
+
+    //backtracker quantites
+    fHitParticleId = hit.particleID;
+    fHitPurity = hit.electronsFromSumADC("Montecarlo")/hit.chanElectrons;
+    fHitCompleteness = hit.electronsFromSumADC("Montecarlo")/hit.chanMaxElectrons;
+    fIDERatio = hit.chanMaxElectrons/hit.chanElectrons;
+
+    //signal-to-noise
+    fIntegralToNoise = hit.getSummedADCToNoise();
+    fPeakToNoise = hit.getPeakToNoise();
+
+    //associated true particle info
+    fPdg = fParticleMap[ id ].pdgCode;
+    fTrueTheta = fParticleMap[ id ].startTheta;
+    fTruePhi = fParticleMap[ id ].startPhi;
+    fTrueLength = fParticleMap[ id ].length;
+
+    fHitTree->Fill();
   }
 }
 
-void Efficiency::matchTruth(){
-  //match reco and truth, calculate purity and completeness of a reco track
-
-  //first of all reset all the variables
-  fEnergyMap.clear();
-  fPurirty=0;
-  fCompleteness=0;
-
-  //loop over the hits in tracks and associate every energy deposit to the correct particleID
-  double energyTrk = 0.;
-  for( auto hit : fTrack.hitsTrk ){
-    fEnergyMap[ hit.particleID ] += hit.trueEnergy;
-    energyTrk += (hit.trueEnergy/hit.trueEnergyFraction);
-  }
-
-  //find the best particle ID (the one that contribute the most in the track energy account )
-  fBestTrackID =0.;
-  double maxe = 0.;
-  for( auto const & val : fEnergyMap  ){
-
-    if( maxe < val.second ){
-      maxe = val.second;
-      fBestTrackID= val.first;
-    }
-  }
-
-  //calculate the total energy of the best track in hits
-  double totalEnergy = 0;
-  for( auto hit : fHits ){
-    if( fBestTrackID == hit.particleID )
-      totalEnergy+=hit.trueEnergy;
-  }
-
-  fPurirty = (fEnergyMap[ fBestTrackID ])/totalEnergy;
-  fCompleteness = fEnergyMap[ fBestTrackID ]/energyTrk;
-
-}
-
-void Efficiency::fillMap1D(int pdg, map<int, TH1D*> map, double fillIn ){
+void Efficiency::fillMap1D(int pdg, map<int, TH1D*> map, double fillIn )
+{
   //fill the map if the pdg code of the best tParticleId
     if( map.find(pdg) != map.end() )
       map[pdg]->Fill( fillIn );
@@ -264,7 +510,8 @@ void Efficiency::fillMap1D(int pdg, map<int, TH1D*> map, double fillIn ){
       map[0]->Fill( fillIn );
 }
 
-void Efficiency::fillMap2D(int pdg, map<int, TH2D*> map, double fillZ, double fillY ){
+void Efficiency::fillMap2D(int pdg, map<int, TH2D*> map, double fillZ, double fillY )
+{
   //fill the map if the pdg code of the best tParticleId
   if( map.find(pdg) != map.end() )
     map[pdg]->Fill( fillZ, fillY );
@@ -276,14 +523,9 @@ void Efficiency::setMapEntry(int id, MCTrack mctrack ){
 
   fParticleMap[id] = mctrack;
 
-  //appy some cuts in order to discard mctracks which aren't well contained
-  //inside a buffer box
-
-  //fill g4 histograms right afterwards
+  //fill g4 histograms and ttree
   fillMap1D( abs( fParticleMap[id].pdgCode ), fThetaG4Map, fParticleMap[id].startTheta );
   fillMap1D( abs( fParticleMap[id].pdgCode ), fPhiG4Map, fParticleMap[id].startPhi );
-
-  //fFileNumber = fParticleMap[ id ].run;
 
   fEvent = fParticleMap[ id ].eventNumber; //get to the event a progressive number across files
 
@@ -307,17 +549,37 @@ void Efficiency::setMapEntry(int id, MCTrack mctrack ){
   fTrueEndDirectionY = fParticleMap[ id ].endDirection.Y();
   fTrueEndDirectionZ = fParticleMap[ id ].endDirection.Z();
   fTrueLength = fParticleMap[ id ].length;
-  getNHitsMatched( id, fNumberOfHits, fNumberOfHitsView0, fNumberOfHitsView1 );
+  fNumberOfHitsView0 = fHitEfficiency->getNumOfHits( id, 0 );
+  fNumberOfHitsView1 = fHitEfficiency->getNumOfHits( id, 1 );
+  fNumberOfHits = fNumberOfHitsView0+fNumberOfHitsView1;
+  fAvgCompletenessView0 = fHitEfficiency->getAvgCompleteness( id, 0 );
+  fAvgCompletenessView1 = fHitEfficiency->getAvgCompleteness( id, 1 );
+  fAvgPurityView0 = fHitEfficiency->getAvgPurity( id, 0 );
+  fAvgPurityView1 = fHitEfficiency->getAvgPurity( id, 1 );
+  fAvgSignalToNoiseView0 = fHitEfficiency->getAvgSignalToNoise( id, 0 );
+  fAvgSignalToNoiseView1 = fHitEfficiency->getAvgSignalToNoise( id, 1 );
+  fAvgIntegralToNoiseView0 = fHitEfficiency->getAvgIntegralToNoise( id, 0 );
+  fAvgIntegralToNoiseView1 = fHitEfficiency->getAvgIntegralToNoise( id, 1 );
+  fAvgIntegralView0 = fHitEfficiency->getAvgIntegral( id, 0 );
+  fAvgIntegralView1 = fHitEfficiency->getAvgIntegral( id, 1 );
+  fAvgAmplitudeView0 = fHitEfficiency->getAvgAmplitude( id, 0 );
+  fAvgAmplitudeView1 = fHitEfficiency->getAvgAmplitude( id, 1 );
+  fAvgWidthView0 = fHitEfficiency->getAvgWidth( id, 0 );
+  fAvgWidthView1 = fHitEfficiency->getAvgWidth( id, 1 );
 
   fMcTTree->Fill();
 
+  if(fMakeHitsTree){ this->fillHitTree(id); }
+
 }
 
-void Efficiency::fill(){
+void Efficiency::fill()
+{
   //fill the histograms
 
-  //match with truth
-  this->matchTruth();
+  fBestTrackID = fTrack.bestParticleID;
+  fCompleteness = fTrack.completeness;
+  fPurirty = fTrack.purity;
 
   //check if fBestTrackID belongs to fParticleMap
   if ( fParticleMap.find( fBestTrackID ) == fParticleMap.end() )
@@ -373,15 +635,19 @@ void Efficiency::fill(){
   fRecoLength = fTrack.length;
   fTrueLength = fParticleMap[fBestTrackID].length;
 
-  fNumberOfHits = fTrack.hitsTrk.size();
-  fNumberOfHitsView0=0;
-  fNumberOfHitsView1=0;
-
-  for ( auto const & hit : fTrack.hitsTrk )
-  {
-    if ( hit.view == 0 ){ fNumberOfHitsView0++; }
-    else if ( hit.view == 1 ){ fNumberOfHitsView1++; }
-  }
+  fNumberOfHitsView0 = fHitEfficiency->getNumOfHits( fBestTrackID, 0 );
+  fNumberOfHitsView1 = fHitEfficiency->getNumOfHits( fBestTrackID, 1 );
+  fNumberOfHits = fNumberOfHitsView0+fNumberOfHitsView1;
+  fAvgSignalToNoiseView0 = fHitEfficiency->getAvgSignalToNoise( fBestTrackID, 0 );
+  fAvgSignalToNoiseView1 = fHitEfficiency->getAvgSignalToNoise( fBestTrackID, 1 );
+  fAvgIntegralToNoiseView0 = fHitEfficiency->getAvgIntegralToNoise( fBestTrackID, 0 );
+  fAvgIntegralToNoiseView1 = fHitEfficiency->getAvgIntegralToNoise( fBestTrackID, 1 );
+  fAvgIntegralView0 = fHitEfficiency->getAvgIntegral( fBestTrackID, 0 );
+  fAvgIntegralView1 = fHitEfficiency->getAvgIntegral( fBestTrackID, 1 );
+  fAvgAmplitudeView0 = fHitEfficiency->getAvgAmplitude( fBestTrackID, 0 );
+  fAvgAmplitudeView1 = fHitEfficiency->getAvgAmplitude( fBestTrackID, 1 );
+  fAvgWidthView0 = fHitEfficiency->getAvgWidth( fBestTrackID, 0 );
+  fAvgWidthView1 = fHitEfficiency->getAvgWidth( fBestTrackID, 1 );
 
   fRecoTTree->Fill();
 
@@ -408,7 +674,7 @@ void Efficiency::fill(){
   fillMap1D( abs(fPdg), fPhiTrueMap, fParticleMap[fBestTrackID].startPhi );
   fillMap2D( abs(fPdg), fPhiThetaTrueMap, fParticleMap[fBestTrackID].startTheta, fParticleMap[fBestTrackID].startPhi);
 
-  if(fCompleteness>0.5 && fPurirty>0.5){
+  if( fTrack.completeness > 0.5 & fTrack.purity > 0.5 ){
 
     //fill the reco quantities
     this->fillMap1D( abs(fPdg), fThetaRecoMap, fParticleMap[fBestTrackID].startTheta);
@@ -448,14 +714,14 @@ void Efficiency::checkUnmatch()
       fTrueEndDirectionY = fParticleMap[ id ].endDirection.Y();
       fTrueEndDirectionZ = fParticleMap[ id ].endDirection.Z();
       fTrueLength = fParticleMap[ id ].length;
-      getNHitsMatched( id, fNumberOfHits, fNumberOfHitsView0, fNumberOfHitsView1 );
 
       fUnmatchTTree->Fill();
     }
   }
 }
 
-void Efficiency::makeEfficiencyPlot(){
+void Efficiency::makeEfficiencyPlot()
+{
   //calculate the efficieny plots
 
   size_t arraySize = max(pdgCode.size(), pdgNames.size() );
@@ -478,11 +744,11 @@ void Efficiency::makeEfficiencyPlot(){
     fPhiEfficiency[pdgCode.at(i)]->SetTitle( (pdgNames.at(i)+"Phi_Efficiency").c_str() );
     fThetaEfficiency[pdgCode.at(i)]->SetTitle( (pdgNames.at(i)+"Theta_Efficiency").c_str() );
     fPhiThetaEfficiency[pdgCode.at(i)]->SetTitle( (pdgNames.at(i)+"PhiTheta_Efficiency").c_str() );
-
   }
 }
 
-void Efficiency::write(){
+void Efficiency::write()
+{
 
   size_t arraySize = max(pdgCode.size(), pdgNames.size() );
 
@@ -518,12 +784,18 @@ void Efficiency::write(){
   fMcTTree->Write();
   fRecoTTree->Write();
   fUnmatchTTree->Write();
+
+  if( fMakeHitsTree ) { fHitTree->Write(); }
+
 }
 
-void Efficiency::clean(){
+void Efficiency::clean()
+{
 
   //quantities to be reset after the event
   fParticleMap.clear();
   fHits.clear();
   fBestTrackIDs.clear();
+  fHitsMap.clear();
+  delete fHitEfficiency;
 }

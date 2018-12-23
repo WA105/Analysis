@@ -45,7 +45,6 @@ class Channel
     void subtractPedestal( bool subtractPedestal );
     double sumAdcInROI( int startTime, int endTime );
 
-
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -67,9 +66,10 @@ class Hit
     double dxLocalTrackDirection;
     double dx3DPosition;
     double TPC;
-    double view;
+    int view;
     double channel;
     double peakTime;
+    double amplitude;
     double chargeSummedADC;
     double chargeIntegral;
     double startTime;
@@ -78,18 +78,29 @@ class Hit
     double goodnessOfFit;
     double multiplicity;
 
+    //if available
+    double channelNoise;
+
     //backtracker quantites
     int particleID;
     double trueEnergy;
     double trueEnergyFraction;
+    double chanElectrons;
+    double chanMaxElectrons;
+    int chanBestID;
 
     int lem;
     //project view
     //deprecated channels
-    void calibrateCharge( double calo0=0, double calo1=0 );
+    void calibrateCharge( string type );
     double getdQdx();
     void findLem();
     bool isGoodLem( vector<int> lems );
+    double electronsFromSumADC( string type );
+    double electronsFromIntegral( string type );
+    double getPeakToNoise(){ return  channelNoise > 0 ? amplitude/channelNoise : 0; };
+    double getIntegralToNoise( string type ){ return  channelNoise > 0 ? electronsFromIntegral( type )/channelNoise*900 : 0; };
+    double getSummedADCToNoise(){ return  channelNoise > 0 ? chargeSummedADC/channelNoise : 0; };
 
 };
 
@@ -129,6 +140,10 @@ class Track
     double endDirectionX;
     double endDirectionY;
     double endDirectionZ;
+
+    int bestParticleID;
+    double completeness;
+    double purity;
 
     vector<Hit> hitsTrk; //Array holding the hits associated with this track
 
@@ -189,6 +204,7 @@ class LArParser
     //setters
     //void setTTree( TTree *tree ){ fTree = tree; }
     //void setRun(Run *run){fRun = run;}
+    void setChannelNoise( string model );
 
     //getters
     void getRawChannelsEvent(TTree *tree, vector<Channel> & channels, int event  );
@@ -277,6 +293,7 @@ class LArParser
     short tHit_View[NMaxHitsPerEvent]={0};
     short tHit_Channel[NMaxHitsPerEvent]={0};
     float tHit_PeakTime[NMaxHitsPerEvent]={0};
+    float tHit_Amplitude[NMaxHitsPerEvent]={0};
     float tHit_ChargeSummedADC[NMaxHitsPerEvent]={0};
     float tHit_ChargeIntegral[NMaxHitsPerEvent]={0};
     float tHit_StartTime[NMaxHitsPerEvent]={0};
@@ -289,6 +306,9 @@ class LArParser
     int tHit_particleID[NMaxHitsPerEvent]={0};
     float tHit_TrueEnergy[NMaxHitsPerEvent]={0};
     float tHit_TrueEnergyFraction[NMaxHitsPerEvent]={0};
+    float tHit_chanElectrons[NMaxHitsPerEvent] = {0};
+    float tHit_chanMaxElectrons[NMaxHitsPerEvent] = {0};
+    int tHit_bestChanIDE[NMaxHitsPerEvent] = {0};
 
     //Cluster variables
     //  short tNumberOfClusters;
@@ -309,6 +329,9 @@ class LArParser
     short tNumberOfTracks=0;
     short tTrackID[NMaxTracksPerEventTimesNViews]={0};
     short tTrack_NumberOfHits[NMaxTracksPerEventTimesNViews]={0};
+    int tTrack_BestParticleID[NMaxTracksPerEventTimesNViews]={0};
+    double tTrack_Completeness[NMaxTracksPerEventTimesNViews]={0};
+    double tTrack_Purity[NMaxTracksPerEventTimesNViews]={0};
     float tTrack_Length[NMaxTracksPerEventTimesNViews]={0};
     float tTrack_StartPoint_X[NMaxTracksPerEvent]={0};
     float tTrack_StartPoint_Y[NMaxTracksPerEvent]={0};
@@ -341,6 +364,7 @@ class LArParser
     short tTrack_Hit_View[NMaxHitsPerEvent]={0};
     short tTrack_Hit_Channel[NMaxHitsPerEvent]={0};
     float tTrack_Hit_PeakTime[NMaxHitsPerEvent]={0};
+    float tTrack_Hit_Amplitude[NMaxHitsPerEvent]={0};
     float tTrack_Hit_ChargeSummedADC[NMaxHitsPerEvent]={0};
     float tTrack_Hit_ChargeIntegral[NMaxHitsPerEvent]={0};
     float tTrack_Hit_StartTime[NMaxHitsPerEvent]={0};
@@ -351,6 +375,12 @@ class LArParser
     int tTrack_Hit_particleID[NMaxHitsPerEvent]={0};
     float tTrack_Hit_TrueEnergy[NMaxHitsPerEvent]={0};
     float tTrack_Hit_TrueEnergyFraction[NMaxHitsPerEvent]={0};
+    float tTrack_Hit_ChannelElectrons[NMaxHitsPerEvent]={0};
+    float tTrack_Hit_MaxChannelElectrons[NMaxHitsPerEvent]={0};
+    int tTrack_Hit_BestChanIDE[NMaxHitsPerEvent]={0};
+
+    bool fUseChannelNoise = false;
+    std::map< int, double > fChannelNoise;
 };
 
 #endif // __DATASTRUCTURE_H

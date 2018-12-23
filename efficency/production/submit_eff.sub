@@ -1,20 +1,23 @@
 ## basic configuration of the submit file ##
-#EOS_MGM_URL            = root://eospublic.cern.ch
-mcbversion              = 2
+##EOS_MGM_URL           = root://eosuser.cern.ch
+mcbversion=0
 notify_user             = andrea.scarpelli@cern.ch
 notification            = Error
-universe       		      = vanilla
-executable     		      = /afs/cern.ch/work/a/ascarpel/Analysis/efficency/build/recoEff
+universe       		= vanilla
+executable     		= /afs/cern.ch/work/a/ascarpel/Analysis/efficency/build/recoEff
+initialdir              = /afs/cern.ch/work/a/ascarpel/Analysis/efficency/
 JOBNAME                 = reco_eff_$(mcbversion)
-output  		            = messages/$(JOBNAME).$(ClusterId).$(ProcId).out
-error   		            = messages/$(JOBNAME).$(ClusterId).$(ProcId).error
-log 			              = messages/$(JOBNAME).$(ClusterId).$(ProcId).log
-getenv 			            = True
+output  		= $(initialdir)production/messages/$(JOBNAME).$(ClusterId).$(ProcId).out
+error   		= $(initialdir)production/messages/$(JOBNAME).$(ClusterId).$(ProcId).error
+log 		        = $(initialdir)production/messages/$(JOBNAME).$(ClusterId).$(ProcId).log
+getenv 			= True
 
-## list of i/o arguments ##
-should_transfer_files = YES
+should_transfer_files 	= YES
+transfer_input_files   	= $(initialdir)729-0-rms.root
 when_to_transfer_output = ON_EXIT
 requirements            = (Arch == "INTEL" && OpSys == "LINUX") || (Arch == "X86_64" && OpSys =="LINUX" )
-priority 		            = 20
-transfer_output_remaps = "recoEfficiency.root = /eos/user/a/ascarpel/efficency/311/MCB/$(mcbversion)/recoEfficiency_$(Process).root"
+priority 		= 20
++JobFlavour             = "microcentury"
+#+MaxRuntime = 1200
+
 queue arguments from arguments_MCB$(mcbversion).txt
