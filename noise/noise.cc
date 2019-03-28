@@ -2,8 +2,9 @@
 // Routine to calculate the noise mean and rms for a given subrun
 //
 // Input is a recofull file with noise hits
-// Output is a TTree with the average noise rms and mean for that event in ADCs
-// Output are a TH1D with the rms and the mean as function of the channel number
+// Outputs: a TTree with the average noise rms and mean for that event in ADCs
+// and also two TH1Ds with rms and mean as function of the channel number
+//
 // Usage: ./build/noise -i path/to/input.root -o path/to/output.root -h no -p no
 // -i input
 // -o output
@@ -107,29 +108,6 @@ float getMeanVector( vector<float> v ){
     mean = sum/(float)v.size();
     return mean;
   }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-string getFileNumber( string filename ){
-  //assuming the filename encorded in a format /path/to/file/run-subrun-Parser.root
-
-  //isolate filenumber from path
-  string s = filename;
-  string delimiter = "/";
-
-  size_t pos = 0;
-  string token;
-
-  while ((pos = s.find(delimiter)) != string::npos) {
-    token = s.substr(0, pos);
-    s.erase(0, pos + delimiter.length());
-  }
-
-  pos = s.find("-");
-  string number = s.substr(0, pos);
-
-  return number;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

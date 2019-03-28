@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // Data structures methods implementation
 //
 //mailto:andrea.scarpelli@cern.ch
@@ -114,13 +114,13 @@ void Hit::calibrateCharge( string type){
   return;
 }
 
-double Hit::getdQdx(){
+double Hit::getdQdx(string type){
   //get the dqdx
 
   double dqdx=0;
   if( dxLocalTrackDirection ==0 ){ return dqdx; }
   else{
-    dqdx = chargeIntegral/dxLocalTrackDirection;
+    dqdx = Hit::electronsFromIntegral(type)/dxLocalTrackDirection;
   }
 
   return dqdx;
@@ -134,7 +134,7 @@ void Hit::findLem(){
   //TODO Hardcoded z coodinates
  //fist of all check if the set of coodinate is valid (tolerance on boundaries)
  if( fabs(Z) > 300 || fabs(Y) > 50){
-   cout << "Unknown coordinates: LEM not found!" << endl;
+   //cout << "Unknown coordinates: LEM not found!" << endl;
    return;
  }
 
@@ -198,6 +198,8 @@ void LArParser::setChannelNoise( string model )
 {
   fUseChannelNoise=true;
 
+  string noiseRun = getFileNumber(model);
+
   //open noise model tfile
   TFile *file = new TFile(model.c_str(), "READ");
 
@@ -209,10 +211,11 @@ void LArParser::setChannelNoise( string model )
   }
   else
   {
-    TH1D *noiseHist = (TH1D*)file->Get("hChRMS_729");
+    string histname = "hChRMS_"+noiseRun;
+    TH1D *noiseHist = (TH1D*)file->Get(histname.c_str());
     if( !noiseHist )
     {
-      cout << "setChannelNoise(): Cannot open noise model" << endl;
+      cout << "setChannelNoise(): Cannot find histname" << endl;
       fUseChannelNoise = false;
       file->Close();
     }
@@ -371,9 +374,13 @@ void LArParser::setRecoTrackBranches(TTree *tree){
   tree->SetBranchAddress("NumberOfTracks",&tNumberOfTracks);
   tree->SetBranchAddress("TrackID",&tTrackID);
   tree->SetBranchAddress("Track_NumberOfHits",&tTrack_NumberOfHits);
-  tree->SetBranchAddress("Track_BestParticleID",&tTrack_BestParticleID);
-  tree->SetBranchAddress("Track_Purity",&tTrack_Purity);
-  tree->SetBranchAddress("Track_Completeness",&tTrack_Completeness);
+
+  if( fActiveBranch ){
+    tree->SetBranchAddress("Track_BestParticleID",&tTrack_BestParticleID);
+    tree->SetBranchAddress("Track_Purity",&tTrack_Purity);
+    tree->SetBranchAddress("Track_Completeness",&tTrack_Completeness);
+  }
+
   tree->SetBranchAddress("Track_Length_Trajectory",&tTrack_Length);
   tree->SetBranchAddress("Track_StartPoint_X", &tTrack_StartPoint_X);
   tree->SetBranchAddress("Track_StartPoint_Y", &tTrack_StartPoint_Y);
@@ -400,6 +407,8 @@ void LArParser::setRecoTrackBranches(TTree *tree){
   tree->SetBranchAddress("Track_Hit_Z", &tTrack_Hit_Z);
   tree->SetBranchAddress("Track_Hit_ds_LocalTrackDirection", &tTrack_dx_LocalTrackDirection);
   tree->SetBranchAddress("Track_Hit_ds_3DPosition", &tTrack_dx_3DPosition);
+  tree->SetBranchAddress("Track_Hit_LocalTrackDirection_Theta", &tTrack_Hit_LocalTrackDirection_Theta);
+  tree->SetBranchAddress("Track_Hit_LocalTrackDirection_Phi", &tTrack_Hit_LocalTrackDirection_Phi);
   tree->SetBranchAddress("Track_Hit_TPC", &tTrack_Hit_TPC);
   tree->SetBranchAddress("Track_Hit_View", &tTrack_Hit_View);
   tree->SetBranchAddress("Track_Hit_Channel", &tTrack_Hit_Channel);
@@ -412,12 +421,15 @@ void LArParser::setRecoTrackBranches(TTree *tree){
   tree->SetBranchAddress("Track_Hit_Width", &tTrack_Hit_Width);
   tree->SetBranchAddress("Track_Hit_GoodnessOfFit", &tTrack_Hit_GoodnessOfFit);
   tree->SetBranchAddress("Track_Hit_Multiplicity", &tTrack_Hit_Multiplicity);
-  tree->SetBranchAddress("Track_Hit_trueID", &tTrack_Hit_particleID);
-  tree->SetBranchAddress("Track_Hit_trueEnergyMax", &tTrack_Hit_TrueEnergy);
-  tree->SetBranchAddress("Track_Hit_trueEnergyFraction", &tTrack_Hit_TrueEnergyFraction);
-  tree->SetBranchAddress("Track_Hit_ChannelElectrons", &tTrack_Hit_ChannelElectrons);
-  tree->SetBranchAddress("Track_Hit_MaxChannelElectrons", &tTrack_Hit_MaxChannelElectrons);
-  tree->SetBranchAddress("Track_Hit_BestChanIDE", &tTrack_Hit_BestChanIDE);
+
+  if( fActiveBranch ){
+    tree->SetBranchAddress("Track_Hit_trueID", &tTrack_Hit_particleID);
+    tree->SetBranchAddress("Track_Hit_trueEnergyMax", &tTrack_Hit_TrueEnergy);
+    tree->SetBranchAddress("Track_Hit_trueEnergyFraction", &tTrack_Hit_TrueEnergyFraction);
+    tree->SetBranchAddress("Track_Hit_ChannelElectrons", &tTrack_Hit_ChannelElectrons);
+    tree->SetBranchAddress("Track_Hit_MaxChannelElectrons", &tTrack_Hit_MaxChannelElectrons);
+    tree->SetBranchAddress("Track_Hit_BestChanIDE", &tTrack_Hit_BestChanIDE);
+  }
 
   return;
 }
@@ -662,6 +674,8 @@ void LArParser::fillRecoTrack( vector<Track> & tracks ){
         dummyHits.Y=tTrack_Hit_Y[l];
         dummyHits.Z=tTrack_Hit_Z[l];
         dummyHits.dxLocalTrackDirection=tTrack_dx_LocalTrackDirection[l];
+        dummyHits.theta = tTrack_Hit_LocalTrackDirection_Theta[l];
+        dummyHits.phi = tTrack_Hit_LocalTrackDirection_Phi[l];
         dummyHits.dx3DPosition=tTrack_dx_3DPosition[l];
         dummyHits.TPC=tTrack_Hit_TPC[l];
         dummyHits.view=tTrack_Hit_View[l];

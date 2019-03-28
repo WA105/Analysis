@@ -1,9 +1,8 @@
 #!/bin/bash
 
 export version=$1
-export PathToRecoFiles="/eos/experiment/wa105/offline/LArSoft/MC/MCB/MCB${version}/MuonsCN/ROOT/recofull/"
-#export PathToRecoFiles="/eos/experiment/wa105/offline/LArSoft/MC/MCB/MCB1/MuonsCN/ROOT/recofast/"
-export PathToG4Files="/eos/experiment/wa105/offline/LArSoft/MC/MCB/MCB${version}/MuonsCN/ROOT/g4detsim/"
+export PathToRecoFiles="/eos/experiment/wa105/offline/LArSoft/MC/MCC/45Deg/LArSoft/recofast/"
+export PathToG4Files="/eos/experiment/wa105/offline/LArSoft/MC/MCC/45Deg/ROOT/g4detsim/"
 
 OutputList="arguments_MCB${version}.txt"
 

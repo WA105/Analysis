@@ -50,7 +50,6 @@ unsigned int ViewToDAQChan(unsigned int ViewChan){
   return Chan311;
 }
 
-
 double getCalAmpConstant( int view, string type )
 {
 
@@ -59,13 +58,13 @@ double getCalAmpConstant( int view, string type )
 
   if(type == "Data")
   {
-    adc2fc0=1./59.8; //ADC*ticks to fC view 0 (from pulsing)
-    adc2fc1=1./66.7; //ADC*ticks to fC view 1 (from pulsing)
+    adc2fc0=1./59.8053; //ADC*ticks to fC view 0 (from pulsing)
+    adc2fc1=1./66.6715; //ADC*ticks to fC view 1 (from pulsing)
   }
   else if( type == "Montecarlo" )
   {
-    adc2fc0=1./42.68; //ADC*ticks to fC view 0 (from integral)
-    adc2fc1=1./56.66; //ADC*ticks to fC view 1 (from integral)
+    adc2fc0=1./42.2759; //ADC*ticks to fC view 0 (from integral)
+    adc2fc1=1./59.3642; //ADC*ticks to fC view 1 (from integral)
   }
   else
   {
@@ -82,7 +81,6 @@ double getCalAmpConstant( int view, string type )
       return 0;
   }
 }
-
 
 /*
 int find_lem(double y, double z){

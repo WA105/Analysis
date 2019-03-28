@@ -29,17 +29,23 @@ class Cut
     ~Cut();
 
     //setters
-    void setActiveVolumeCut( vector<int> volumeCut );
     void setTrackLengthCut(double length){fLengthCut = length; };
     void setTrack( Track track ){ fTrack = track; }
 
     //getters
-    bool isPassingCut(); //crossing TPC from anode to cathode
+    bool isPassingCut( Track track ); //crossing TPC from anode to cathode
+    bool isCrossingTPC( Track track );
+    bool cutEndPoint( Track track );
+
+    //cut type
+    void setActiveVolumeCut( vector<int> volumeCut );
+    bool cutsFromFile( string filename );
+    bool appyNoCuts(){ fSelNoCuts = true; }
+    bool cutsFromHighway( string filename, double allCBR, double sumCBR );
 
   private:
 
     //here one can implement its own cut functions
-    bool isCrossingTPC();
     void initActiveVolumeBounds();
 
     vector<int> fVolumeCut = {0,0,0,0,0,0}; //in cm
@@ -55,6 +61,12 @@ class Cut
     int maxy;
     int minz;
     int maxz;
+
+    vector<Track> fCutsList;
+    vector<Track> fHighwayCutsList;
+    bool fCutsFromFile=false;
+    bool fCutsFromHighway=false;
+    bool fSelNoCuts=false;
 
 };
 

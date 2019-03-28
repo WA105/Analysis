@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/stat.h> //to use struct stat
+#include <numeric>
 
 #include "TChain.h"
 #include "TH1D.h"

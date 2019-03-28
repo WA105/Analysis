@@ -77,6 +77,8 @@ class Hit
     double width;
     double goodnessOfFit;
     double multiplicity;
+    double theta;
+    double phi;
 
     //if available
     double channelNoise;
@@ -93,7 +95,7 @@ class Hit
     //project view
     //deprecated channels
     void calibrateCharge( string type );
-    double getdQdx();
+    double getdQdx(string type);
     void findLem();
     bool isGoodLem( vector<int> lems );
     double electronsFromSumADC( string type );
@@ -359,6 +361,8 @@ class LArParser
     float tTrack_Hit_Y[NMaxHitsPerEvent]={0};
     float tTrack_Hit_Z[NMaxHitsPerEvent]={0};
     float tTrack_dx_LocalTrackDirection[NMaxHitsPerEvent]={0};
+    float tTrack_Hit_LocalTrackDirection_Theta[NMaxHitsPerEvent]={0};
+    float tTrack_Hit_LocalTrackDirection_Phi[NMaxHitsPerEvent]={0};
     float tTrack_dx_3DPosition[NMaxHitsPerEvent]={0};
     short tTrack_Hit_TPC[NMaxHitsPerEvent]={0};
     short tTrack_Hit_View[NMaxHitsPerEvent]={0};
@@ -381,6 +385,8 @@ class LArParser
 
     bool fUseChannelNoise = false;
     std::map< int, double > fChannelNoise;
+
+    bool fActiveBranch = false; //a flag to use if the root file has been made with a specific Parser version which lives on my personal featue branch ( andrea.scarpelli@cern.ch 04/03/19 )
 };
 
 #endif // __DATASTRUCTURE_H
