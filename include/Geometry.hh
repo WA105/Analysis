@@ -34,6 +34,13 @@ unsigned int ViewToDAQChan(unsigned int ViewChan);
 
 double getCalAmpConstant( int view, string type );
 
+double rescalePhi(double phi)
+{
+  if(phi<0){ phi = -phi; }
+  if(phi>90){ phi = 180-phi; }
+  return phi;
+};
+
 //int find_lem(double y, double z);
 
 //bool isGood_lem( int lem );

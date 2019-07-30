@@ -19,11 +19,11 @@ void loadLib(){
   gSystem->SetBuildDir("obj",true);
   gSystem->AddIncludePath(includepath.c_str());
   gROOT->LoadMacro((currentdir+"/../source/Geometry.cc+").c_str());
+  gROOT->LoadMacro((currentdir+"/../source/Utils.cc+").c_str());
   gROOT->LoadMacro((currentdir+"/../source/Run.cc+").c_str());
   gROOT->LoadMacro((currentdir+"/../source/DataStructure.cc+").c_str());
-  gROOT->LoadMacro((currentdir+"/../source/Utils.cc+").c_str());
   gROOT->LoadMacro((currentdir+"/../source/Efficiency.cc+").c_str());
-  gROOT->LoadMacro((currentdir+"/../source/Utils.cc+").c_str());
+  gROOT->LoadMacro((currentdir+"/../source/Fit.cc+").c_str());
 
   //gROOT->LoadMacro((currentdir+"/source/311Lib.cc+").c_str());
   //gROOT->LoadMacro((currentdir+"/source/311style.cc+").c_str());
