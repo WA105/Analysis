@@ -34,6 +34,8 @@ unsigned int ViewToDAQChan(unsigned int ViewChan);
 
 double getCalAmpConstant( int view, string type );
 
+const double getMeasuredLifetime( int view );
+
 //int find_lem(double y, double z);
 
 //bool isGood_lem( int lem );
