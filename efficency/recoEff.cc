@@ -86,7 +86,7 @@ int main( int argc, char* argv[] ){
   //define and variables =======================================================
 
   LArParser *mcParser = new LArParser();
-  LArParser *recoParser = new LArParser();
+  LArParser *recoParser = new LArParser(true);
   recoParser->setChannelNoise( "729-0-rms.root" );
 
   //define here the output file

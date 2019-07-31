@@ -25,5 +25,5 @@ file(GLOB sources ${PROJECT_SOURCE_DIR}/../source/*.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/../include/*.hh)
 
 #add here the name of your executable
-add_executable(signalToNoise ${PROJECT_SOURCE_DIR}/signalToNoise ${sources} ${headers})
-target_link_libraries(signalToNoise ${ROOT_LIBRARIES} sqlite3 CustomClasses)
+add_executable(dqdx ${PROJECT_SOURCE_DIR}/dqdx.cc ${sources} ${headers})
+target_link_libraries(dqdx ${ROOT_LIBRARIES} sqlite3 CustomClasses)

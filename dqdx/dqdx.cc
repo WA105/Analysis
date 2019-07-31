@@ -1,11 +1,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 //  Routine to study a run signal-to-noise ratio
 //
-//  Usage: ./build/signalToNoise -s /path/to/data.root -c /path/to/cuts.txt -n /path/to/noise_model.root -o path/to/outputFile.root
+//  Usage: ./build/dqds -s /path/to/data.root -c /path/to/cuts.txt -o path/to/outputFile.root
 //  -s FastReco data runs
 //  -c List of tracks which pass a given cut calculated externally (e.g. highway cut)
-//  -r Type of runs: Data or Montecarlo
-//  -n File .root with the reference noise model
 //  -o outputfile.root
 //
 //  mailto:andrea.scarpelli@cern.ch
@@ -86,6 +84,8 @@ class MakeFile
     double fAvgAmplitudeView1;
     double fAvgSummedADCView0;
     double fAvgSummedADCView1;
+    double fSummedChargeView0;
+    double fSummedChargeView1;
 
     //hit specific
     int fView;
@@ -114,6 +114,8 @@ class MakeFile
     double getAvgWidth( vector<Hit> hits, int view );
     double getAvgAmplitude( vector<Hit> hits, int view );
     double getAvgSummedADC( vector<Hit> hits, int view );
+    double getSummedCharge( vector<Hit> hits, int view );
+    double corrLifetime(double charge, int peakTime, int view);
 };
 
 MakeFile::MakeFile()
@@ -149,6 +151,8 @@ MakeFile::MakeFile()
   fTrackTree->Branch("AvgWidthView1", &fAvgWidthView1, "AvgWidthView1/D");
   fTrackTree->Branch("AvgSummedADCView0", &fAvgSummedADCView0, "AvgSummedADCView0/D");
   fTrackTree->Branch("AvgSummedADCView1", &fAvgSummedADCView1, "AvgSummedADCView1/D");
+  fTrackTree->Branch("SummedChargeView0", &fSummedChargeView0, "SummedChargeView0/D");
+  fTrackTree->Branch("SummedChargeView1", &fSummedChargeView1, "SummedChargeView1/D");
 
   //hittree
   fHitTree->Branch("Run", &fRun, "Run/I");
@@ -167,8 +171,6 @@ MakeFile::MakeFile()
   fHitTree->Branch("Amplitude", &fAmplitude, "Amplitude/D");
   fHitTree->Branch("Width", &fWidth, "Width/D");
   fHitTree->Branch("Chi2", &fChi2, "Chi2/D");
-  fHitTree->Branch("PeakToNoise", &fPeakToNoise, "PeakToNoise/D");
-  fHitTree->Branch("AreaToNoise", &fAreaToNoise, "AreaToNoise/D");
   fHitTree->Branch("LocalTheta", &fTheta, "LocalTheta/D");
   fHitTree->Branch("LocalPhi", &fPhi, "LocalPhi/D");
   fHitTree->Branch("X", &fX, "X/D" );
@@ -191,15 +193,6 @@ MakeFile::MakeFile()
   fHitTree->Branch("EPointZ", &fEPointZ, "EPointZ/D");
   fHitTree->Branch("StartTheta", &fStartTheta, "StartTheta/D");
   fHitTree->Branch("StartPhi", &fStartPhi, "StartPhi/D");
-  fHitTree->Branch("NumberOfHitsView0", &fNumberOfHitsView0, "NumberOfHitsView0/I");
-  fHitTree->Branch("NumberOfHitsView1", &fNumberOfHitsView1, "NumberOfHitsView1/I");
-  fHitTree->Branch("AvgAmplitudeView0", &fAvgAmplitudeView0, "AvgAmplitudeView0/D");
-  fHitTree->Branch("AvgAmplitudeView1", &fAvgAmplitudeView1, "AvgAmplitudeView1/D");
-  fHitTree->Branch("AvgWidthView0", &fAvgWidthView0, "AvgWidthView0/D");
-  fHitTree->Branch("AvgWidthView1", &fAvgWidthView1, "AvgWidthView1/D");
-  fHitTree->Branch("AvgSummedADCView0", &fAvgSummedADCView0, "AvgSummedADCView0/D");
-  fHitTree->Branch("AvgSummedADCView1", &fAvgSummedADCView1, "AvgSummedADCView1/D");
-
 }
 
 MakeFile::~MakeFile(){}
@@ -210,6 +203,18 @@ int MakeFile::getNumOfHits( vector<Hit> hits, int view )
   auto lambda = [ view ]( int accumulator, Hit h )
   {
      return h.view == view ? accumulator + 1 : accumulator;
+  };
+  numOfHits = accumulate( hits.begin(), hits.end(), 0, lambda );
+
+  return numOfHits;
+}
+
+double MakeFile::getSummedCharge( vector<Hit> hits, int view )
+{
+  int numOfHits = 0;
+  auto lambda = [ view ]( int accumulator, Hit h )
+  {
+     return h.view == view ? accumulator + h.chargeSummedADC : accumulator;
   };
   numOfHits = accumulate( hits.begin(), hits.end(), 0, lambda );
 
@@ -273,6 +278,17 @@ double MakeFile::getAvgSummedADC( vector<Hit> hits, int view )
   return sum > 0. ? accumulated/sum : 0.;
 }
 
+
+double MakeFile::corrLifetime(double charge, int peakTime, int view)
+{
+  double lifetime = getMeasuredLifetime(view);
+  //cout << charge << endl;
+  //cout << exp(peakTime*0.4/lifetime) << endl;
+  charge *= exp(peakTime*0.4/lifetime);
+  //cout << charge << endl;
+  return charge;
+}
+
 void MakeFile::fillTrack( Track t )
 {
   //Wrapper to fill the track ttree
@@ -325,14 +341,14 @@ void MakeFile::fillTrack( Track t )
   fAvgAmplitudeView1 = this->getAvgAmplitude( t.hitsTrk, 1 );
   fAvgSummedADCView0 = this->getAvgSummedADC( t.hitsTrk, 0 );
   fAvgSummedADCView1 = this->getAvgSummedADC( t.hitsTrk, 1 );
+  fSummedChargeView0 = this->getSummedCharge(t.hitsTrk, 0);
+  fSummedChargeView1 = this->getSummedCharge(t.hitsTrk, 1);
   fTrackTree->Fill();
 }
 
 void MakeFile::fillHit( Hit h )
 {
   //Wrapper to fill the hit ttree
-  double adc2fc = getCalAmpConstant(h.view, fRunType);
-
   fRun = h.run;
   fSubrun = h.subRun;
   fEvent = h.event;
@@ -343,14 +359,14 @@ void MakeFile::fillHit( Hit h )
   fPeakTime = h.peakTime;
   fAmplitude = h.amplitude;
   fWidth = h.width;
-  fIntegral = h.chargeIntegral*adc2fc; //in fC
-  fSummedADC = h.chargeSummedADC*adc2fc; //in fC
-  fPeakToNoise = h.getPeakToNoise();
-  fAreaToNoise = h.getIntegralToNoise(fRunType);
+  //fIntegral = corrLifetime(h.chargeIntegral,  h.peakTime, h.view);
+  //fSummedADC = corrLifetime(h.chargeSummedADC,  h.peakTime, h.view);
+  fIntegral = h.chargeIntegral;
+  fSummedADC = h.chargeSummedADC;
   fLocaldS = h.dxLocalTrackDirection ;
   f3DPositiondS = h.dx3DPosition;
   if ( fLocaldS>0 ){
-    fdQds = fSummedADC/f3DPositiondS;
+    fdQds = fSummedADC/fLocaldS;
   }
   else{
     fdQds = 0;
@@ -371,6 +387,14 @@ void MakeFile::Write()
   fHitTree->Write();
 }
 
+double corrPhi(double phi)
+{
+  //bring phi in the 1st quadrant
+  if(phi < 0.) { phi = -phi; };
+  if(phi > 90.){ phi = 180.-phi; };
+  return phi;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Main macro
 
@@ -389,25 +413,12 @@ int main( int argc, char* argv[] ){
   for ( int i=1; i<argc; i=i+2 ) {
    if      ( string(argv[i]) == "-s" ) recoFile = argv[i+1];
    else if ( string(argv[i]) == "-c" ) cutsFile = argv[i+1];
-   else if ( string(argv[i]) == "-r" ) runType = argv[i+1];
-   else if ( string(argv[i]) == "-n" ) noiseFile = argv[i+1];
    else if ( string(argv[i]) == "-o" ) outputFile = argv[i+1];
    else {
      cout << "Unknown option" << endl;
      return 1;
    }
   }
-
-  cout << runType << endl;
-
-  if( runType != "Montecarlo" && runType != "Data" )
-  {
-    cout << "main(): invalid runType options."
-        << "Possible options are 'Data' or 'Montecarlo'" << endl;
-    return 1;
-  }
-
-  cout << "Processing file: " << recoFile << " cuts: " << cutsFile << endl;
 
   //define LArParser  ==========================================================
 
@@ -441,14 +452,15 @@ int main( int argc, char* argv[] ){
   vector<int> activeVolumeCut = { 10, 10, 10, 10, 10, 10 };
   myCuts->setActiveVolumeCut( activeVolumeCut );
 
-  if( runType == "Montecarlo" ){ myCuts->appyNoCuts(); }
-  if( runType == "Data" ){ myCuts->appyNoCuts(); }
-  //{
-  //  //if ( !myCuts->cutsFromHighway(cutsFile, 0.1, 9999) ){
-  //  if(!myCuts->cutsFromFile(cutsFile)){
-  //    cout << "ERROR! " << cutsFile << "does not exist! No cut applied" << endl;
-  //  }
-  //}
+  if(cutsFile != "none"){
+    if( !myCuts->cutsFromHighway(cutsFile, 0.1, 9999) ){
+      cout << "ERROR! " << cutsFile << "does not exist! No cut applied" << endl;
+    }
+  }
+  else{
+    myCuts->appyNoCuts();
+    cout << "No cuts applied" << endl;
+  }
 
   //Event looper ===============================================================
   for(int evt=0; evt<recoTree->GetEntries(); evt++)
@@ -462,10 +474,10 @@ int main( int argc, char* argv[] ){
       //loop over tracks
       for( Track track : recoTracks )
       {
-        if( track.length > 50) {
+        if( track.length > 50 && myCuts->isPassingCut(track)) {
 
           if( track.startDirectionTheta > 92 && track.startDirectionTheta < 160
-                && track.startDirectionPhi > 35 && track.startDirectionPhi < 55 )
+                && corrPhi(track.startDirectionPhi) > 10 && corrPhi(track.startDirectionPhi) < 80 )
           {
 
             //loop over hits and sort the hits per views
@@ -492,18 +504,19 @@ int main( int argc, char* argv[] ){
                 bool condRegion = ( hit.Z > 52 && hit.Z < 248 );
 
                 // 2. remove hits with unphysical ds
-                bool condPitch = ( hit.dx3DPosition < 0.3125 );
+                bool condPitch = ( hit.dx3DPosition < 0.3125 & hit.dxLocalTrackDirection < 0.3125);
 
                 // 3. remove hits with multiplicity and chi2 too large
                 bool condFit = ( hit.multiplicity > 1 && ( hit.goodnessOfFit ==0 || hit.goodnessOfFit > 5)  );
 
                   // 4. remove problematic channles
-                 bool condChannel = ( hit.channel > 576 && hit.channel < 607 );
+                 //bool condChannel = ( hit.channel > 576 && hit.channel < 607 );
 
                  // 5. remove unphisical LocalTheta ( horizontal )
                  bool condLocalTheta = ( hit.theta < 92 );
 
-                if ( condRegion && !condPitch && !condFit && !condChannel && !condLocalTheta )
+                //if ( condRegion && !condPitch && !condFit && !condChannel && !condLocalTheta )
+                if ( !condPitch && !condFit  && !condLocalTheta )
                 {
                   myFile->fillHit( hit );
                 }

@@ -194,6 +194,10 @@ LArParser::LArParser(){}
 
 LArParser::~LArParser(){}
 
+LArParser::LArParser(bool activeBranch){
+  fActiveBranch=activeBranch;
+}
+
 void LArParser::setChannelNoise( string model )
 {
   fUseChannelNoise=true;

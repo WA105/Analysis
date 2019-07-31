@@ -58,8 +58,8 @@ double getCalAmpConstant( int view, string type )
 
   if(type == "Data")
   {
-    adc2fc0=1./59.8053; //ADC*ticks to fC view 0 (from pulsing)
-    adc2fc1=1./66.6715; //ADC*ticks to fC view 1 (from pulsing)
+    adc2fc0=1./59.859; //ADC*ticks to fC view 0 (from pulsing)
+    adc2fc1=1./66.6802; //ADC*ticks to fC view 1 (from pulsing)
   }
   else if( type == "Montecarlo" )
   {
@@ -79,6 +79,18 @@ double getCalAmpConstant( int view, string type )
     default:
       std::cout << "getCalAmpConstant(): invalid view!" << std::endl;
       return 0;
+  }
+}
+
+const double getMeasuredLifetime( int view )
+{
+  switch (view) {
+    case 0:
+      return 4200.0; //in us
+    case 1:
+      return 4600.0; //in us
+    default:
+      return 4000.0; //in us
   }
 }
 

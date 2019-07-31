@@ -203,6 +203,8 @@ class LArParser
     LArParser();
     ~LArParser();
 
+    LArParser(bool activeBranch);
+
     //setters
     //void setTTree( TTree *tree ){ fTree = tree; }
     //void setRun(Run *run){fRun = run;}
@@ -236,7 +238,7 @@ class LArParser
     //void clean();
 
     static const int NMaxGeantTrackPerEvent=10000;
-    static const int NMaxHitsPerEvent=10000;;
+    static const int NMaxHitsPerEvent=10000;
     static const int NMaxClustersPerEvent=10000;
     static const int NMaxTracksPerEvent=1000;
     static const int NMaxTracksPerEventTimesNViews=NMaxTracksPerEvent*NUM_OF_VIEWS;
