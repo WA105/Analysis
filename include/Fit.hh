@@ -203,7 +203,8 @@ class makeGraphs{
     void fillGraphs(int n, double binCenter, double binError);
 
   protected:
-    const double mip=7.75;
+    //const double mip=7.75;
+    const double mip=10;
 
     TGraphErrors *gMPV[2];
     TGraphErrors *gResolution[2];

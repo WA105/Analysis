@@ -182,7 +182,7 @@ void makeGraphs::setPointFit(int n, double binCenter, double binError, fitLandau
     //take all the paramters and errors from fit
     for(int view=0; view<2; view++)
     {
-      mpv[view]=fitf[view]->GetParameter(1);
+      mpv[view]=myHist->getHist(0)->GetMean();
       empv[view]=fitf[view]->GetParError(1);
 
       sigma[view]=fitf[view]->GetParameter(3);
