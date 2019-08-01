@@ -182,7 +182,7 @@ void makeGraphs::setPointFit(int n, double binCenter, double binError, fitLandau
     //take all the paramters and errors from fit
     for(int view=0; view<2; view++)
     {
-      mpv[view]=myHist->getHist(0)->GetMean();
+      mpv[view]=fitf[view]->GetParameter(1);
       empv[view]=fitf[view]->GetParError(1);
 
       sigma[view]=fitf[view]->GetParameter(3);
@@ -198,7 +198,7 @@ void makeGraphs::setPointFit(int n, double binCenter, double binError, fitLandau
     }
 
     //Error treatment as done here is not correct
-    gain = (mpv[1]+mpv[0])/mip;
+    gain = (mpv[1]+mpv[0])/mipMPV;
     double estat = sqrt(pow(empv[0]/mpv[0],2) + pow(empv[1]/mpv[1], 2));
     egain = sqrt( estat*estat + 0.02*0.02 + 0.09*0.09 + 0.04*0.04 )*gain;
 
