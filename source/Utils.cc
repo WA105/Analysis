@@ -46,7 +46,7 @@ inline vector<string> glob(const string& pat){
 TTree *getTTree( string filename ){
   //find the ttree associated to that specific filename: assuming fixed tree name
 
-  TTree *ttree;
+  TTree *ttree = new TTree();
 
   if( ExistTest(filename) ){
 

@@ -36,6 +36,7 @@ void fitLandau::initHist(string name, string title, int bin, double low, double 
   //override
   fName=name;
   fTitle=title;
+  fEntriesMap.clear();
 
   for(int view=0; view<2; view++)
   {
@@ -48,6 +49,7 @@ void fitLandau::initHist(string name, string title, int bin, double low, double 
 void fitLandau::fillTH1(int view, double fillin)
 {
   dqds[view]->Fill(fillin);
+  fEntriesMap[view].push_back(fillin);
 }
 
 TH1D* fitLandau::getHist(int view)
@@ -127,6 +129,103 @@ void fitLandau::doFit(int view, double lowlim, double uplim, bool norm)
   fitf[view] = langaufit(dqds[view],fr,sv,pllo,plhi,fp,fpe,&chisqr,&ndf);
 }
 
+double fitLandau::getTruncMean(int view, double rmlow, double rmhigh ){
+
+ vector<double> vec = fEntriesMap[view];
+
+ if(vec.empty()) return -999;
+
+ std::vector<double> vtmp(vec);
+
+ // sort it
+ std::sort(vtmp.begin(), vtmp.end());
+
+ size_t n = vtmp.size();
+ size_t nlow, nhigh;
+
+  //evaluate the number of entries to trim from the start and from the end
+ // TODO: proceeding in this way, rounding the entry, we might be biased
+ nlow  = (size_t)(rmlow * n);
+ nhigh = n - (size_t)(rmhigh * n);
+
+ // some basic checks
+ if(rmlow <= 0 || rmlow >= 1) nlow = 0;
+ if(rmhigh <= 0 || rmhigh >= 1) nhigh = n;
+
+ if( (rmlow + rmhigh) >= 0.99)
+   {
+     cout<<"ERROR: truncated_mean() the fractions to remove are to high"<<endl;
+     nlow  = 0;
+     nhigh = n;
+   }
+
+ // should not happen though
+ if( nlow >= n ) nlow = 0;
+ if( nhigh >= n ) nhigh = n;
+
+
+ double trmean = 0.0;
+
+ for(size_t i=nlow;i<nhigh;i++)
+   trmean += vtmp[i];
+
+ trmean /= ((float)nhigh - (float)nlow);
+ return trmean;
+
+}
+
+double fitLandau::getTruncMeanError(int view, double rmlow, double rmhigh ){
+
+ vector<double> vec = fEntriesMap[view];
+
+ if(vec.empty()) return -999;
+
+ std::vector<double> vtmp(vec);
+
+ // sort it
+ std::sort(vtmp.begin(), vtmp.end());
+
+ size_t n = vtmp.size();
+ size_t nlow, nhigh;
+
+  //evaluate the number of entries to trim from the start and from the end
+ // TODO: proceeding in this way, rounding the entry, we might be biased
+ nlow  = (size_t)(rmlow * n);
+ nhigh = n - (size_t)(rmhigh * n);
+
+ // some basic checks
+ if(rmlow <= 0 || rmlow >= 1) nlow = 0;
+ if(rmhigh <= 0 || rmhigh >= 1) nhigh = n;
+
+ if( (rmlow + rmhigh) >= 0.99)
+   {
+     cout<<"ERROR: truncated_mean() the fractions to remove are to high"<<endl;
+     nlow  = 0;
+     nhigh = n;
+   }
+
+ // should not happen though
+ if( nlow >= n ) nlow = 0;
+ if( nhigh >= n ) nhigh = n;
+
+ //calculate the mean
+ double trmean = 0.0;
+ for(size_t i=nlow;i<nhigh;i++)
+   trmean += vtmp[i];
+ trmean /= ((float)nhigh - (float)nlow);
+
+ //calculate the standard deviation
+ double tstd = 0.0;
+ for(size_t i=nlow;i<nhigh;i++)
+   tstd += (vtmp[i]-trmean)*(vtmp[i]-trmean);
+ tstd /= ((float)nhigh - (float)nlow)-1;
+ tstd = sqrt(tstd);
+ tstd /= sqrt((float)nhigh - (float)nlow);
+
+ return tstd;
+
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 makeGraphs::makeGraphs(int nPoints)
@@ -138,7 +237,8 @@ makeGraphs::makeGraphs(int nPoints)
   gResolution[0] = new TGraphErrors(nPoints);
   gResolution[1] = new TGraphErrors(nPoints);
 
-  gGain = new TGraphErrors(nPoints);
+  gGainMPV = new TGraphErrors(nPoints);
+  gGainMean = new TGraphErrors(nPoints);
 
   gAsymmetry = new TGraphErrors(nPoints);
 
@@ -148,7 +248,8 @@ makeGraphs::makeGraphs(int nPoints)
   gResolution[0]->SetName("gResolution0");
   gResolution[1]->SetName("gResolution1");
 
-  gGain->SetName("gGain");
+  gGainMPV->SetName("gGainMPV");
+  gGainMean->SetName("gGainMean");
 
   gAsymmetry->SetName("gAsymmetry");
 }
@@ -166,8 +267,11 @@ void makeGraphs::fillGraphs(int n, double binCenter, double binError)
     gResolution[view]->SetPointError(n, binError, eresolution[view]);
   }
 
-  gGain->SetPoint(n, binCenter, gain);
-  gGain->SetPointError(n, binError, egain);
+  gGainMPV->SetPoint(n, binCenter, gain);
+  gGainMPV->SetPointError(n, binError, egain);
+
+  gGainMean->SetPoint(n, binCenter, gainMean);
+  gGainMean->SetPointError(n, binError, egainMean);
 
   gAsymmetry->SetPoint(n, binCenter, asymmetry);
   gAsymmetry->SetPointError(n, binError, easymmetry);
@@ -185,15 +289,16 @@ void makeGraphs::setPointFit(int n, double binCenter, double binError, fitLandau
       mpv[view]=fitf[view]->GetParameter(1);
       empv[view]=fitf[view]->GetParError(1);
 
+      mean[view]=myHist->getTruncMean(view, 0.05, 0.25);
+      emean[view]=myHist->getTruncMeanError(view, 0.05, 0.25);
+
       sigma[view]=fitf[view]->GetParameter(3);
       esigma[view]=fitf[view]->GetParError(3);
 
       width[view]=fitf[view]->GetParameter(2);
       ewidth[view]=fitf[view]->GetParError(2);;
 
-      //resolution[view]=(myHist->getFWHM(view)/2)/mpv[view];
       resolution[view]=sigma[view]/mpv[view];
-      cout << "---> " << myHist->getFWHM(view) << " " << resolution[view] << endl;
       eresolution[view] =0.;
     }
 
@@ -201,6 +306,9 @@ void makeGraphs::setPointFit(int n, double binCenter, double binError, fitLandau
     gain = (mpv[1]+mpv[0])/mipMPV;
     double estat = sqrt(pow(empv[0]/mpv[0],2) + pow(empv[1]/mpv[1], 2));
     egain = sqrt( estat*estat + 0.02*0.02 + 0.09*0.09 + 0.04*0.04 )*gain;
+
+    gainMean = (mean[1]+mean[0])/mipMEAN;
+    egainMean = sqrt(pow(emean[0]/mean[0],2) + pow(emean[1]/mean[1], 2));
 
     asymmetry= (mpv[1]-mpv[0])/(mpv[1]+mpv[0]);
     easymmetry=0.;

@@ -176,10 +176,14 @@ class fitLandau{
     void fillTH1(int view, double fillin);
     void doFit(int view, double start, double end, bool norm);
     double getFWHM(int view);
+    double getTruncMean(int view, double rmLow, double rmHigh);
+    double getTruncMeanError(int view, double rmLow, double rmHigh);
 
   protected:
+
     TH1D *dqds[2];
     TF1 *fitf[2];
+    map<int, vector<double>> fEntriesMap;
 
     string fName;
     string fTitle;
@@ -197,7 +201,8 @@ class makeGraphs{
 
     TGraphErrors *getGraphMPV(int view){ return gMPV[view]; };
     TGraphErrors *getGraphResolution(int view){ return gResolution[view]; };
-    TGraphErrors *getGraphGain(){ return gGain; };
+    TGraphErrors *getGraphGainMPV(){ return gGainMPV; };
+    TGraphErrors *getGraphGainMean(){ return gGainMean; };
     TGraphErrors *getGraphAsymmetry(){ return gAsymmetry; };
 
     void fillGraphs(int n, double binCenter, double binError);
@@ -208,7 +213,8 @@ class makeGraphs{
 
     TGraphErrors *gMPV[2];
     TGraphErrors *gResolution[2];
-    TGraphErrors *gGain;
+    TGraphErrors *gGainMean;
+    TGraphErrors *gGainMPV;
     TGraphErrors *gAsymmetry;
 
     TGraphErrors *gSlow;
@@ -226,15 +232,19 @@ class makeGraphs{
     TF1 *fitf[2];
 
     double mpv[2];
+    double mean[2];
     double sigma[2];
     double width[2];
     double gain;
+    double gainMean;
     double asymmetry;
     double resolution[2];
     double empv[2];
+    double emean[2];
     double esigma[2];
     double ewidth[2];
     double egain;
+    double egainMean;
     double eresolution[2];
     double easymmetry;
 };

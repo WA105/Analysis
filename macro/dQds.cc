@@ -54,6 +54,7 @@ void makePretty(TCanvas *c, int canvasNum,  TH1D *hist, TF1 *ff, string view, Co
   hist->GetYaxis()->CenterTitle();
 
   ff->SetLineWidth(3.0);
+  ff->SetLineStyle(2);
   ff->SetLineColor(color);
 
   hist->Draw("E");
@@ -68,15 +69,15 @@ void makePretty(TCanvas *c, int canvasNum,  TH1D *hist, TF1 *ff, string view, Co
 
   string smpv = "#scale[2.2]{MPV = "+round_and_convert(mpv, 1)+" #pm "+round_and_convert(empv, 1)+" fC/cm}";
   string swidth ="#scale[2.2]{Width = "+round_and_convert(width, 1)+" #pm "+round_and_convert(ewidth, 1)+" fC/cm}";
-  string ssigma ="#scale[2.2]{Sigma = "+round_and_convert(sigma, 1)+" #pm "+round_and_convert(esigma, 1)+" fC/cm}";
-  string strunc = "#scale[2.2]{Tr. Mean = "+round_and_convert(trunc[0], 1)+" #pm "+round_and_convert(trunc[1], 1)+" fC/cm}";
+  string ssigma ="#scale[2.2]{#sigma_{Gauss} = "+round_and_convert(sigma, 1)+" #pm "+round_and_convert(esigma, 1)+" fC/cm}";
+  string strunc = "#scale[2.2]{ #LT dQ/ds #GT = "+round_and_convert(trunc[0], 1)+" #pm "+round_and_convert(trunc[1], 1)+" fC/cm}";
 
-  TLegend *l1 = new TLegend(0.457206, 0.463265, 0.90602, 0.906803);
+  TLegend *l1 = new TLegend(0.357006, 0.501361, 0.918545, 0.909524);
   l1->SetHeader(("#scale[3.0]{#bf{"+view+"}}").c_str(), "C");
   l1->AddEntry((TObject*)0,smpv.c_str(), "");
-  l1->AddEntry((TObject*)0,swidth.c_str(), "");
   l1->AddEntry((TObject*)0,ssigma.c_str(), "");
   l1->AddEntry((TObject*)0,strunc.c_str(), "");
+  l1->SetFillColorAlpha(kWhite, 0.0);
   l1->Draw("");
 }
 
@@ -126,17 +127,18 @@ void dQds()
   //fill the histogram
   loopTree(ttree, myHist, phi);
 
-  myHist->doFit(0, 0.5, 1.5, norm);
-  myHist->doFit(1, 0.5, 1.5, norm);
+  myHist->doFit(0, 0.45, 2.0, norm);
+  myHist->doFit(1, 0.45, 2.0, norm);
 
   //Draw =======================================================================
 
   TCanvas *c = new TCanvas("c", "", 1000, 400);
   c->Divide(2,1);
 
-  //not correct values
-  double trunc0[2] = {492.2158241909493/calo[0], 0.844720554183213/calo[0]};
-  double trunc1[2] = {483.2593816255622/calo[1], 0.48157343787501106/calo[1]};
+  //double trunc0[2] = {492.2158241909493/calo[0], 0.844720554183213/calo[0]};
+  //double trunc1[2] = {483.2593816255622/calo[1], 0.48157343787501106/calo[1]};
+  double trunc0[2] = {myHist->getTruncMean(0, 0.0, 0.0), myHist->getTruncMeanError(0, 0.00, 0.0)};
+  double trunc1[2] = {myHist->getTruncMean(1, 0.0, 0.0), myHist->getTruncMeanError(0, 0.00, 0.0)};
 
   makePretty(c, 1, myHist->getHist(0), myHist->getFunction(0), "View 0", kRed+1, trunc0);
   makePretty(c, 2, myHist->getHist(1), myHist->getFunction(1), "View 1", kBlue+1, trunc1);
